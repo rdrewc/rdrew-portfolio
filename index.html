@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ryan Casey</title>
+<title>Ryan Casey &ndash; Product Designer</title>
+<meta name="description" content="Product designer currently at Netflix, previously Discord and Meta.">
+<meta property="og:title" content="Ryan Casey &ndash; Product Designer">
+<meta property="og:description" content="Product designer currently at Netflix, previously Discord and Meta.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rdrew.com">
+<meta property="og:image" content="https://rdrew.com/assets/headshot.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ryan Casey &ndash; Product Designer">
+<meta name="twitter:description" content="Product designer currently at Netflix, previously Discord and Meta.">
+<meta name="twitter:image" content="https://rdrew.com/assets/headshot.png">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +61,10 @@
     font-family:'DM Sans',sans-serif;
     -webkit-font-smoothing:antialiased;
     transition:background-color 0.35s ease, color 0.35s ease;
+    cursor:grab;
+  }
+  body.bg-dragging{
+    cursor:grabbing;
   }
   h1, .section-label, .section-rule, .dot-row, .dot-row .name, .dot-row .dots::after,
   .dot-row .date, .plain-list, .plain-list a, .contact-list a{
@@ -551,6 +565,40 @@
     var angle = 0.6;
     var ROT_SPEED = 0.008; // radians per second
 
+    // drag-to-rotate: adds a persistent offset on top of the ever-advancing
+    // auto angle, so dragging nudges the view and it keeps spinning from there.
+    var dragAngleOffset = 0;
+    var isDragging = false;
+    var lastPointerX = 0;
+    var mouseX = -9999, mouseY = -9999;
+    var DRAG_SENSITIVITY = 0.006;
+    var GLOW_RADIUS = 150;
+    var GLOW_COLOR = '110,235,150';
+
+    function onPointerDown(e){
+      isDragging = true;
+      lastPointerX = e.clientX;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      document.body.classList.add('bg-dragging');
+    }
+    function onPointerMove(e){
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if(!isDragging) return;
+      var dx = e.clientX - lastPointerX;
+      dragAngleOffset += dx * DRAG_SENSITIVITY;
+      lastPointerX = e.clientX;
+    }
+    function onPointerUp(){
+      isDragging = false;
+      document.body.classList.remove('bg-dragging');
+    }
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+
     function project(pt, cosA, sinA, scale, cx, cy, yOff){
       var x1 = pt.x * cosA - pt.z * sinA;
       var z1 = pt.x * sinA + pt.z * cosA;
@@ -581,7 +629,8 @@
 
       ctx.clearRect(0, 0, W, H);
 
-      var cosA = Math.cos(angle), sinA = Math.sin(angle);
+      var totalAngle = angle + dragAngleOffset;
+      var cosA = Math.cos(totalAngle), sinA = Math.sin(totalAngle);
       var scale = Math.max(W, 800) / 1400;
       var cx = W / 2;
       var cy = H * 0.46;
@@ -646,6 +695,28 @@
         }
         ctx.strokeStyle = lineColor;
         ctx.stroke();
+      }
+
+      if(isDragging){
+        ctx.lineWidth = 1.4;
+        for(var gr = 0; gr < projRows.length; gr++){
+          var gpts = projRows[gr].pts;
+          for(var gi = 1; gi < gpts.length; gi++){
+            var gp1 = gpts[gi - 1], gp2 = gpts[gi];
+            var gmx = (gp1.sx + gp2.sx) / 2, gmy = (gp1.sy + gp2.sy) / 2;
+            var gdx = gmx - mouseX, gdy = gmy - mouseY;
+            var gdist = Math.sqrt(gdx * gdx + gdy * gdy);
+            if(gdist < GLOW_RADIUS){
+              var gt = 1 - gdist / GLOW_RADIUS;
+              gt = gt * gt;
+              ctx.strokeStyle = 'rgba(' + GLOW_COLOR + ',' + (0.5 * gt).toFixed(3) + ')';
+              ctx.beginPath();
+              ctx.moveTo(gp1.sx, gp1.sy);
+              ctx.lineTo(gp2.sx, gp2.sy);
+              ctx.stroke();
+            }
+          }
+        }
       }
 
       requestAnimationFrame(draw);
