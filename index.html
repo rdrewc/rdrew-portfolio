@@ -16,6 +16,25 @@
     --divider:#262837;
     --strong:#eef0f6;
     --muted:#7d8399;
+    --accent:#9b7bff;
+    --glass-bg:rgba(255,255,255,0.08);
+    --glass-border:rgba(255,255,255,0.14);
+    --glass-indicator:rgba(255,255,255,0.16);
+    --glass-shadow:rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f5fb;
+    --heading:#211f2e;
+    --body-text:#5a5a6e;
+    --label:#8b88a3;
+    --divider:#e2e0ee;
+    --strong:#211f2e;
+    --muted:#87849c;
+    --accent:#7c4dff;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-border:rgba(124,77,255,0.18);
+    --glass-indicator:rgba(124,77,255,0.14);
+    --glass-shadow:rgba(124,77,255,0.18);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
@@ -25,6 +44,11 @@
     color:var(--body-text);
     font-family:'DM Sans',sans-serif;
     -webkit-font-smoothing:antialiased;
+    transition:background-color 0.35s ease, color 0.35s ease;
+  }
+  h1, .section-label, .section-rule, .dot-row, .dot-row .name, .dot-row .dots::after,
+  .dot-row .date, .plain-list, .plain-list a, .contact-list a{
+    transition:color 0.35s ease, border-color 0.35s ease;
   }
 
   .page{
@@ -128,7 +152,7 @@
     text-decoration:none;
     transition:color 0.15s ease;
   }
-  .dot-row .name:hover{color:#fff;}
+  .dot-row .name:hover{color:var(--accent);}
   .dot-row .dots{
     flex:1;
     overflow:hidden;
@@ -165,7 +189,7 @@
     text-decoration:none;
     transition:color 0.15s ease;
   }
-  .plain-list a:hover{color:#fff;}
+  .plain-list a:hover{color:var(--accent);}
 
   .contact-list{
     list-style:none;
@@ -179,12 +203,63 @@
     text-decoration:none;
     transition:color 0.15s ease;
   }
-  .contact-list a:hover{color:#fff;}
+  .contact-list a:hover{color:var(--accent);}
 
   a:focus-visible, button:focus-visible{
-    outline:2px solid #fff;
+    outline:2px solid var(--accent);
     outline-offset:3px;
   }
+
+  .theme-toggle{
+    position:fixed;
+    bottom:32px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:2px;
+    padding:6px;
+    border-radius:999px;
+    background:var(--glass-bg);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 8px 32px var(--glass-shadow);
+    z-index:50;
+    transition:background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+  .theme-toggle .indicator{
+    position:absolute;
+    top:6px;
+    left:6px;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:var(--glass-indicator);
+    box-shadow:0 2px 8px var(--glass-shadow);
+    transition:transform 0.4s cubic-bezier(.4,0,.2,1), background-color 0.35s ease;
+  }
+  :root[data-theme="light"] .theme-toggle .indicator{
+    transform:translateX(38px);
+  }
+  .theme-toggle button{
+    position:relative;
+    z-index:1;
+    width:36px;
+    height:36px;
+    border:none;
+    background:transparent;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+    cursor:pointer;
+    transition:color 0.35s ease;
+  }
+  .theme-toggle button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  :root:not([data-theme="light"]) .theme-toggle .moon-btn{color:var(--accent);}
+  :root[data-theme="light"] .theme-toggle .sun-btn{color:var(--accent);}
 
   @media (max-width:860px){
     .page{
@@ -252,6 +327,46 @@
     </section>
   </div>
 </div>
+
+<div class="theme-toggle">
+  <div class="indicator"></div>
+  <button class="moon-btn" type="button" aria-label="Dark mode" aria-pressed="true">
+    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+  </button>
+  <button class="sun-btn" type="button" aria-label="Light mode" aria-pressed="false">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+  </button>
+</div>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var sunBtn = document.querySelector('.sun-btn');
+    var moonBtn = document.querySelector('.moon-btn');
+
+    function applyTheme(theme){
+      if(theme === 'light'){
+        root.setAttribute('data-theme', 'light');
+      } else {
+        root.removeAttribute('data-theme');
+      }
+      sunBtn.setAttribute('aria-pressed', String(theme === 'light'));
+      moonBtn.setAttribute('aria-pressed', String(theme !== 'light'));
+    }
+
+    var saved = localStorage.getItem('theme') || 'dark';
+    applyTheme(saved);
+
+    sunBtn.addEventListener('click', function(){
+      localStorage.setItem('theme', 'light');
+      applyTheme('light');
+    });
+    moonBtn.addEventListener('click', function(){
+      localStorage.setItem('theme', 'dark');
+      applyTheme('dark');
+    });
+  })();
+</script>
 
 </body>
 </html>
