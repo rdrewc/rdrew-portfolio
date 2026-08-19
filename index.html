@@ -6,69 +6,58 @@
 <title>Ryan Casey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --grad-start:#4A5FD9;
-    --grad-mid:#7B6FE0;
-    --grad-end:#D89FD6;
-    --card-bg:rgba(255,255,255,0.08);
-    --card-border:rgba(255,255,255,0.14);
-    --text:#FFFFFF;
-    --text-soft:rgba(255,255,255,0.72);
-    --text-faint:rgba(255,255,255,0.55);
+    --bg:#12131c;
+    --heading:#dfe1ea;
+    --body-text:#b2b7c6;
+    --label:#6f7690;
+    --divider:#262837;
+    --strong:#eef0f6;
+    --muted:#7d8399;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
   body{
     min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    background:linear-gradient(135deg, var(--grad-start) 0%, var(--grad-mid) 55%, var(--grad-end) 100%);
-    color:var(--text);
-    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--body-text);
+    font-family:'DM Sans',sans-serif;
     -webkit-font-smoothing:antialiased;
   }
 
-  main{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:80px 24px 40px;
-    text-align:center;
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:120px 60px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8vw;
   }
 
-  .card{
-    width:100%;
-    max-width:420px;
-    background:var(--card-bg);
-    border:1px solid var(--card-border);
-    border-radius:28px;
-    padding:56px 40px 44px;
-    backdrop-filter:blur(6px);
+  .intro{
     display:flex;
-    flex-direction:column;
     align-items:center;
+    gap:48px;
+    margin-bottom:44px;
   }
 
   .avatar-wrap{
     position:relative;
     width:170px;
     height:170px;
-    margin-bottom:28px;
+    flex-shrink:0;
   }
   .avatar{
     width:150px;
     height:150px;
     border-radius:50%;
-    background:rgba(255,255,255,0.15);
     overflow:hidden;
     position:absolute;
     top:10px;
     left:10px;
-    z-index:2;
+    z-index:1;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -86,115 +75,179 @@
     width:100%;
     height:100%;
     object-fit:contain;
-    z-index:1;
+    z-index:2;
     pointer-events:none;
   }
 
   h1{
-    font-family:'Playfair Display',serif;
-    font-style:italic;
-    font-weight:400;
-    font-size:clamp(40px,7vw,56px);
-    line-height:1.05;
-    margin-bottom:14px;
-  }
-
-  .role{
-    font-family:'Inter',sans-serif;
+    font-family:'DM Sans',sans-serif;
     font-weight:600;
-    font-size:19px;
-    color:var(--text-soft);
+    font-size:clamp(28px,3vw,36px);
+    color:var(--heading);
   }
 
-  .subline{
-    margin-top:36px;
+  .bio p{
+    font-size:17px;
+    line-height:1.7;
+    max-width:560px;
+    margin-bottom:24px;
+  }
+  .bio p:last-child{margin-bottom:0;}
+
+  .right section{margin-bottom:48px;}
+  .right section:last-child{margin-bottom:0;}
+
+  .section-label{
     font-family:'IBM Plex Mono',monospace;
-    font-size:14px;
-    letter-spacing:0.04em;
-    color:var(--text-faint);
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--label);
+    margin-bottom:10px;
+  }
+  .section-rule{
+    border:none;
+    border-top:1px solid var(--divider);
+    margin-bottom:18px;
   }
 
-  footer{
-    width:100%;
-    padding:28px 24px 32px;
-    border-top:1px solid rgba(255,255,255,0.12);
-  }
-  .footer-inner{
-    max-width:720px;
-    margin:0 auto;
+  .dot-row{
     display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    justify-content:center;
-    gap:8px 28px;
+    align-items:baseline;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:15px;
+    color:var(--strong);
+    padding:5px 0;
   }
-  .footer-inner a{
-    color:var(--text-soft);
+  .dot-row .name{
+    white-space:nowrap;
+    color:var(--strong);
     text-decoration:none;
-    font-size:14px;
-    font-weight:500;
-    letter-spacing:0.01em;
     transition:color 0.15s ease;
   }
-  .footer-inner a:hover{
-    color:var(--text);
+  .dot-row .name:hover{color:#fff;}
+  .dot-row .dots{
+    flex:1;
+    overflow:hidden;
+    position:relative;
+    height:1.2em;
+    margin:0 6px;
   }
-  .footer-dot{
-    width:3px;height:3px;border-radius:50%;
-    background:rgba(255,255,255,0.35);
+  .dot-row .dots::after{
+    content:".................................................................................................................";
+    position:absolute;
+    left:0;
+    top:0;
+    white-space:nowrap;
+    color:var(--muted);
+    font-weight:400;
+    letter-spacing:2px;
   }
-  .footer-copy{
-    text-align:center;
-    margin-top:16px;
+  .dot-row .date{
+    white-space:nowrap;
+    color:var(--muted);
+    font-weight:400;
+  }
+
+  .plain-list{
+    list-style:none;
     font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    color:rgba(255,255,255,0.4);
+    font-weight:600;
+    font-size:15px;
+    color:var(--strong);
   }
+  .plain-list li{padding:5px 0;}
+  .plain-list a{
+    color:var(--strong);
+    text-decoration:none;
+    transition:color 0.15s ease;
+  }
+  .plain-list a:hover{color:#fff;}
+
+  .contact-list{
+    list-style:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:15px;
+  }
+  .contact-list li{padding:5px 0;}
+  .contact-list a{
+    color:var(--strong);
+    text-decoration:none;
+    transition:color 0.15s ease;
+  }
+  .contact-list a:hover{color:#fff;}
 
   a:focus-visible, button:focus-visible{
     outline:2px solid #fff;
     outline-offset:3px;
   }
 
-  @media (max-width:480px){
-    .card{padding:44px 24px 36px;}
+  @media (max-width:860px){
+    .page{
+      grid-template-columns:1fr;
+      padding:64px 28px;
+      gap:56px;
+    }
+    .intro{gap:28px;margin-bottom:32px;}
   }
 </style>
 </head>
 <body>
 
-<main>
-  <div class="card">
-    <div class="avatar-wrap">
-      <img class="avatar-decoration" src="assets/dino.gif" alt="">
-      <div class="avatar">
-        <img src="assets/headshot.png" alt="Ryan Casey">
+<div class="page">
+  <div class="left">
+    <div class="intro">
+      <div class="avatar-wrap">
+        <img class="avatar-decoration" src="assets/dino.gif" alt="">
+        <div class="avatar">
+          <img src="assets/headshot.png" alt="Ryan Casey">
+        </div>
       </div>
+      <h1>Hi I&rsquo;m Ryan</h1>
     </div>
 
-    <h1>Ryan Casey</h1>
-    <div class="role">Product Designer</div>
+    <div class="bio">
+      <p>A product designer living in the Sierra Nevada mountains in California. Most recently I&rsquo;ve been working at Netflix building the games social platform and before that was on the Commerce team growing subscribers.</p>
+      <p>Before that I worked at Discord helping people express themselves and grow the Nitro subscription product. During my time at Meta I designed ad formats, creator products, and all types of video formats across Instagram and the Facebook App.</p>
+      <p>I get excited by prototyping, exploring artificial intelligence, and well crafted products. I&rsquo;m always interested in pushing digital mediums to the next levels of immersion.</p>
+    </div>
   </div>
 
-  <div class="subline">Selected Case Studies 2026</div>
-</main>
+  <div class="right">
+    <section>
+      <div class="section-label">Work</div>
+      <hr class="section-rule">
+      <div class="dot-row"><a class="name" href="https://www.netflix.com" target="_blank" rel="noopener">Netflix</a><span class="dots"></span><span class="date">2024 &ndash; Present</span></div>
+      <div class="dot-row"><a class="name" href="https://discord.com" target="_blank" rel="noopener">Discord</a><span class="dots"></span><span class="date">2022 &ndash; 2024</span></div>
+      <div class="dot-row"><a class="name" href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><span class="dots"></span><span class="date">2018 &ndash; 2022</span></div>
+      <div class="dot-row"><a class="name" href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a><span class="dots"></span><span class="date">2016 &ndash; 2018</span></div>
+      <div class="dot-row"><a class="name" href="https://vimeo.com" target="_blank" rel="noopener">Vimeo</a><span class="dots"></span><span class="date">2014 &ndash; 2016</span></div>
+      <div class="dot-row"><a class="name" href="https://www.shapeways.com" target="_blank" rel="noopener">Shapeways</a><span class="dots"></span><span class="date">2012 &ndash; 2014</span></div>
+    </section>
 
-<footer>
-  <div class="footer-inner">
-    <a href="#" target="_blank" rel="noopener">GitHub</a>
-    <span class="footer-dot"></span>
-    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
-    <span class="footer-dot"></span>
-    <a href="#" target="_blank" rel="noopener">SoundCloud</a>
-    <span class="footer-dot"></span>
-    <a href="mailto:you@rdrew.com">Email</a>
+    <section>
+      <div class="section-label">Patents</div>
+      <hr class="section-rule">
+      <ul class="plain-list">
+        <li><a href="https://patents.google.com/patent/US20190208279A1/" target="_blank" rel="noopener">Connected TV 360-Degree Media Interactions &ndash; Meta</a></li>
+        <li><a href="https://patents.google.com/patent/US20190205008A1/" target="_blank" rel="noopener">Connected TV Comments and Reactions &ndash; Meta</a></li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-label">Contact Me</div>
+      <hr class="section-rule">
+      <ul class="contact-list">
+        <li><a href="https://www.linkedin.com/in/ryandrewcasey/" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="mailto:rdrewcasey@gmail.com">Email</a></li>
+        <li><a href="https://www.instagram.com/ryry" target="_blank" rel="noopener">Instagram</a></li>
+      </ul>
+    </section>
   </div>
-  <div class="footer-copy">rdrew.com &mdash; <span id="year"></span></div>
-</footer>
-
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-</script>
+</div>
 
 </body>
 </html>
