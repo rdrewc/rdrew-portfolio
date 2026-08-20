@@ -1,0 +1,915 @@
+/* Games Dashboard — Player Panel Figma 96:3081 (Game-invites---Prototype).
+ * Vanilla CSS aligned with game-invite-list tokens (tv-invite-list.css).
+ * Entry chrome: #app[data-dashboard-context="player-panel-external"] mirrors invite (hides header/nav).
+ */
+
+#app[data-dashboard-context="player-panel-external"] .tv-dashboard__primary-nav,
+#app[data-dashboard-context="player-panel-external"] .tv-dashboard__edge-nav,
+#app[data-dashboard-context="player-panel-external"] .tv-dashboard__chrome,
+#app[data-dashboard-context="player-panel-external"] .tv-dashboard__header-notif-wrap {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.tv-dashboard__player-panel-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#app[data-player-panel-open="true"] .tv-dashboard__player-panel-shell {
+  display: flex;
+  pointer-events: auto;
+}
+
+/* Friends entry: panel block starts 30px below top of shell (TV viewport), not vertically centered */
+#app[data-player-panel-from-friends="true"] .tv-dashboard__player-panel-shell {
+  align-items: flex-start;
+  justify-content: center;
+  padding: 30px 32px 24px;
+  box-sizing: border-box;
+}
+
+/* ----- Opened from Friends strip: Friends row exits, bottom nav blurred, dialog scales in ----- */
+@keyframes tvFriendsStripExitForPlayerPanel {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes tvPlayerPanelFriendsEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tvPlayerPanelNotificationsEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+#tvDashboard.tv-dashboard--friends-player-panel #tvDashboardFriendsFocus .tv-dashboard__friends-focus-inner {
+  animation: tvFriendsStripExitForPlayerPanel 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+#tvDashboard:not(.tv-dashboard--friends-player-panel) #tvDashboardFriendsFocus .tv-dashboard__friends-focus-inner {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* Match notifications panel: primary nav scaled + blurred + inert */
+#app[data-player-panel-from-friends="true"] #tvDashboard .tv-dashboard__primary-nav {
+  transform: translateX(-50%) scale(0.9);
+  filter: blur(4pt);
+  pointer-events: none;
+  opacity: 0.95;
+}
+
+#app[data-player-panel-from-friends="true"] #tvDashboard .tv-dashboard__edge-nav {
+  filter: blur(4pt);
+  pointer-events: none !important;
+  opacity: 0.45;
+}
+
+.player-panel.player-panel--friends-enter {
+  animation: tvPlayerPanelFriendsEnter 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: top center;
+}
+
+.player-panel.player-panel--notifications-enter {
+  animation: tvPlayerPanelNotificationsEnter 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tvDashboard.tv-dashboard--friends-player-panel #tvDashboardFriendsFocus .tv-dashboard__friends-focus-inner,
+  .player-panel.player-panel--friends-enter,
+  .player-panel.player-panel--notifications-enter {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  #app[data-player-panel-from-friends="true"] #tvDashboard .tv-dashboard__primary-nav,
+  #app[data-player-panel-from-friends="true"] #tvDashboard .tv-dashboard__edge-nav {
+    filter: none;
+  }
+}
+
+/* Stack above game-invite TV sheet when View Player opens (chrome already suppressed). */
+#app[data-dashboard-context="player-panel-external"] .tv-dashboard__game-invite-panel-shell {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.player-panel__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.player-panel {
+  --pp-br-xl: 20px;
+  --pp-br-jumbo: 24px;
+  --pp-br-btn-header: 21px;
+  --pp-br-playing: 8px;
+  --pp-border-subtle: rgba(128, 128, 128, 0.4);
+  --pp-fg: #fff;
+  --pp-fg-subtle: rgba(255, 255, 255, 0.7);
+  --pp-fg-tertiary: rgba(255, 255, 255, 0.7);
+  --pp-btn-surface-primary-focused: #fff;
+  --pp-btn-surface-secondary: rgba(128, 128, 128, 0.4);
+  --pp-btn-surface-secondary-focused: #fff;
+  --pp-btn-surface-inverse: rgba(128, 128, 128, 0.7);
+  --pp-btn-fg-primary-focused: #000;
+  --pp-btn-fg-secondary: #fff;
+  --pp-space-16: 16px;
+  --pp-space-12: 12px;
+  /* Plate glow tint — overridden by avatar sampling (`--pp-plate-glow-*` on this element via JS). */
+  --pp-plate-glow-r: 118;
+  --pp-plate-glow-g: 112;
+  --pp-plate-glow-b: 104;
+
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: min(600px, calc(100vw - 48px));
+  height: min(560px, calc(100vh - 120px));
+  max-height: min(560px, calc(100% - 48px));
+  padding: 32px 44px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--pp-fg);
+}
+
+/* Card plate + hero glow — color from `--pp-plate-glow-*` on `.player-panel` (defaults below; avatar sampling sets inline vars). */
+.player-panel__plate-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pp-br-xl);
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.player-panel__plate-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pp-br-xl);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161616 0%, #020202 72%, #101010 100%);
+  pointer-events: none;
+}
+
+.player-panel__plate-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 260px;
+  border-radius: var(--pp-br-xl) var(--pp-br-xl) 0 0;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 85% at 50% 0%,
+    rgba(var(--pp-plate-glow-r), var(--pp-plate-glow-g), var(--pp-plate-glow-b), 0.4) 0%,
+    rgba(var(--pp-plate-glow-r), var(--pp-plate-glow-g), var(--pp-plate-glow-b), 0) 68%
+  );
+}
+
+/* Header — absolute like Figma */
+.player-panel__header {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  top: 32px;
+  height: 42px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pp-space-12);
+  z-index: 4;
+}
+
+.player-panel[data-state="blocked"] .player-panel__header {
+  justify-content: flex-start;
+  gap: var(--pp-space-12);
+}
+
+.player-panel__header-more-wrap {
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+/* Match `.game-invite-tv__close` pill + white surface focus (tv-invite-list.css) */
+.player-panel__header-more {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 6px 16px;
+  margin: 0;
+  border: none;
+  border-radius: 32px;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  /* #808080 @ 40% opacity */
+  background: rgba(128, 128, 128, 0.4);
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.player-panel__header-more:focus {
+  outline: none;
+}
+
+.player-panel__header-more > .game-invite-list__invite-btn-surface {
+  border-radius: 32px;
+  background: #fff;
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.player-panel__header-more.game-invite-tv__focusable--current > .game-invite-list__invite-btn-surface {
+  opacity: 1;
+}
+
+.player-panel__header-more:hover:not(.game-invite-tv__focusable--current) {
+  color: #fff;
+}
+
+.player-panel__header-more-inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  justify-content: center;
+}
+
+/* Space between icon and label only when a label is visible */
+.player-panel__header-more.game-invite-tv__focusable--current .player-panel__header-more-inner {
+  gap: var(--pp-space-12);
+  color: #000;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__header-more-inner {
+  gap: var(--pp-space-12);
+}
+
+.player-panel__header-more.game-invite-tv__focusable--current .player-panel__header-more-icon {
+  filter: brightness(0);
+}
+
+.player-panel__header-more img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Default: icon-only width; "More" expands when TV-focused */
+.player-panel__header-more-label {
+  display: inline-block;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.player-panel__header-more-label--action {
+  display: none;
+}
+
+.player-panel__header-more-label--more {
+  flex: 0 0 0;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    max-width 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease;
+}
+
+.player-panel__header-more.game-invite-tv__focusable--current .player-panel__header-more-label--more {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 6rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* More Options Focus — white pill + Action label (not the peek "More" strip) */
+.player-panel[data-state="more-options-focus"] .player-panel__header-more-label--more {
+  display: none !important;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__header-more-label--action {
+  display: inline;
+  max-width: none !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__header-more > .game-invite-list__invite-btn-surface {
+  opacity: 1;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__header-more .player-panel__header-more-inner {
+  color: #000;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__header-more .player-panel__header-more-icon {
+  filter: brightness(0);
+}
+
+.player-panel[data-state="blocked"] .player-panel__header-more-wrap {
+  display: none;
+}
+
+/* Scroll / layout column */
+.player-panel__body {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pp-space-12);
+  margin-bottom: -16px;
+  width: 100%;
+  min-height: 0;
+  margin-top: 10px;
+}
+
+.player-panel__profile-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.player-panel__avatar {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 1199px;
+  border: 1px solid var(--pp-border-subtle);
+  box-shadow: 0 0 60px rgba(0, 204, 255, 0.3);
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.player-panel__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-panel__text-col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  gap: 2px;
+}
+
+.player-panel[data-state="blocked"] .player-panel__text-col {
+  align-items: flex-start;
+}
+
+.player-panel__handle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  text-align: center;
+  width: 100%;
+}
+
+.player-panel[data-state="blocked"] .player-panel__handle {
+  text-align: left;
+}
+
+.player-panel__account-note {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19px;
+  display: none;
+}
+
+.player-panel__account-note[hidden] {
+  display: none !important;
+}
+
+.player-panel[data-state="incoming-request"] .player-panel__account-note,
+.player-panel[data-state="outgoing-request"] .player-panel__account-note,
+.player-panel[data-state="more-options-focus"] .player-panel__account-note {
+  display: block;
+}
+
+/* Status uses `.tv-dashboard__friends-focus-handle-status` from tv-focus-profile.css */
+
+.player-panel[data-presence-online="false"] .tv-dashboard__friends-focus-handle-status span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.player-panel__achievements {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 22px;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.player-panel__achievements img {
+  width: 21px;
+  height: 21px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.player-panel__achievements span {
+  font-size: 14px;
+  line-height: 19px;
+  white-space: nowrap;
+}
+
+/* Content + actions region */
+.player-panel__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  min-height: 0;
+}
+
+.player-panel__copy-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.player-panel__copy-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 37px;
+  color: var(--pp-fg);
+}
+
+.player-panel__copy-body {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--pp-fg-subtle);
+}
+
+.player-panel__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pp-space-16);
+  width: min(360px, 100%);
+  align-items: stretch;
+}
+
+.player-panel__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 6px var(--pp-space-16);
+  margin: 0;
+  border: none;
+  border-radius: var(--pp-br-jumbo);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  box-sizing: border-box;
+}
+
+.player-panel__btn:focus-visible {
+  outline: none;
+}
+
+/* TV focus — white fill + black label (no outline / inset ring) */
+.player-panel__btn.game-invite-tv__focusable--current {
+  outline: none;
+  box-shadow: none;
+}
+
+.player-panel__btn--secondary-gray.game-invite-tv__focusable--current:not(.player-panel__btn--loading) {
+  background: var(--pp-btn-surface-primary-focused);
+  color: var(--pp-btn-fg-primary-focused);
+}
+
+.player-panel__btn--secondary-gray.player-panel__btn--loading.game-invite-tv__focusable--current {
+  background: var(--pp-btn-surface-secondary);
+  color: var(--pp-btn-fg-secondary);
+}
+
+.player-panel__btn--primary-white.game-invite-tv__focusable--current {
+  box-shadow: none;
+}
+
+.player-panel__btn--inverse-gray.game-invite-tv__focusable--current {
+  background: var(--pp-btn-surface-primary-focused);
+  color: var(--pp-btn-fg-primary-focused);
+}
+
+.player-panel__btn--primary-white {
+  color: var(--pp-btn-fg-primary-focused);
+}
+
+.player-panel__btn--primary-white::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pp-br-jumbo);
+  background: var(--pp-btn-surface-primary-focused);
+  z-index: 0;
+}
+
+.player-panel__btn--primary-white .player-panel__btn-label,
+.player-panel__btn--primary-white > span:not(.player-panel__btn-loader) {
+  position: relative;
+  z-index: 1;
+}
+
+.player-panel__btn-loader {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.player-panel__btn--loading .player-panel__btn-loader {
+  display: flex;
+}
+
+.player-panel__btn--loading .player-panel__btn-label {
+  opacity: 0;
+}
+
+.player-panel__btn--secondary-gray.player-panel__btn--loading .player-panel__btn-label {
+  opacity: 0;
+}
+
+@keyframes ppIncomingLoaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.player-panel__btn-loader-img {
+  display: block;
+  animation: ppIncomingLoaderSpin 0.85s linear infinite;
+}
+
+/* Incoming friend-request — loading → confirmation (Figma 101:3466 / 101:3471) */
+.player-panel__incoming-stage {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Match stacked Accept + Decline (min-heights + gap) so confirmation can center in the same slot */
+  min-height: calc(42px + var(--pp-space-16) + 42px);
+  position: relative;
+}
+
+.player-panel[data-incoming-outcome="done"] .player-panel__incoming-stage {
+  justify-content: center;
+}
+
+.player-panel__incoming-actions {
+  transition: opacity 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player-panel__incoming-actions .player-panel__btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.player-panel__incoming-actions .player-panel__btn:disabled.game-invite-tv__focusable--current {
+  opacity: 1;
+}
+
+.player-panel__incoming-actions.player-panel__incoming-actions--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Stay hidden after load + fade — only confirmation remains visible (do not restore layout). */
+.player-panel__incoming-actions.player-panel__incoming-actions--finished,
+.player-panel[data-incoming-outcome="done"] .player-panel__incoming-actions {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.player-panel__incoming-confirmation {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.player-panel__incoming-confirmation:not([hidden]) {
+  display: flex;
+}
+
+.player-panel__incoming-confirmation-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: block;
+  object-fit: contain;
+}
+
+.player-panel__incoming-confirmation-text {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 27px;
+  color: var(--pp-fg);
+  font-family: inherit;
+}
+
+.player-panel__incoming-confirmation--in {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-panel__incoming-actions,
+  .player-panel__incoming-confirmation {
+    transition-duration: 0.01ms !important;
+  }
+
+  .player-panel__btn-loader-img {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+.player-panel__btn--secondary-gray {
+  background: var(--pp-btn-surface-secondary);
+  color: var(--pp-btn-fg-secondary);
+}
+
+.player-panel__btn--secondary-gray.player-panel__btn--loading {
+  background: var(--pp-btn-surface-secondary);
+}
+
+/* Incoming Accept — loading stays on secondary surface (explicit for parity with spec) */
+#tvPlayerPanelAccept.player-panel__btn--loading {
+  background: var(--pp-btn-surface-secondary);
+}
+
+.player-panel__btn--inverse-gray {
+  background: var(--pp-btn-surface-inverse);
+  color: #fff;
+}
+
+.player-panel__btn--inverse-gray:hover {
+  filter: brightness(1.1);
+}
+
+/* Playing card — friend only */
+/* Friends strip (prototype) has no “playing” row → hide card (see tv-player-panel.js). */
+.player-panel[data-state="current-friend"][data-currently-playing="false"] .player-panel__playing {
+  display: none;
+}
+
+.player-panel__playing {
+  position: relative;
+  width: min(360px, 100%);
+  height: 190px;
+  padding: 12px;
+  border-radius: var(--pp-br-playing);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.player-panel__playing-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pp-br-playing);
+  pointer-events: none;
+}
+
+.player-panel__playing-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--pp-br-playing);
+  display: block;
+}
+
+.player-panel__playing-scrim {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pp-br-playing);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.6) 70%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  pointer-events: none;
+}
+
+.player-panel__playing-label {
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--pp-fg-subtle);
+}
+
+.player-panel__playing-title {
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+/* Per-state visibility */
+.player-panel .player-panel__show-incoming,
+.player-panel .player-panel__show-outgoing,
+.player-panel .player-panel__show-friend,
+.player-panel .player-panel__show-blocked,
+.player-panel .player-panel__show-more-options {
+  display: none;
+}
+
+.player-panel[data-state="incoming-request"] .player-panel__show-incoming {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.player-panel[data-state="outgoing-request"] .player-panel__show-outgoing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Only the main sheet column stack uses vertical flex — not profile bits that share `.player-panel__show-friend`. */
+.player-panel[data-state="current-friend"] .player-panel__main-inner.player-panel__show-friend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.player-panel[data-state="current-friend"] .tv-dashboard__friends-focus-handle-status.player-panel__show-friend {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-panel[data-state="current-friend"] .player-panel__achievements.player-panel__show-friend {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-panel[data-state="blocked"] .player-panel__show-blocked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.player-panel[data-state="more-options-focus"] .player-panel__show-more-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.player-panel[data-state="incoming-request"] .player-panel__header-more-wrap,
+.player-panel[data-state="outgoing-request"] .player-panel__header-more-wrap,
+.player-panel[data-state="current-friend"] .player-panel__header-more-wrap,
+.player-panel[data-state="more-options-focus"] .player-panel__header-more-wrap {
+  display: block;
+}
+
+.player-panel[data-state="blocked"] .player-panel__header-more-wrap {
+  display: none;
+}
+
+.player-panel[data-state="incoming-request"] .player-panel__text-col,
+.player-panel[data-state="outgoing-request"] .player-panel__text-col,
+.player-panel[data-state="more-options-focus"] .player-panel__text-col {
+  align-items: stretch;
+}
+
+.player-panel[data-state="incoming-request"] .player-panel__handle,
+.player-panel[data-state="outgoing-request"] .player-panel__handle,
+.player-panel[data-state="more-options-focus"] .player-panel__handle {
+  text-align: center;
+}
+
+/* Friend: center handle */
+.player-panel[data-state="current-friend"] .player-panel__handle {
+  width: min-content;
+  min-width: 100%;
+}
+
+/* Invite from friend panel — deferred; markup/attrs kept for later */
+.player-panel .player-panel__friend-invite-row {
+  display: none !important;
+}
+
+.game-invite-list__item[data-player-panel-handle-key] {
+  cursor: pointer;
+}

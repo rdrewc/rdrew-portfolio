@@ -1,0 +1,566 @@
+/**
+ * Interactive “Game Screens” — Figma node 30:3184 (replaces flattened Default PNG in TV frame).
+ * Content frame 30:3185 matches the TV: 1280 × 720 (no extra scale transform).
+ */
+
+.tv-gameplay-interactive {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  overflow: hidden;
+  /* Match lobby solid fill / former default frame tone */
+  background: #111522;
+  pointer-events: none;
+}
+
+.tv-gameplay-interactive.is-active {
+  display: block;
+  pointer-events: auto;
+}
+
+/* Dual-layer full-bleed rasters — crossfade on variant change (see applyTvRaster). */
+.tv-gameplay__raster-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Lobby variant: no flattened PNG — solid fill behind interactive UI (see tv-assets.js default id). */
+.tv-gameplay__raster-stack.tv-gameplay__raster-stack--lobby-solid {
+  background-color: #111522;
+}
+
+.tv-gameplay__img--layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 0.36s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+  z-index: 0;
+}
+
+.tv-gameplay__img--layer.tv-gameplay__img--visible {
+  opacity: 1;
+  z-index: 1;
+}
+
+.tv-gameplay__raster-stack.tv-gameplay__raster-stack--hidden .tv-gameplay__img--layer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-gameplay__img--layer {
+    transition: opacity 0.05s ease;
+  }
+}
+
+.tv-gameplay-interactive__viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Figma “Content” 30:3185 — 1280 × 720, same as TV raster */
+.tv-gameplay-interactive__scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.tv-gameplay-interactive__shots {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.tv-gameplay-interactive__shots img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.tv-gameplay-interactive__ui-cover-right {
+  position: absolute;
+  left: 568px;
+  top: 97px;
+  width: 155px;
+  height: 595px;
+  background: linear-gradient(180deg, #2c355e 0%, #2f3b72 100%);
+  pointer-events: none;
+}
+
+.tv-gameplay-interactive__ui-cover-top {
+  position: absolute;
+  left: 40.05px;
+  top: 69.73px;
+  width: 312.407px;
+  height: 24.588px;
+  background: #0e111b;
+  pointer-events: none;
+}
+
+.tv-gameplay-interactive__placeholder {
+  position: absolute;
+  left: 586px;
+  width: 118px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d2754;
+  border-radius: 10px;
+  opacity: 1;
+}
+
+/* Figma 32:3328 — slot controls use TV focus ring only (no separate component spec). */
+.tv-gameplay-interactive__placeholder-btn {
+  margin: 0;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  z-index: 2;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tv-gameplay-interactive__placeholder-btn:focus {
+  outline: none;
+}
+
+.tv-gameplay-interactive__placeholder-btn--tv-focused {
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 0 14px rgba(0, 149, 255, 0.45);
+}
+
+.tv-gameplay-interactive__placeholder--1 {
+  top: 323px;
+}
+.tv-gameplay-interactive__placeholder--2 {
+  top: 458px;
+}
+.tv-gameplay-interactive__placeholder--3 {
+  top: 593px;
+}
+
+.tv-gameplay-interactive__placeholder img {
+  width: 34.667px;
+  height: 34.667px;
+  display: block;
+}
+
+/* Invite — Figma 32:3328: Default (32:3323) vs Focused (32:3321) */
+.tv-gameplay-interactive__invite {
+  position: absolute;
+  left: calc(50% + 7.5px);
+  top: 114px;
+  transform: translateX(-50%);
+  width: 241px;
+  height: 40px;
+  margin: 0;
+  padding: 6.648px 13.295px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  background: #000;
+  box-shadow: none;
+  cursor: pointer;
+  font-family: "Netflix Sans", system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 19.347px;
+  line-height: 17.949px;
+  color: #fcfcfc;
+  letter-spacing: 0.02em;
+  z-index: 2;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tv-gameplay-interactive__invite:focus {
+  outline: none;
+}
+
+.tv-gameplay-interactive__invite--tv-focused,
+.tv-gameplay-interactive__invite:focus-visible {
+  border-width: 4px;
+  border-color: rgba(0, 128, 255, 0.55);
+  background: #fff;
+  color: #00157b;
+  box-shadow: 0 2.884px 12.259px rgba(0, 149, 255, 0.65);
+}
+
+.tv-gameplay-interactive__invite:hover {
+  filter: brightness(1.03);
+}
+
+.tv-gameplay-interactive__invite:active {
+  transform: translateX(-50%) scale(0.97);
+}
+
+.tv-gameplay-interactive__badge {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4.286px;
+  padding: 4.286px 12.857px 4.286px 4.286px;
+  border-radius: 37.5px;
+  background: rgba(255, 0, 89, 0.6);
+  pointer-events: none;
+}
+
+.tv-gameplay-interactive__badge-icon {
+  width: 22px;
+  height: 22px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.tv-gameplay-interactive__badge-icon img {
+  display: block;
+  width: 21.429px;
+  height: 21.429px;
+}
+
+.tv-gameplay-interactive__badge-text {
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  line-height: 8.223px;
+  color: #ffdee7;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* Player cards — Figma 32:3341 (Default 32:3342 · Focused 32:3329); stripe colors unchanged per slot */
+
+.tv-gameplay-interactive__row-btn {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  z-index: 2;
+}
+
+.tv-gameplay-interactive__row-btn:focus {
+  outline: none;
+}
+
+.tv-gameplay-interactive__row--join-hidden,
+.tv-gameplay-interactive__placeholder-btn--join-hidden {
+  display: none !important;
+}
+
+/* Player / host rows — default shell = 32:3342 */
+.tv-gameplay-interactive__row {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16.281px;
+  padding: 12.298px 13.568px;
+  overflow: hidden;
+  border-radius: 3.796px;
+  background: rgba(9, 21, 0, 0.8);
+  border: 2.53px solid rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+  box-sizing: border-box;
+  transition:
+    left 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    right 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Focused card = 32:3329 (white panel, blue chrome) */
+.tv-gameplay-interactive__row--tv-focused {
+  z-index: 4;
+  background: #fff;
+  border-width: 3.977px;
+  border-color: rgba(0, 140, 255, 0.75);
+  box-shadow: 0 5.061px 43.016px rgba(0, 149, 255, 0.65);
+}
+
+.tv-gameplay-interactive__row--tv-focused .tv-gameplay-interactive__name,
+.tv-gameplay-interactive__row--tv-focused .tv-gameplay-interactive__sub {
+  color: #000;
+}
+
+.tv-gameplay-interactive__row--tv-focused .tv-gameplay-interactive__name {
+  text-shadow: 0 0 13.959px rgba(255, 255, 255, 0.6);
+}
+
+.tv-gameplay-interactive__row--tv-focused .tv-gameplay-interactive__sub {
+  text-shadow: 0 0 12.211px rgba(255, 255, 255, 0.6);
+}
+
+/* Middle = centered; left/right = 190px inset from that screen edge (1280×720 scene) */
+.tv-gameplay-interactive__row--host {
+  top: 188px;
+  left: calc(50% + 11.48px);
+  right: auto;
+  transform: translateX(-50%);
+  width: 310.96px;
+  height: 78.59px;
+}
+
+.tv-gameplay-interactive__row--host.tv-gameplay-interactive__row--team-left {
+  left: 190px;
+  right: auto;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--host.tv-gameplay-interactive__row--team-right {
+  left: auto;
+  right: 190px;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p2 {
+  top: 316px;
+  left: calc(50% + 14.15px);
+  right: auto;
+  transform: translateX(-50%);
+  width: 316.297px;
+  height: 77.177px;
+}
+
+.tv-gameplay-interactive__row--p2.tv-gameplay-interactive__row--team-left {
+  left: 190px;
+  right: auto;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p2.tv-gameplay-interactive__row--team-right {
+  left: auto;
+  right: 190px;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p3 {
+  top: 446px;
+  left: calc(50% + 14.15px);
+  right: auto;
+  transform: translateX(-50%);
+  width: 316.297px;
+  height: 77.177px;
+}
+
+.tv-gameplay-interactive__row--p3.tv-gameplay-interactive__row--team-left {
+  left: 190px;
+  right: auto;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p3.tv-gameplay-interactive__row--team-right {
+  left: auto;
+  right: 190px;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p4 {
+  top: 576px;
+  left: calc(50% + 14.15px);
+  right: auto;
+  transform: translateX(-50%);
+  width: 316.297px;
+  height: 77.177px;
+}
+
+.tv-gameplay-interactive__row--p4.tv-gameplay-interactive__row--team-left {
+  left: 190px;
+  right: auto;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__row--p4.tv-gameplay-interactive__row--team-right {
+  left: auto;
+  right: 190px;
+  transform: translateX(0);
+}
+
+.tv-gameplay-interactive__avatar {
+  flex-shrink: 0;
+  width: 44.153px;
+  height: 44.153px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tv-gameplay-interactive__row--host .tv-gameplay-interactive__avatar {
+  width: 50.474px;
+  height: 50.474px;
+}
+
+.tv-gameplay-interactive__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.tv-gameplay-interactive__row > .tv-gameplay-interactive__avatar,
+.tv-gameplay-interactive__row > .tv-gameplay-interactive__meta {
+  position: relative;
+  z-index: 1;
+}
+
+.tv-gameplay-interactive__meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3.392px;
+  align-items: flex-start;
+}
+
+.tv-gameplay-interactive__row--host .tv-gameplay-interactive__meta {
+  gap: 3.878px;
+}
+
+.tv-gameplay-interactive__name {
+  margin: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 20.243px;
+  line-height: 18.316px;
+  color: #fff;
+  text-shadow: 0 0 12.211px rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+.tv-gameplay-interactive__row--host .tv-gameplay-interactive__name {
+  font-size: 23.141px;
+  line-height: 20.939px;
+}
+
+.tv-gameplay-interactive__sub {
+  margin: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 10.854px;
+  line-height: 18.316px;
+  color: #fff;
+  text-shadow: 0 0 12.211px rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+.tv-gameplay-interactive__stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3.796px;
+  height: auto;
+  z-index: 0;
+}
+
+.tv-gameplay-interactive__row--host .tv-gameplay-interactive__stripe {
+  width: 4.653px;
+  background: #e6b20a;
+}
+
+.tv-gameplay-interactive__row--p2 .tv-gameplay-interactive__stripe {
+  background: #e50914;
+}
+
+.tv-gameplay-interactive__row--p3 .tv-gameplay-interactive__stripe {
+  background: #2a5389;
+}
+
+.tv-gameplay-interactive__row--p4 .tv-gameplay-interactive__stripe {
+  background: #962a00;
+}
+
+/* FIFA Menu screen — stacked mode buttons (TV remote / gamepad) over full-frame raster */
+.tv-gameplay-interactive--menu {
+  z-index: 2;
+  background: transparent;
+}
+
+.tv-gameplay-menu {
+  position: absolute;
+  left: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(420px, calc(100% - 120px));
+  box-sizing: border-box;
+}
+
+.tv-gameplay-menu__btn {
+  position: relative;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px 22px 6px 22px;
+  background:
+    repeating-linear-gradient(-32deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg, #0f1a32 0%, #060a14 100%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transform: skewX(-4deg);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.tv-gameplay-menu__btn-label {
+  display: block;
+  transform: skewX(4deg);
+}
+
+.tv-gameplay-menu__btn:hover:not(.tv-gameplay-menu__btn--tv-focused) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tv-gameplay-menu__btn:focus {
+  outline: none;
+}
+
+.tv-gameplay-menu__btn--tv-focused,
+.tv-gameplay-menu__btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.88),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,181 @@
+/* Games header — Figma 5:12871: Netflix mark (left) + notifications pill (right) */
+
+.tv-dashboard__header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 11;
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 46px 24px 44px;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  font-family: inherit;
+}
+
+.tv-dashboard__header-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  min-height: 34px;
+}
+
+.tv-dashboard__header-mark {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+}
+
+.tv-dashboard__header-n {
+  display: block;
+  width: 18px;
+  height: 34px;
+  object-fit: contain;
+  object-position: left center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.tv-dashboard__header-notif-wrap {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.25));
+}
+
+/* Notification Menu Button (Figma supplemental) */
+.tv-dashboard__header-notif {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 16px;
+  min-height: 42px;
+  border: 2px solid rgba(128, 128, 128, 0.2);
+  border-radius: 21px;
+  background: rgba(0, 0, 0, 0.7);
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 27px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  gap: 12px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tv-dashboard__header-notif:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.tv-dashboard__header-notif:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.tv-dashboard__header-notif:hover {
+  color: #fff;
+}
+
+/* Default / unfocused: light bell (SVG is white) */
+.tv-dashboard__header-notif__icon {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.tv-dashboard__header-notif__icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: none;
+  opacity: 0.95;
+}
+
+.tv-dashboard__header-notif__label {
+  display: block;
+  flex: 0 0 auto;
+}
+
+/* Focus: white pill, dark type + bell (align with primary bottom nav) */
+.tv-dashboard__header-notif--focused {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #000;
+  cursor: default;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.08);
+}
+
+.tv-dashboard__header-notif--focused .tv-dashboard__header-notif__icon img {
+  filter: brightness(0) saturate(100%);
+  opacity: 1;
+}
+
+.tv-dashboard__header-notif--focused:hover {
+  color: #000;
+}
+
+/* Notifications panel open — control appears unavailable */
+.tv-dashboard__header-notif--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: rgba(128, 128, 128, 0.15);
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.tv-dashboard__header-notif--disabled .tv-dashboard__header-notif__icon img {
+  opacity: 0.55;
+  filter: brightness(0) invert(1);
+}
+
+.tv-dashboard__header-notif--disabled:hover {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Unread TV game-invite toast mirrored in notifications list */
+.tv-dashboard__header-notif__badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: #e50914;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+
+.tv-dashboard__header-notif--game-invite-unread .tv-dashboard__header-notif__badge {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+}

@@ -1,0 +1,317 @@
+/* Notifications overlay — Figma 76:7471; panel chrome from `.game-invite-list` (see tv-invite-list.css). */
+
+.tv-dashboard__notifications-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 30pt 24px 48px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.tv-dashboard__notifications-shell[hidden] {
+  display: none !important;
+}
+
+.tv-dashboard__notifications-shell:not([hidden]) {
+  pointer-events: auto;
+}
+
+.tv-dashboard__notifications-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+}
+
+/* Centered 600×560 panel — same shell geometry as before */
+.tv-dashboard__notifications-shell .game-invite-list--notifications {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 600px;
+  height: 560px;
+  max-width: min(600px, calc(100vw - 48px));
+  max-height: min(560px, calc(100vh - 30pt - 48px));
+  pointer-events: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.tv-dashboard__notifications-shell .game-invite-list--notifications .game-invite-list__pane {
+  width: 100%;
+  height: 100%;
+}
+
+.tv-dashboard__notifications-shell .game-invite-list--notifications .game-invite-list__content {
+  width: 100%;
+  height: 100%;
+  padding-top: 12px;
+  padding-bottom: 40px;
+  gap: 8px;
+}
+
+.tv-dashboard__notifications-shell .game-invite-list--notifications .game-invite-list__main {
+  gap: 0;
+  margin-top: 0;
+}
+
+.game-invite-list--notifications .game-invite-list__list {
+  margin-top: 0;
+}
+
+/* Left gutter for unread dot — outside list highlight / focus ring */
+.game-invite-list--notifications .game-invite-list__list-viewport {
+  --notifications-dot-gutter: 22px;
+  padding-left: var(--notifications-dot-gutter);
+  box-sizing: border-box;
+}
+
+.game-invite-list__notifications-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Header center spacer — keeps Close / Settings aligned like invite + logo */
+.game-invite-list__logo--notifications-spacer {
+  visibility: hidden;
+  width: 160px;
+  height: 56px;
+  pointer-events: none;
+}
+
+/* Notification settings control hidden (prototype) */
+.game-invite-list--notifications .game-invite-list__header-end {
+  display: none !important;
+}
+
+/* Settings — same focus ring treatment as Close */
+.game-invite-list__notifications-settings {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 16px;
+  min-height: 30px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--fi-br-btn);
+  background: transparent;
+  color: var(--fi-btn-fg-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+}
+
+.game-invite-list__notifications-settings:focus {
+  outline: none;
+}
+
+.game-invite-list__notifications-settings > .game-invite-list__invite-btn-surface {
+  border-radius: var(--fi-br-btn);
+  background: #fff;
+  opacity: 0;
+}
+
+.game-invite-list__notifications-settings--state-focused > .game-invite-list__invite-btn-surface {
+  opacity: 0;
+}
+
+.game-invite-list__notifications-settings.game-invite-list__notifications-settings--state-focused {
+  outline: 2pt solid #fff;
+  outline-offset: 2px;
+}
+
+.game-invite-list__notifications-settings-fill {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-invite-list__notifications-settings-fill img {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.game-invite-list__notifications-settings--state-focused .game-invite-list__notifications-settings-fill img {
+  filter: none;
+}
+
+/* List focus — 2pt ring inset from dot gutter (ring does not cover unread dot) */
+.tv-dashboard__notifications-shell .game-invite-list--notifications .game-invite-list__list-highlight {
+  /* Above `.game-invite-list__list-track` (z-index: 1) so the ring isn’t painted behind the rows */
+  z-index: 2;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 2pt #fff;
+  left: var(--notifications-dot-gutter, 22px);
+  right: 0;
+  width: auto;
+  /* Snap to the focused row’s box immediately; avoid height/top tween on open (invite list keeps move transitions). */
+  transition: opacity 0.15s ease;
+}
+
+/* Match invite-list TV focus treatment — notification rows have no Invite pill */
+.game-invite-list--notifications .game-invite-list__item.game-invite-list__item--state-button-focus {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* No invite / share gutter; dot sits in viewport padding gutter (left of focus ring) */
+.game-invite-list--notifications .game-invite-list__item {
+  padding: 12px 16px;
+}
+
+.game-invite-list--notifications .game-invite-list__item::before {
+  content: "";
+  position: absolute;
+  /* 10px dot centered ~11px in gutter: row starts after 22px padding → left: -16px */
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e50914;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.game-invite-list--notifications .game-invite-list__item--notification-unread::before {
+  opacity: 1;
+}
+
+.game-invite-list--notifications .game-invite-list__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+}
+
+.game-invite-list--notifications .game-invite-list__sub {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.game-invite-list__notification-time {
+  margin: 2px 0 0;
+  width: 100%;
+  font-size: var(--fi-label-size);
+  font-weight: 400;
+  line-height: var(--fi-label-lh);
+  color: var(--fi-foreground-dim);
+}
+
+.game-invite-list--notifications .game-invite-list__thumb--avatar {
+  width: 120px;
+  height: 120px;
+}
+
+.game-invite-list--notifications .game-invite-list__thumb--avatar .game-invite-list__avatar {
+  width: 104px;
+  height: 104px;
+}
+
+/* Same asset as `.tv-game-invite-toast__icon-left` (toast 61:6870), 120×120 in list */
+.game-invite-list--notifications .game-invite-list__thumb--notification-toast-icon {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--fi-surface-mid);
+}
+
+.game-invite-list--notifications .game-invite-list__thumb--notification-toast-icon img {
+  width: 120px;
+  height: 120px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Primary nav dimmed while notifications panel open */
+.tv-dashboard.notifications-panel-open .tv-dashboard__primary-nav {
+  transform: translateX(-50%) scale(0.9);
+  filter: blur(4pt);
+  pointer-events: none;
+  opacity: 0.95;
+}
+
+/* Drill transition: notifications list ↔ game invite detail (paired with tv-game-invite-toast.css) */
+@keyframes tvNotifPanelDrillOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes tvNotifPanelDrillIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.tv-dashboard__notifications-shell .game-invite-list--notifications.tv-notif-panel--drill-out {
+  animation: tvNotifPanelDrillOut 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.tv-dashboard__notifications-shell .game-invite-list--notifications.tv-notif-panel--drill-in {
+  animation: tvNotifPanelDrillIn 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center center;
+}
+
+/* Friend-request declined while notifications panel is open — row collapses; list reflows via JS sync */
+.game-invite-list--notifications .game-invite-list__item.game-invite-list__item--notification-removing {
+  overflow: hidden;
+  opacity: 0;
+  min-height: 0 !important;
+  gap: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  pointer-events: none;
+  transition:
+    max-height 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 200ms ease,
+    padding 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    margin 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-invite-list--notifications .game-invite-list__item.game-invite-list__item--notification-removing::before {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}

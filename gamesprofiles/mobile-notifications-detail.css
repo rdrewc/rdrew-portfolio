@@ -1,0 +1,1495 @@
+/**
+ * Evolution mobile notification detail — overlay card (L3) or sub-page (L2).
+ */
+
+/* --- Overlay card (L3 lightbox) --- */
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__view--notif-detail {
+  z-index: 10;
+  overflow: hidden;
+  transform: translateY(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail {
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notif-detail {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail {
+  opacity: 1;
+}
+
+/* Toast entry — ride dashboard panel open; no slide-up */
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"]
+  .fc-mobile-dash__view--notif-detail {
+  transform: none;
+  transition:
+    visibility 0s linear var(--fc-mobile-dash-enter-ms),
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notif-detail {
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    visibility 0s linear 0s,
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail {
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"]:not(
+    [data-mobile-dashboard-l3="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notifications
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notifications
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--notifications
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__header--detail-l2 {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__scroll-fade {
+  display: none;
+}
+
+/* Sub-page wrapper — no chrome in overlay; only the lightbox card is visible */
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__card--detail-l2 {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__card--detail-l2::before {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__content--notif-detail {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 calc(16px * var(--md-x)) calc(24px * var(--md-y));
+}
+
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-notif-detail__card {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  margin-top: calc(20px * var(--md-y));
+}
+
+/* --- Sub page (L2 with header + back) --- */
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail {
+  z-index: 3;
+  overflow: hidden;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__content {
+  opacity: 0;
+}
+
+/* Sub-page toast entry — ride dashboard panel open; no slide from right */
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"]
+  .fc-mobile-dash__view--notif-detail {
+  transform: none;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    visibility 0s linear var(--fc-mobile-dash-enter-ms),
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail {
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    visibility 0s linear 0s,
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"]:not(
+    [data-mobile-dashboard-l2="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"]:not(
+    [data-mobile-dashboard-l2="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content {
+  opacity: 1;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--home {
+  transform: none;
+  pointer-events: none;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+/* Sub-page detail pushed over an L2 — list slides left and fades out */
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return]
+  .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return]
+  .fc-mobile-dash__view--notif-detail {
+  z-index: 4;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="notifications"]
+  .fc-mobile-dash__view--notifications,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="friends"]
+  .fc-mobile-dash__view--friends-l2,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="achievements"]
+  .fc-mobile-dash__view--achievements-l2,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+  .fc-mobile-dash__view--add-players-l2,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="invite"]
+  .fc-mobile-dash__view--add-players {
+  z-index: 3;
+  transform: translateX(-100%);
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="invite"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="invite"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="invite"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__add-players-l2-footer {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-notif-detail__toolbar {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail {
+  display: block;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  flex-shrink: 0;
+  z-index: 3;
+  isolation: isolate;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__content--notif-detail {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  flex: none;
+  min-height: 0;
+  display: block;
+  padding: calc(var(--fc-md-header-band-h) + calc(12px * var(--md-y))) calc(16px * var(--md-x))
+    calc(16px * var(--md-y));
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior: none;
+  gap: 0;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail.is-scrollable {
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content--notif-detail.is-scrollable::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__scroll-fade {
+  z-index: 2;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__card--detail-l2 {
+  display: block;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-notif-detail__card {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  overflow: visible;
+  isolation: auto;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-notif-detail__card::before {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-notif-detail__card-inner {
+  flex: none;
+  overflow: visible;
+  min-height: auto;
+}
+
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-notif-detail__card-bg {
+  display: none;
+}
+
+.fc-mobile-dash__content--notif-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0 calc(16px * var(--md-x)) calc(24px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
+  margin-top: calc(20px * var(--md-y));
+  border: none;
+  border-radius: calc(12px * var(--md-x));
+  overflow: hidden;
+  background-color: var(--fc-md-list-surface-bg);
+  background-image: radial-gradient(
+    ellipse 90% 55% at 50% 0%,
+    rgba(68, 148, 236, 0.4) 0%,
+    rgba(68, 148, 236, 0) 100%
+  );
+  box-shadow: none;
+  box-sizing: border-box;
+  isolation: isolate;
+}
+
+.fc-mobile-notif-detail__toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(8px * var(--md-y)) calc(8px * var(--md-x));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.fc-mobile-notif-detail__toolbar .fc-mobile-dash__icon-btn {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.fc-mobile-notif-detail__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(142, 196, 228, 0.72) 0%,
+    rgba(118, 138, 176, 0.18) 38%,
+    rgba(148, 108, 156, 0.16) 62%,
+    rgba(210, 142, 176, 0.58) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fc-mobile-notif-detail__card-bg {
+  display: none !important;
+}
+
+.fc-mobile-notif-detail__card--achievement-locked .fc-mobile-notif-detail__image-wrap {
+  width: calc(80px * var(--md-x));
+  height: calc(80px * var(--md-y));
+  border-radius: calc(8px * var(--md-x));
+  overflow: hidden;
+  background: var(--fc-md-muted-surface-bg);
+}
+
+.fc-mobile-notif-detail__card--achievement-locked .fc-mobile-notif-detail__image--achievement {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+
+.fc-mobile-notif-detail__card--achievement-mystery .fc-mobile-notif-detail__image-wrap {
+  width: calc(80px * var(--md-x));
+  height: calc(80px * var(--md-y));
+  border-radius: calc(8px * var(--md-x));
+  overflow: hidden;
+  background: transparent;
+}
+
+.fc-mobile-notif-detail__card--achievement-mystery .fc-mobile-notif-detail__image--achievement {
+  border: 0;
+}
+
+.fc-mobile-notif-detail__card--achievement .fc-mobile-notif-detail__card-inner {
+  padding-bottom: calc(52px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--achievement .fc-mobile-notif-detail__message {
+  margin: calc(8px * var(--md-y)) 0 0;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(24px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__card--achievement .fc-mobile-notif-detail__time--anchored {
+  position: absolute;
+  left: calc(16px * var(--md-x));
+  right: calc(16px * var(--md-x));
+  bottom: calc(20px * var(--md-y));
+  margin: 0;
+  z-index: 3;
+  text-align: center;
+}
+
+.fc-mobile-notif-detail__card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: calc(24px * var(--md-y));
+  padding: calc(24px * var(--md-y)) calc(16px * var(--md-x)) calc(32px * var(--md-y));
+  padding-top: calc(24px * var(--md-y));
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transition: opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc-mobile-notif-detail__card-inner::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.fc-mobile-notif-detail__card.is-morphing .fc-mobile-notif-detail__card-inner {
+  opacity: 0 !important;
+}
+
+.fc-mobile-notif-detail__profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(16px * var(--md-y));
+  width: 100%;
+}
+
+.fc-mobile-notif-detail__image-wrap {
+  flex: 0 0 auto;
+  position: relative;
+  overflow: visible;
+}
+
+.fc-mobile-notif-detail__image-wrap:has(.fc-mobile-notif-detail__image--avatar) {
+  width: calc(96px * var(--md-x));
+  height: calc(96px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__image {
+  display: block;
+  object-fit: cover;
+}
+
+.fc-mobile-notif-detail__image--avatar {
+  width: calc(96px * var(--md-x));
+  height: calc(96px * var(--md-y));
+  border-radius: 50%;
+  /* Gentle colored glow sampled from the avatar (--avatar-glow set in JS). */
+  box-shadow: 0 0 calc(108px * var(--md-x)) calc(22px * var(--md-x))
+    var(--avatar-glow, transparent);
+}
+
+.fc-mobile-notif-detail__image--achievement {
+  width: calc(80px * var(--md-x));
+  height: calc(80px * var(--md-y));
+  border: 0.8px solid rgba(76, 89, 102, 0.4);
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-notif-detail__image--logo {
+  width: min(100%, calc(280px * var(--md-x)));
+  height: calc(80px * var(--md-y));
+  object-fit: contain;
+}
+
+.fc-mobile-notif-detail__card--game-invite .fc-mobile-notif-detail__card-inner {
+  padding-top: calc(88px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--game-invite .fc-mobile-notif-detail__image-wrap {
+  position: absolute;
+  top: calc(24px * var(--md-y));
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  width: min(100%, calc(168px * var(--md-x)));
+  line-height: 0;
+}
+
+.fc-mobile-notif-detail__card--game-invite .fc-mobile-notif-detail__image--logo {
+  width: 100%;
+  height: calc(48px * var(--md-y));
+  object-fit: contain;
+}
+
+.fc-mobile-notif-detail__card--game-invite .fc-mobile-notif-detail__profile {
+  gap: calc(16px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--friend-request .fc-mobile-notif-detail__card-inner {
+  gap: calc(24px * var(--md-y));
+  padding-top: calc(108px * var(--md-y));
+  padding-bottom: calc(16px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--friend-connected .fc-mobile-notif-detail__card-inner {
+  padding-top: calc(136px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--non-friend .fc-mobile-notif-detail__card-inner {
+  padding-top: calc(136px * var(--md-y));
+}
+
+/* Non-friends never show a last-played game (friends-only detail). The button's
+   .fc-mobile-local-profile__last-played sets display:flex, which overrides the
+   hidden attribute — so scope-override it (higher specificity wins). */
+.fc-mobile-notif-detail__card--non-friend .fc-mobile-notif-detail__last-played {
+  display: none;
+}
+
+.fc-mobile-notif-detail__card--friend-request .fc-mobile-notif-detail__image-wrap,
+.fc-mobile-notif-detail__card--friend-connected .fc-mobile-notif-detail__image-wrap,
+.fc-mobile-notif-detail__card--non-friend .fc-mobile-notif-detail__image-wrap {
+  position: absolute;
+  top: calc(24px * var(--md-y));
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  line-height: 0;
+}
+
+.fc-mobile-notif-detail__image--thumb {
+  width: calc(64px * var(--md-x));
+  height: calc(64px * var(--md-y));
+  border: 0.8px solid rgba(76, 89, 102, 0.4);
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-notif-detail__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2px * var(--md-y));
+  width: 100%;
+  text-align: center;
+}
+
+.fc-mobile-notif-detail__title {
+  margin: 0;
+  font-size: calc(20px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(30px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__lead {
+  margin: 0;
+  width: 100%;
+  font-size: calc(20px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(30px * var(--md-y));
+  color: #fff;
+  text-align: center;
+}
+
+.fc-mobile-notif-detail__lead:empty,
+.fc-mobile-notif-detail__lead[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__lead + .fc-mobile-notif-detail__message {
+  margin-top: calc(-12px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__subtitle {
+  margin: 0;
+  font-size: calc(12px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(18px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fc-mobile-notif-detail__subtitle:empty {
+  display: none;
+}
+
+.fc-mobile-notif-detail__game {
+  margin: 0;
+  font-size: calc(12px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(18px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__game:empty,
+.fc-mobile-notif-detail__game[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__time {
+  margin: 0;
+  font-size: calc(12px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(18px * var(--md-y));
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.fc-mobile-notif-detail__time:empty,
+.fc-mobile-notif-detail__time[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__copy {
+  margin: calc(8px * var(--md-y)) 0 0;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(24px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fc-mobile-notif-detail__message {
+  margin: 0;
+  width: 100%;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(24px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.fc-mobile-notif-detail__message:empty,
+.fc-mobile-notif-detail__message[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__copy:empty,
+.fc-mobile-notif-detail__copy[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--md-x));
+  margin-top: calc(4px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__status[hidden] {
+  display: none;
+}
+
+/* Friend profile: online status sits directly below the avatar (first in the column). */
+.fc-mobile-notif-detail__card--friend-connected .fc-mobile-notif-detail__status {
+  order: -1;
+  margin-top: 0;
+}
+
+/* Friend profile: even 6px spacing between the 4 lines (status, handle,
+   achievements, game), matching the self profile. */
+.fc-mobile-notif-detail__card--friend-connected .fc-mobile-notif-detail__text {
+  gap: calc(6px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__card--friend-connected .fc-mobile-notif-detail__meta {
+  margin-top: 0;
+}
+
+.fc-mobile-notif-detail__status-dot {
+  display: block;
+  width: calc(8px * var(--md-x));
+  height: calc(8px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__status-label {
+  font-size: calc(13px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(20px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__card--friend-connected.is-offline .fc-mobile-notif-detail__status-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: calc(12px * var(--md-y));
+  line-height: calc(17px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2px * var(--md-y));
+  margin-top: calc(8px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__meta[hidden] {
+  display: none;
+}
+
+.fc-mobile-notif-detail__meta-row {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--md-x));
+  color: rgba(255, 255, 255, 0.5);
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__meta-row img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+}
+
+.fc-mobile-notif-detail__meta-game {
+  margin: 0;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(24px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__cta-stage {
+  position: relative;
+  width: 100%;
+  min-height: calc(32px * var(--md-y));
+  margin-top: auto;
+}
+
+.fc-mobile-notif-detail__cta-stage[data-outcome="done"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-mobile-notif-detail__cta {
+  display: flex;
+  gap: calc(10px * var(--md-x));
+  width: 100%;
+  transition: opacity 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc-mobile-notif-detail__cta--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fc-mobile-notif-detail__cta--finished,
+.fc-mobile-notif-detail__cta-stage[data-outcome="done"] .fc-mobile-notif-detail__cta {
+  display: none !important;
+}
+
+.fc-mobile-notif-detail__cta:empty {
+  display: none;
+}
+
+.fc-mobile-notif-detail__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: calc(32px * var(--md-y));
+  margin: 0;
+  padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+  border: none;
+  border-radius: calc(24px * var(--md-x));
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.fc-mobile-notif-detail__btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+/* "Friend Request Sent" — solid muted disabled button (not faded). */
+.fc-mobile-notif-detail__btn--sent:disabled {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: default;
+}
+
+.fc-mobile-notif-detail__btn-label {
+  white-space: nowrap;
+}
+
+.fc-mobile-notif-detail__btn-loader {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-mobile-notif-detail__btn-loader img {
+  display: block;
+  width: calc(18px * var(--md-x));
+  height: calc(18px * var(--md-y));
+  opacity: 0.4;
+  animation: fc-mobile-notif-detail-btn-spin 0.85s linear infinite;
+}
+
+@keyframes fc-mobile-notif-detail-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fc-mobile-notif-detail__btn--loading {
+  background: var(--fc-md-secondary-btn-disabled-bg);
+  color: #fff;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.fc-mobile-notif-detail__btn--loading .fc-mobile-notif-detail__btn-label {
+  display: none;
+}
+
+.fc-mobile-notif-detail__btn--loading .fc-mobile-notif-detail__btn-loader {
+  display: flex;
+}
+
+.fc-mobile-notif-detail__confirmation {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  opacity: 0;
+  transition: opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.fc-mobile-notif-detail__confirmation:not([hidden]) {
+  display: flex;
+}
+
+.fc-mobile-notif-detail__confirmation-icon {
+  flex-shrink: 0;
+  width: calc(24px * var(--md-x));
+  height: calc(24px * var(--md-y));
+  display: block;
+  object-fit: contain;
+}
+
+.fc-mobile-notif-detail__confirmation-text {
+  margin: 0;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+  white-space: nowrap;
+}
+
+.fc-mobile-notif-detail__confirmation--accept .fc-mobile-notif-detail__confirmation-text,
+.fc-mobile-notif-detail__confirmation--join .fc-mobile-notif-detail__confirmation-text,
+.fc-mobile-notif-detail__confirmation--sent .fc-mobile-notif-detail__confirmation-text {
+  color: #2bb871;
+}
+
+.fc-mobile-notif-detail__btn--invited {
+  background: var(--fc-md-secondary-btn-disabled-bg);
+  color: #fff;
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.fc-mobile-notif-detail__confirmation--decline .fc-mobile-notif-detail__confirmation-text {
+  color: #eb3942;
+}
+
+.fc-mobile-notif-detail__confirmation--in {
+  opacity: 1;
+}
+
+.fc-mobile-notif-detail__btn--secondary:active {
+  background: var(--fc-md-secondary-btn-pressed-bg);
+}
+
+.fc-mobile-notif-detail__btn--primary {
+  background: #fff;
+  color: #000;
+}
+
+.fc-mobile-notif-detail__btn--secondary {
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+}
+
+.fc-mobile-notif-detail__btn--primary.fc-mobile-notif-detail__btn--loading,
+.fc-mobile-notif-detail__btn--secondary.fc-mobile-notif-detail__btn--loading {
+  background: var(--fc-md-secondary-btn-disabled-bg);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--notifications,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--friends-l2,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--achievements-l2,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--add-players,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return]
+    .fc-mobile-dash__view--notifications,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return]
+    .fc-mobile-dash__view--friends-l2,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return]
+    .fc-mobile-dash__view--achievements-l2,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="add-players"]
+    .fc-mobile-dash__view--add-players-l2,
+  .fc-mobile-dash[data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"][data-mobile-detail-return="invite"]
+    .fc-mobile-dash__view--add-players,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"] .fc-mobile-dash__view--notif-detail
+    .fc-mobile-dash__content--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3="detail"]
+    .fc-mobile-dash__view--notif-detail
+    .fc-mobile-dash__content--notif-detail,
+  .fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l3-enter="panel"]
+    .fc-mobile-dash__view--notif-detail
+    .fc-mobile-dash__content--notif-detail {
+    transition: none;
+  }
+
+  .fc-mobile-notif-detail__cta,
+  .fc-mobile-notif-detail__confirmation,
+  .fc-mobile-notif-detail__card-inner {
+    transition-duration: 0.01ms !important;
+  }
+
+  .fc-mobile-notif-detail__btn-loader img {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ─── Local profile two-panel layout ─────────────────────────────────────── */
+
+/* Hide all standard card chrome when showing local profile */
+.fc-mobile-notif-detail__card[data-notif-kind="local-profile"] .fc-mobile-notif-detail__toolbar,
+.fc-mobile-notif-detail__card[data-notif-kind="local-profile"] .fc-mobile-notif-detail__card-bg,
+.fc-mobile-notif-detail__card[data-notif-kind="local-profile"] .fc-mobile-notif-detail__card-inner,
+.fc-mobile-notif-detail__card[data-notif-kind="local-profile"] .fc-mobile-notif-detail__time {
+  display: none;
+}
+
+.fc-mobile-notif-detail__card[data-notif-kind="local-profile"] {
+  background: transparent;
+  box-shadow: none;
+  border-radius: calc(12px * var(--md-x));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide panel when not local-profile kind */
+.fc-mobile-notif-detail__card:not([data-notif-kind="local-profile"]) .fc-mobile-local-profile {
+  display: none;
+}
+
+.fc-mobile-local-profile {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left panel */
+.fc-mobile-local-profile__left {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #16213a;
+  padding: calc(10px * var(--md-y)) calc(12px * var(--md-x));
+  min-height: 0;
+}
+
+.fc-mobile-local-profile__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: calc(4px * var(--md-y));
+}
+
+.fc-mobile-local-profile__avatar-wrap {
+  width: calc(86px * var(--md-x));
+  height: calc(86px * var(--md-x));
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-bottom: calc(5px * var(--md-y));
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  /* Gentle colored glow sampled from the avatar (--avatar-glow set in JS). */
+  box-shadow: 0 0 calc(108px * var(--md-x)) calc(22px * var(--md-x))
+    var(--avatar-glow, transparent);
+}
+
+.fc-mobile-local-profile__avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fc-mobile-local-profile__status-row {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--md-x));
+  margin-bottom: calc(6px * var(--md-y));
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__status-dot {
+  display: block;
+  width: calc(10px * var(--md-x));
+  height: calc(10px * var(--md-x));
+}
+
+.fc-mobile-local-profile__status-label {
+  font-size: calc(11px * var(--md-y));
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.fc-mobile-local-profile__handle {
+  margin: 0 0 calc(6px * var(--md-y));
+  font-size: calc(18px * var(--md-y));
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__achievements {
+  margin: 0 0 calc(6px * var(--md-y));
+  font-size: calc(12px * var(--md-y));
+  line-height: calc(18px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__game-row {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--md-x));
+  margin-bottom: calc(10px * var(--md-y));
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__game-icon {
+  width: calc(12px * var(--md-x));
+  height: calc(12px * var(--md-x));
+  opacity: 0.6;
+}
+
+.fc-mobile-local-profile__game-name {
+  font-size: calc(11px * var(--md-y));
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fc-mobile-local-profile__btns {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--md-y));
+  width: 100%;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__btn {
+  width: 100%;
+  padding: calc(8px * var(--md-y)) calc(12px * var(--md-x));
+  border-radius: calc(100px * var(--md-x));
+  border: none;
+  font-size: calc(13px * var(--md-y));
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+}
+
+.fc-mobile-local-profile__btn--secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* "Last played" card below the Share/Edit buttons. */
+.fc-mobile-local-profile__last-played {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: calc(10px * var(--md-y));
+  height: calc(118px * var(--md-y));
+  padding: calc(12px * var(--md-y)) calc(14px * var(--md-x));
+  border: none;
+  border-radius: calc(14px * var(--md-x));
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  /* Dark placeholder until assets/unhinged.png is added. */
+  background: linear-gradient(135deg, #26262b 0%, #141416 55%, #0b0b0d 100%);
+}
+
+.fc-mobile-local-profile__last-played-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("assets/unhinged.webp");
+  background-size: cover;
+  background-position: center;
+}
+
+.fc-mobile-local-profile__last-played-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.15) 34%,
+    rgba(0, 0, 0, 0.45) 64%,
+    rgba(0, 0, 0, 0.86) 100%
+  );
+}
+
+.fc-mobile-local-profile__last-played-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.fc-mobile-local-profile__last-played-label {
+  font-size: calc(12px * var(--md-y));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.fc-mobile-local-profile__last-played-ext {
+  width: calc(18px * var(--md-x));
+  height: calc(18px * var(--md-x));
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.fc-mobile-local-profile__last-played-body {
+  position: relative;
+  z-index: 1;
+}
+
+.fc-mobile-local-profile__last-played-title {
+  margin: 0;
+  font-size: calc(17px * var(--md-y));
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.fc-mobile-local-profile__last-played-sub {
+  margin: calc(2px * var(--md-y)) 0 0;
+  font-size: calc(13px * var(--md-y));
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Local-profile view: keep the persistent Back to Game / Exit Game peek footer
+   (it shows throughout the prototype), but hide the duplicate "Currently Playing"
+   label + game title here. The root carries data-mobile-active-detail (set in
+   finishDetailOpen, cleared on close), so this is scoped to the profile view only. */
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__peek-info {
+  display: none !important;
+}
+
+/* Profile detail views (self, friend, non-friend): drop the "Details" header —
+   each card has its own back button — and let the card fill the height with small
+   top/bottom margins so it sits close to the device edges. If a profile's content
+   is taller than the view, the content scrolls vertically. */
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__header--detail-l2,
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-dash__header--detail-l2,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-dash__header--detail-l2 {
+  display: none !important;
+}
+
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__content--notif-detail,
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-dash__content--notif-detail,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-dash__content--notif-detail {
+  display: flex !important;
+  flex-direction: column;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding-top: calc(8px * var(--md-y)) !important;
+  padding-bottom: calc(8px * var(--md-y)) !important;
+}
+
+/* Flex column + flex:1 0 auto: fills the height when content is short, keeps its
+   natural height (and lets the content scroll) when content is tall. display:flex
+   here is what lets the inner panel actually stretch to the taller card. */
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-notif-detail__card,
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__card,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__card {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 0 auto !important;
+  max-height: none !important;
+}
+
+/* Friend / non-friend profiles: the "Details" header is gone, so re-show the
+   card's own toolbar (close = back, plus the ... overflow) so you can navigate
+   back. (The self profile already has its own toolbar inside the card.) */
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__toolbar,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__toolbar {
+  display: flex !important;
+}
+
+/* Landscape: profile card fills to the bottom too. The card sits inside a block
+   section by default (which kept it pinned to the top); make that section a
+   growing flex column so the card can fill the height. */
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__card--detail-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-dash__card--detail-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-dash__card--detail-l2 {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 0 auto !important;
+}
+
+/* All profile views: vertically center the picture + 4-line text lockup in the
+   card. The toolbar (back / overflow) stays pinned at the top and the action
+   buttons stay pinned at the bottom. (Card fills the height; see fill rules above.) */
+
+/* Self: avatar → game lockup centered; Share/Edit pinned to the bottom. */
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-local-profile__avatar-wrap {
+  margin-top: auto;
+}
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-local-profile__game-row {
+  margin-bottom: auto;
+}
+.fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-local-profile__btns {
+  /* Small eyebrow so the Share Profile button doesn't touch the playing indicator. */
+  margin-top: calc(12px * var(--md-y));
+}
+
+/* Friend / non-friend: un-absolute the avatar so picture + text are one lockup,
+   drop the big top padding that cleared the absolute avatar, then center the
+   lockup. The CTA buttons (last child of the card body) stay at the bottom. */
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__image-wrap,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__image-wrap {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__card-inner,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__card-inner {
+  padding-top: calc(16px * var(--md-y)) !important;
+  /* Drop the inner scroll container so margin:auto can vertically center the
+     lockup; the outer content area still scrolls if the profile overflows. */
+  overflow: visible !important;
+}
+
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__profile,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__profile {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Friend + non-friend player cards: vertically center the whole content group
+   (avatar / name / details / actions) rather than top-aligning it. The sub-page
+   card-inner is flex:none by default (so the margin:auto centering has no room),
+   and the CTA is normally margin-top:auto pinned to the bottom — override both,
+   fill the card, and center the group. */
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__card-inner,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__card-inner {
+  flex: 1 0 auto !important;
+  justify-content: center;
+}
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__profile,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__profile {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__cta-stage,
+.fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-notif-detail__cta-stage {
+  margin-top: 0 !important;
+}
+
+/* Friend card DOM order is profile → cta → last-played; reorder so the
+   last-played tile sits above the action buttons in the centered group. */
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__last-played {
+  order: 2;
+}
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__cta-stage {
+  order: 3;
+}
+
+/* Stack Invite to Game + Remove Friend vertically (full width) in both orientations. */
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__cta {
+  flex-direction: column;
+}
+.fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-notif-detail__cta .fc-mobile-notif-detail__btn {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+/* Portrait has more vertical room: profile cards grow to fill down to the bottom
+   of the panel (the gradient container they sit in), with padding at the bottom. */
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__card--detail-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-dash__card--detail-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-dash__card--detail-l2 {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 0 auto !important;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="local-profile"] .fc-mobile-dash__content--notif-detail,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="friend-connected"] .fc-mobile-dash__content--notif-detail,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-active-detail="non-friend"] .fc-mobile-dash__content--notif-detail {
+  padding-bottom: calc(24px * var(--md-y)) !important;
+}

@@ -1,0 +1,157 @@
+/* NGC (Current) — full-screen controller settings bottom sheet on connected phone */
+
+.ngc-settings-sheet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.28s ease, visibility 0.28s step-end;
+}
+
+.ngc-settings-sheet-layer.is-open {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.28s ease, visibility 0s step-start;
+}
+
+.ngc-settings-sheet {
+  /* Same Figma→device coords as Evolution mobile dashboard (852×393 landscape). */
+  --md-x: calc(852 / 812);
+  --md-y: calc(393 / 375);
+  --fc-md-header-bg: rgba(23, 30, 38, 0.82);
+  --fc-md-header-backdrop: blur(20px) saturate(1.15);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #080c11;
+  color: #fff;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.ngc-settings-sheet-layer.is-open .ngc-settings-sheet {
+  transform: translateY(0);
+}
+
+.ngc-settings-sheet__header {
+  flex: 0 0 auto;
+  background: var(--fc-md-header-bg);
+  -webkit-backdrop-filter: var(--fc-md-header-backdrop);
+  backdrop-filter: var(--fc-md-header-backdrop);
+}
+
+.ngc-settings-sheet__title-row {
+  display: flex;
+  align-items: center;
+  gap: calc(12px * var(--md-x));
+  min-width: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(8px * var(--md-y));
+  box-sizing: border-box;
+}
+
+.ngc-settings-sheet__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: calc(32px * var(--md-x));
+  height: calc(32px * var(--md-y));
+  margin: 0;
+  padding: calc(8px * var(--md-y));
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ngc-settings-sheet__back-btn:focus {
+  outline: none;
+}
+
+.ngc-settings-sheet__back-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.ngc-settings-sheet__back-btn img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+}
+
+.ngc-settings-sheet__title {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(24px * var(--md-y));
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ngc-settings-sheet__content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: calc(16px * var(--md-y));
+  min-height: 0;
+  padding: calc(8px * var(--md-y)) calc(16px * var(--md-x)) calc(48px * var(--md-y));
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.ngc-settings-sheet__settings-block {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#app[data-platform-experience="current"] [data-ngc-slot="left"],
+#app[data-platform-experience="current"] [data-ngc-slot="settings"],
+#app[data-platform-experience="evolution"] [data-ngc-slot="settings"] {
+  cursor: pointer;
+}
+
+/* Landscape (852×393) — constrain settings column width on Current experience. */
+#app[data-platform-experience="current"][data-controller-orientation="landscape"] .ngc-settings-sheet__title-row,
+#app[data-platform-experience="current"][data-controller-orientation="landscape"] .ngc-settings-sheet__content {
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Portrait NGC (393×852) — 1:1 device coords, same as mobile dashboard portrait. */
+#app[data-controller-orientation="portrait"] .ngc-settings-sheet {
+  --md-x: 1;
+  --md-y: 1;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-settings-sheet__content {
+  padding-bottom: calc(64px * var(--md-y));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ngc-settings-sheet-layer,
+  .ngc-settings-sheet {
+    transition: none !important;
+  }
+}

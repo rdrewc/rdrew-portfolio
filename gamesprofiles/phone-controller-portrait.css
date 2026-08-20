@@ -1,0 +1,136 @@
+/**
+ * Connected NGC — portrait orientation (393×852).
+ * Top ~600px reserved for mobile dashboard; D-pad + stacked A/B in lower band.
+ * Reference: assets/raster/ngc-portrait/portrait-gamepad-ref.png
+ */
+
+#app[data-controller-orientation="portrait"] .fc-device--ngc {
+  width: 393px;
+  height: 852px;
+}
+
+#app[data-controller-orientation="portrait"] .fc-ngc-root {
+  background: #04060a;
+}
+
+#app[data-controller-orientation="portrait"] .fc-ngc-bg {
+  left: 50%;
+  top: -120px;
+  transform: translateX(-50%);
+  width: 520px;
+  height: 420px;
+}
+
+/* Top control row — same set as landscape, centered at top */
+#app[data-controller-orientation="portrait"] .ngc-controls {
+  left: 50%;
+  top: 16px;
+  right: auto;
+  transform: translateX(-50%);
+  width: 326px;
+  max-width: calc(100% - 32px);
+  height: auto;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-controls--voice {
+  width: 490px;
+  max-width: calc(100% - 32px);
+}
+
+#app[data-controller-orientation="portrait"] .ngc-thumbstick {
+  display: none;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-loader {
+  top: calc(600px + 80px);
+  transform: translate(-50%, 0);
+}
+
+/* D-pad — portrait scale reduced 30% from prior 1.3 (→ 0.91) */
+#app[data-controller-orientation="portrait"] .ngc-d-pad {
+  left: 50%;
+  top: 400px;
+  width: 240px;
+  height: 240px;
+  transform: translateX(-50%) scale(0.91);
+  transform-origin: top center;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set {
+  left: 0;
+  top: auto;
+  bottom: 0;
+  width: 393px;
+  height: 240px;
+  pointer-events: none;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-x,
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-y {
+  display: none !important;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-a,
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-b {
+  top: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-a {
+  left: 20px !important;
+  right: 20px !important;
+  bottom: 122px !important;
+  width: auto !important;
+  height: 100px !important;
+  background: linear-gradient(180deg, #3ee8d0 0%, #1aab96 100%);
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-b {
+  left: 28px !important;
+  right: 28px !important;
+  bottom: 64px !important;
+  width: auto !important;
+  height: 46px !important;
+  background: linear-gradient(180deg, #ff6b5a 0%, #e04558 100%);
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set__btn img {
+  display: none;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-a::after,
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-b::after {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.82);
+  pointer-events: none;
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-a::after {
+  content: "A";
+}
+
+#app[data-controller-orientation="portrait"] .ngc-button-set .ngc-b-b::after {
+  content: "B";
+  font-size: 20px;
+}
+
+/* Hide painted gamepad while dashboard covers the shell */
+#app[data-controller-orientation="portrait"][data-mobile-dashboard="open"] .fc-ngc-layer:not(.is-hidden) > .ngc-d-pad,
+#app[data-controller-orientation="portrait"][data-mobile-dashboard="open"] .fc-ngc-layer:not(.is-hidden) > .ngc-button-set,
+#app[data-controller-orientation="portrait"][data-mobile-dashboard="open"] .fc-ngc-layer:not(.is-hidden) > .ngc-controls,
+#app[data-controller-orientation="portrait"][data-mobile-dashboard="open"] .fc-ngc-layer:not(.is-hidden) > .ngc-thumbstick,
+#app[data-controller-orientation="portrait"][data-mobile-dashboard="open"] .fc-ngc-layer:not(.is-hidden) > .ngc-loader {
+  visibility: hidden;
+  pointer-events: none;
+}

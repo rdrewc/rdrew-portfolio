@@ -1,0 +1,89 @@
+/**
+ * Touch-style pointer overlay for the phone mockup (mouse / trackpad only).
+ * Global cursor suppression on every layer inside #phoneFrame — no per-surface opt-in.
+ */
+
+@media (hover: hover) and (pointer: fine) {
+  main:not(.layout-focus) #phoneFrame,
+  main:not(.layout-focus) #phoneFrame *,
+  main:not(.layout-focus) #phoneFrame *::before,
+  main:not(.layout-focus) #phoneFrame *::after,
+  main:not(.layout-focus) #phoneFrame svg,
+  main:not(.layout-focus) #phoneFrame svg * {
+    cursor: none !important;
+  }
+}
+
+.phone-touch-cursor {
+  --touch-size: 44px;
+  --touch-force: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  margin-left: calc(var(--touch-size) / -2);
+  margin-top: calc(var(--touch-size) / -2);
+  pointer-events: none !important;
+  z-index: 100000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease, visibility 0.12s ease;
+}
+
+.phone-touch-cursor.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.phone-touch-cursor__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 0, 0, 0.12);
+  transform: scale(calc(1 - var(--touch-force) * 0.28));
+  transition:
+    transform 0.1s ease,
+    background 0.1s ease,
+    border-color 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.phone-touch-cursor.is-pressed .phone-touch-cursor__ring {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow:
+    0 1px 6px rgba(0, 0, 0, 0.42),
+    inset 0 0 8px rgba(255, 255, 255, 0.12);
+}
+
+.phone-touch-cursor__ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.phone-touch-cursor.is-tap .phone-touch-cursor__ripple {
+  animation: phone-touch-ripple 0.42s ease-out forwards;
+}
+
+@keyframes phone-touch-ripple {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,523 @@
+/* iOS-style phone surfaces — lock, home, Messages (prototype; not pixel-perfect iOS). */
+
+.ios-panel {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    system-ui,
+    sans-serif;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  color: #fff;
+}
+
+.ios-panel.is-hidden {
+  display: none !important;
+}
+
+/* ----- Lock screen ----- */
+.ios-lock {
+  background:
+    linear-gradient(165deg, rgba(80, 40, 120, 0.55) 0%, transparent 45%),
+    linear-gradient(200deg, rgba(20, 60, 100, 0.4) 20%, transparent 50%),
+    linear-gradient(180deg, #1a1428 0%, #0d0a12 100%);
+}
+
+.ios-lock__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ios-lock__status-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ios-lock__clock-block {
+  text-align: center;
+  margin-top: 28px;
+}
+
+.ios-lock__time {
+  font-size: 76px;
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.ios-lock__date {
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+.ios-lock__notifs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 14px 100px;
+  gap: 10px;
+}
+
+.ios-notif {
+  text-align: left;
+  border-radius: 18px;
+  padding: 12px 14px;
+  color: #000;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+.ios-notif--tap {
+  cursor: pointer;
+}
+
+.ios-notif--tap:hover {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.ios-notif__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ios-notif__app {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.ios-notif__time {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.ios-notif__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.ios-notif__body {
+  font-size: 14px;
+  line-height: 1.35;
+  opacity: 0.88;
+}
+
+.ios-notif__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ios-notif__icon--nfc {
+  background: transparent;
+  padding: 0;
+}
+
+.ios-notif__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ios-lock__footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.45;
+}
+
+.ios-lock__swipe {
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* ----- Home screen ----- */
+.ios-home {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(100, 140, 220, 0.35), transparent 55%),
+    linear-gradient(180deg, #2a5080 0%, #1e3060 40%, #0f1830 100%);
+}
+
+.ios-home__page {
+  flex: 1;
+  padding: 54px 20px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ios-home__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 10px;
+  justify-items: center;
+}
+
+.ios-home__app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 72px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ios-home__app:active {
+  transform: scale(0.96);
+}
+
+.ios-home__icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.ios-home__icon--nfc {
+  background: transparent;
+  padding: 0;
+}
+
+.ios-home__icon--nfc img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ios-home__icon--msg {
+  background: linear-gradient(180deg, #34c759 0%, #248f3f 100%);
+  padding: 0;
+}
+
+.ios-home__icon--msg img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.ios-home__icon--ph {
+  background: linear-gradient(180deg, #5ac8fa 0%, #007aff 100%);
+  font-size: 26px;
+}
+
+.ios-home__icon--sf {
+  background: linear-gradient(180deg, #fff 0%, #d0d4dc 100%);
+  color: #007aff;
+  font-size: 30px;
+}
+
+.ios-home__label {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.ios-home__dock-wrap {
+  margin-top: auto;
+  padding: 10px 12px 28px;
+}
+
+.ios-home__dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 12px 16px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ios-home__dock .ios-home__icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+}
+
+.ios-home__dock .ios-home__label {
+  display: none;
+}
+
+/* ----- Messages list ----- */
+.ios-msgs {
+  background: #000;
+}
+
+.ios-msgs__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 52px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ios-msgs__nav-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.ios-msgs__nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+.ios-msgs__list {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 0 24px;
+}
+
+.ios-msgs__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.ios-msgs__row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ios-msgs__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #555, #333);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ios-msgs__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ios-msgs__avatar--ngc-app {
+  border-radius: 12px;
+  background: transparent;
+}
+
+.ios-msgs__avatar--ngc-app img {
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.ios-msgs__mid {
+  flex: 1;
+  min-width: 0;
+}
+
+.ios-msgs__name {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.ios-msgs__snippet {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ios-msgs__snippet--link {
+  color: #64d2ff;
+}
+
+.ios-msgs__meta {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ----- Messages thread ----- */
+.ios-thread {
+  background: #000;
+}
+
+.ios-thread__nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ios-thread__back {
+  border: none;
+  background: transparent;
+  color: #0a84ff;
+  font-size: 17px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ios-thread__title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  margin-right: 48px;
+}
+
+.ios-thread__body {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ios-thread__row {
+  display: flex;
+  width: 100%;
+}
+
+.ios-thread__row--out {
+  justify-content: flex-end;
+}
+
+.ios-bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.ios-bubble--in {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-bottom-left-radius: 4px;
+}
+
+.ios-bubble--out {
+  background: #0a84ff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.ios-invite-card {
+  max-width: 88%;
+  align-self: flex-start;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(40, 40, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ios-invite-card[role="button"] {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ios-invite-card[role="button"]:focus-visible {
+  outline: 2px solid rgba(92, 159, 214, 0.95);
+  outline-offset: 2px;
+}
+
+.ios-invite-card__thumb {
+  height: 120px;
+  background: linear-gradient(135deg, #1a3d1a 0%, #0d280d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ios-invite-card__thumb img {
+  max-height: 100px;
+  max-width: 90%;
+  object-fit: contain;
+}
+
+.ios-invite-card__body {
+  padding: 10px 12px 12px;
+}
+
+.ios-invite-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.ios-invite-card__url {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  word-break: break-all;
+}
+
+.ios-thread__hint {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 8px;
+}

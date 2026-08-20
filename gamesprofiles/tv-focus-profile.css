@@ -1,0 +1,1718 @@
+/* Nav row focus panels — shared dock: 36px above primary nav (64px TV safe + 42px bar).
+ * Profile: 72:7008. Friends: 74:7060. Controllers: 74:7142. Achievements: 5:12944. Exit: 74:7249. Visual only. */
+@import url("@netflixdesign/hawkins-fonts/netflix-sans");
+
+.tv-dashboard__profile-focus,
+.tv-dashboard__controllers-focus,
+.tv-dashboard__exit-focus {
+  position: absolute;
+  left: 50%;
+  bottom: calc(64px + 42px + 36px);
+  transform: translateX(-50%);
+  z-index: 3;
+  box-sizing: border-box;
+  pointer-events: none;
+  max-width: calc(100vw - 48px);
+}
+
+/* Friends & Achievements: 64px left inset; viewport + translated track (invite/notifications-style focus window) */
+.tv-dashboard__friends-focus,
+.tv-dashboard__achievements-focus,
+.tv-dashboard__exit-discovery {
+  position: absolute;
+  left: 64px;
+  right: 0;
+  bottom: calc(64px + 42px + 36px);
+  transform: none;
+  z-index: 3;
+  box-sizing: border-box;
+  pointer-events: none;
+  width: auto;
+  max-width: none;
+}
+
+.tv-dashboard__profile-focus[hidden],
+.tv-dashboard__friends-focus[hidden],
+.tv-dashboard__controllers-focus[hidden],
+.tv-dashboard__achievements-focus[hidden],
+.tv-dashboard__exit-focus[hidden],
+.tv-dashboard__exit-discovery[hidden] {
+  display: none !important;
+}
+
+/* Closing the overlay does not run applyDom; never show panels while the dashboard is closed. */
+.tv-dashboard:not(.is-open) .tv-dashboard__profile-focus,
+.tv-dashboard:not(.is-open) .tv-dashboard__friends-focus,
+.tv-dashboard:not(.is-open) .tv-dashboard__controllers-focus,
+.tv-dashboard:not(.is-open) .tv-dashboard__achievements-focus,
+.tv-dashboard:not(.is-open) .tv-dashboard__exit-focus,
+.tv-dashboard:not(.is-open) .tv-dashboard__exit-discovery {
+  display: none !important;
+}
+
+.tv-dashboard__profile-focus-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Left: profile card 390×386 */
+.tv-dashboard__profile-focus-card--profile {
+  position: relative;
+  width: 390px;
+  height: 386px;
+  flex: 0 0 auto;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161616 0%, #020202 72%, #101010 100%);
+  overflow: hidden;
+}
+
+.tv-dashboard__profile-focus-card--profile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Tint driven by avatar sampling in JS; neutral fallback only until painted / if sampling fails. */
+.tv-dashboard__profile-focus-card-wash {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 260px;
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    130% 85% at 50% 0%,
+    rgba(90, 95, 110, 0.12) 0%,
+    rgba(90, 95, 110, 0) 72%
+  );
+}
+
+.tv-dashboard__profile-focus-avatar {
+  position: absolute;
+  left: 50%;
+  top: 32px;
+  width: 160px;
+  height: 160px;
+  transform: translateX(-50%);
+  border-radius: 160px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  box-shadow: 0 0 60px #07476c;
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.tv-dashboard__profile-focus-avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__profile-focus-lockup {
+  position: absolute;
+  left: 50%;
+  top: 210px;
+  width: 317px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+.tv-dashboard__profile-focus-handle {
+  margin: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.15;
+  text-align: center;
+  color: #fff;
+}
+
+.tv-dashboard__profile-focus-status {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.tv-dashboard__profile-focus-status img {
+  display: block;
+  width: 12px;
+  height: 12px;
+}
+
+.tv-dashboard__profile-focus-status span {
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #fff;
+}
+
+/* Edit Online Status — TV content-focus target when Profile tab is selected */
+.tv-dashboard__profile-focus-pill {
+  position: absolute;
+  left: 13.79%;
+  right: 13.46%;
+  top: 73.83%;
+  bottom: 15.05%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background: rgba(128, 128, 128, 0.4);
+  z-index: 2;
+}
+
+.tv-dashboard__profile-focus-pill-inner {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+}
+
+.tv-dashboard__profile-focus-pill-inner img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__profile-focus-pill-inner span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Right: currently playing 765×386 */
+.tv-dashboard__profile-focus-card--playing {
+  position: relative;
+  width: 765px;
+  height: 386px;
+  flex: 0 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tv-dashboard__profile-focus-playing-bg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__profile-focus-playing-badge {
+  position: absolute;
+  left: 21px;
+  top: 20px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.tv-dashboard__profile-focus-playing-badge span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 19px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ----- Friends focus — Figma 74:7060 (Friends); 390 + 12 + 244 gap layout ----- */
+
+.tv-dashboard__friends-focus-inner {
+  width: 100%;
+  min-width: 0;
+}
+
+.tv-dashboard__friends-focus-viewport {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* Title + player cards move together via JS translateX (third card column = focus anchor). */
+.tv-dashboard__friends-focus-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.tv-dashboard__friends-focus-player-cards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+.tv-dashboard__friends-focus-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 390px;
+  height: 386px;
+  margin: 0;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 18px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Title card (left) */
+.tv-dashboard__friends-focus-title-card {
+  position: relative;
+  width: 390px;
+  height: 386px;
+  flex: 0 0 auto;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 12%, rgba(176, 56, 220, 0.3) 0%, transparent 58%),
+    linear-gradient(180deg, #1c0e20 0%, #020202 65.85%, #101010 100%);
+}
+
+/* Single composite hero (replaces layered user PNGs). */
+.tv-dashboard__friends-focus-hero {
+  position: absolute;
+  left: 50%;
+  top: calc(26px - 20pt + 15px);
+  transform: translateX(-50%);
+  width: calc(216px * 0.8);
+  height: calc(216px * 0.8);
+  pointer-events: none;
+}
+
+.tv-dashboard__friends-focus-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.tv-dashboard__friends-focus-heading {
+  position: absolute;
+  left: 50%;
+  top: 196px;
+  transform: translateX(-50%);
+  margin: 0;
+  width: 324px;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 42px;
+  text-align: center;
+  color: #fff;
+}
+
+.tv-dashboard__friends-focus-cta {
+  position: absolute;
+  left: 64px;
+  top: 254px;
+  width: 262px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.tv-dashboard__friends-focus-pill-primary {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border-radius: 32px;
+  background: rgba(128, 128, 128, 0.4);
+}
+
+.tv-dashboard__friends-focus-pill-primary img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__friends-focus-pill-primary span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.tv-dashboard__friends-focus-link-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border-radius: 32px;
+  background: transparent;
+}
+
+.tv-dashboard__friends-focus-link-secondary span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+.tv-dashboard__friends-focus-player-card--offline .tv-dashboard__friends-focus-handle-status span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Player list card (right) */
+.tv-dashboard__friends-focus-player-card {
+  position: relative;
+  width: 244px;
+  height: 386px;
+  flex: 0 0 auto;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  /* Same panel fill as `.game-invite-list__panel-bg` (notifications / invite shell). */
+  background: linear-gradient(180deg, #161616 0%, #020202 75%, #101010 100%);
+}
+
+/* Per-card tint from friend avatar in JS; neutral placeholder until sampled. */
+.tv-dashboard__friends-focus-player-topwash {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 244px;
+  height: 260px;
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    130% 85% at 50% 0%,
+    rgba(90, 95, 110, 0.12) 0%,
+    rgba(90, 95, 110, 0) 72%
+  );
+}
+
+.tv-dashboard__friends-focus-player-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 64px 20px 28px;
+  box-sizing: border-box;
+  height: 100%;
+  gap: 24px;
+}
+
+.tv-dashboard__friends-focus-player-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.tv-dashboard__friends-focus-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+}
+
+.tv-dashboard__friends-focus-handle-name {
+  margin: 0;
+  width: 100%;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 29px;
+  text-align: center;
+  color: #fff;
+}
+
+.tv-dashboard__friends-focus-handle-status {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.tv-dashboard__friends-focus-handle-status img {
+  display: block;
+  width: 8px;
+  height: 8px;
+}
+
+.tv-dashboard__friends-focus-handle-status span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  color: #fff;
+}
+
+.tv-dashboard__friends-focus-player-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 120px;
+  border: 1.5px solid rgba(128, 128, 128, 0.4);
+  box-shadow: 0 0 29px rgba(230, 19, 29, 0.2);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tv-dashboard__friends-focus-player-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__friends-focus-player-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.tv-dashboard__friends-focus-player-meta[hidden] {
+  display: none !important;
+}
+
+.tv-dashboard__friends-focus-player-playing-row {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.tv-dashboard__friends-focus-player-playing-row img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__friends-focus-player-playing-row span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tv-dashboard__friends-focus-player-game-title {
+  margin: 0;
+  max-width: 128px;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: center;
+  color: #fff;
+}
+
+/* ----- Controllers focus — Figma 74:7142 (Controllers Panel) ----- */
+
+.tv-dashboard__controllers-focus-inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tv-dashboard__controllers-focus-card {
+  width: min(1018px, calc(100vw - 48px));
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 50px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: linear-gradient(180deg, #161616 0%, #020202 72%, #101010 100%);
+}
+
+.tv-dashboard__controllers-focus-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 53px;
+}
+
+.tv-dashboard__controllers-focus-qr {
+  flex: 0 0 auto;
+  width: 315px;
+  height: 315px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.tv-dashboard__controllers-focus-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.tv-dashboard__controllers-focus-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  padding-top: 6px;
+}
+
+.tv-dashboard__controllers-focus-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+}
+
+.tv-dashboard__controllers-focus-text h2 {
+  margin: 0;
+  padding: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 37px;
+  color: #fff;
+}
+
+.tv-dashboard__controllers-focus-text p {
+  margin: 0;
+  padding-bottom: 8px;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tv-dashboard__controllers-focus-slots {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tv-dashboard__controllers-focus-slot {
+  position: relative;
+  width: 106px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.tv-dashboard__controllers-focus-slot--connected {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  overflow: visible;
+  background: transparent;
+  border: none;
+}
+
+.tv-dashboard__controllers-focus-slot-avatar-wrap {
+  position: relative;
+  width: 106px;
+  height: 106px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tv-dashboard__controllers-focus-slot-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__controllers-focus-slot-handle {
+  margin: 0;
+  width: 100%;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  text-align: center;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-dashboard__controllers-focus-slot--empty {
+  width: 106px;
+  height: 106px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  background: rgba(128, 128, 128, 0.2);
+  opacity: 0.5;
+}
+
+.tv-dashboard__controllers-focus-slot--empty img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 38px;
+  height: 38px;
+  display: block;
+}
+
+.tv-dashboard__controllers-focus-ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 4px 16px;
+  box-sizing: border-box;
+  width: 160px;
+  border-radius: 60px;
+  background: rgba(128, 128, 128, 0.4);
+}
+
+.tv-dashboard__controllers-focus-ready span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ----- Achievements focus — Figma 5:12944 (Achievements Row); layout matches Friends ----- */
+
+.tv-dashboard__achievements-focus-inner {
+  width: 100%;
+  min-width: 0;
+}
+
+.tv-dashboard__achievements-focus-viewport {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.tv-dashboard__achievements-focus-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.tv-dashboard__achievements-focus-cards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+/* Header card 390×386 */
+.tv-dashboard__achievements-focus-header {
+  position: relative;
+  width: 390px;
+  height: 386px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 12%, rgba(176, 56, 220, 0.3) 0%, transparent 58%),
+    linear-gradient(180deg, #1c0e20 0%, rgba(0, 0, 0, 0.8) 65.85%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+/* Title, progress, and copy sit 40px above the bottom of the header card; hero stays full Figma illustration. */
+.tv-dashboard__achievements-focus-header-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.tv-dashboard__achievements-focus-header-inner .tv-dashboard__achievements-focus-header-body {
+  pointer-events: auto;
+}
+
+/* Single illustration — layout matches `.tv-dashboard__friends-focus-hero`. */
+.tv-dashboard__achievements-focus-hero {
+  position: absolute;
+  left: 50%;
+  top: calc(26px - 20pt);
+  transform: translateX(-50%);
+  width: calc(216px * 0.8);
+  height: calc(216px * 0.8);
+  pointer-events: none;
+}
+
+.tv-dashboard__achievements-focus-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.tv-dashboard__achievements-focus-header-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 16px;
+}
+
+.tv-dashboard__achievements-focus-header-body > h2 {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 42px;
+  text-align: center;
+  color: #fff;
+}
+
+.tv-dashboard__achievements-focus-progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+}
+
+.tv-dashboard__achievements-focus-progress-track {
+  flex: 1 1 auto;
+  height: 16px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.2);
+  position: relative;
+  min-width: 48px;
+}
+
+.tv-dashboard__achievements-focus-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16.47%;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #ef44a8 0%,
+    #ea275e 35%,
+    #e61026 55%,
+    #d3317a 100%
+  );
+}
+
+/* FIFA prototype strip: 4 of 12 unlocked */
+.tv-dashboard__achievements-focus-progress-fill--fifa {
+  width: calc(100% / 3);
+}
+
+.tv-dashboard__achievements-focus-progress-count {
+  flex-shrink: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+}
+
+.tv-dashboard__achievements-focus-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.tv-dashboard__achievements-focus-header-copy strong {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #fff;
+}
+
+.tv-dashboard__achievements-focus-header-copy p {
+  margin: 0;
+  flex: 1 1 auto;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Unlocked achievement card 244×386 */
+.tv-dashboard__achievements-focus-card {
+  position: relative;
+  width: 244px;
+  height: 386px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161616 0%, rgba(0, 0, 0, 0.9) 72%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+.tv-dashboard__achievements-focus-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 12px;
+}
+
+.tv-dashboard__achievements-focus-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__achievements-focus-card-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__achievements-focus-card-text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.tv-dashboard__achievements-focus-card-text h3 {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #fff;
+}
+
+.tv-dashboard__achievements-focus-card-text .tv-dashboard__achievements-focus-card-desc {
+  margin: 0;
+  flex: 1 1 auto;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tv-dashboard__achievements-focus-card-text .tv-dashboard__achievements-focus-card-date {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Locked card 232×380 */
+.tv-dashboard__achievements-focus-locked {
+  position: relative;
+  width: 232px;
+  height: 380px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  background:
+    linear-gradient(-0deg, transparent 20%, rgba(255, 255, 255, 0.05) 100%),
+    linear-gradient(0deg, transparent 40%, rgba(255, 255, 255, 0.05) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.9) 65.85%, rgba(0, 0, 0, 0.1) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.tv-dashboard__achievements-focus-locked-img {
+  width: 200px;
+  height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.tv-dashboard__achievements-focus-locked-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.tv-dashboard__achievements-focus-locked-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tv-dashboard__achievements-focus-locked-text h3 {
+  margin: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tv-dashboard__achievements-focus-locked-text p {
+  margin: 0;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tv-dashboard__achievements-focus-locked-label {
+  margin: auto 0 0;
+  padding-top: 4px;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: normal;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Hidden / mystery — no description; shared mystery artwork */
+.tv-dashboard__achievements-focus-mystery {
+  position: relative;
+  width: 232px;
+  height: 380px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  background:
+    linear-gradient(145deg, rgba(30, 60, 45, 0.35) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.92) 60%, rgba(0, 0, 0, 0.25) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.tv-dashboard__achievements-focus-mystery-img {
+  width: 200px;
+  height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #050806;
+}
+
+.tv-dashboard__achievements-focus-mystery-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+}
+
+.tv-dashboard__achievements-focus-mystery-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.tv-dashboard__achievements-focus-mystery-body h3 {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.tv-dashboard__achievements-focus-mystery-label {
+  margin: auto 0 0;
+  padding-top: 4px;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: normal;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ----- Exit focus — Figma 74:7249 (Exit Panel - TV) ----- */
+
+.tv-dashboard__exit-focus-inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tv-dashboard__exit-focus-card {
+  position: relative;
+  width: min(871px, calc(100vw - 48px));
+  height: 386px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 4px 2px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161616 0%, #020202 72%, #101010 100%);
+}
+
+.tv-dashboard__exit-focus-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(646px, calc(100% - 32px));
+  height: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 36px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+.tv-dashboard__exit-focus-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.tv-dashboard__exit-focus-title {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 72px;
+  color: #fff;
+}
+
+.tv-dashboard__exit-focus-sub {
+  margin: 0;
+  min-height: 31px;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tv-dashboard__exit-focus-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.tv-dashboard__exit-focus-btn {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 24px;
+  background: rgba(128, 128, 128, 0.7);
+}
+
+.tv-dashboard__exit-focus-btn--continue {
+  border-radius: 21px;
+}
+
+.tv-dashboard__exit-focus-btn--exit {
+  border-radius: 74px;
+  background: transparent;
+}
+
+.tv-dashboard__exit-focus-btn span {
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ----- Exit discovery row — Figma 140:6512 (Exit Row) ----- */
+
+.tv-dashboard__exit-discovery-inner {
+  width: 100%;
+  min-width: 0;
+}
+
+.tv-dashboard__exit-discovery-viewport {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 4px;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.tv-dashboard__exit-discovery-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.tv-dashboard__exit-discovery-prompt {
+  position: relative;
+  width: 390px;
+  height: 336px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border: none;
+  border-radius: 20px;
+  overflow: visible;
+  background: transparent;
+  text-align: center;
+}
+
+.tv-dashboard__exit-discovery-prompt-panel {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+  background:
+    radial-gradient(
+      ellipse 251px 306px at 50% 36px,
+      rgba(176, 56, 220, 0.3) 0%,
+      rgba(109, 59, 227, 0) 100%
+    ),
+    linear-gradient(180deg, #1c0e20 0%, rgba(0, 0, 0, 0.8) 65.85%, rgba(0, 0, 0, 0.02) 100%);
+  pointer-events: none;
+}
+
+.tv-dashboard__exit-discovery-prompt-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: 0;
+}
+
+.tv-dashboard__exit-discovery-prompt-hero {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__exit-discovery-prompt-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-dashboard__exit-discovery-prompt-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 0;
+  padding: 8px 0;
+}
+
+.tv-dashboard__exit-discovery-prompt-title {
+  margin: 0;
+  max-width: 284px;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 29px;
+  color: #fff;
+}
+
+.tv-dashboard__exit-discovery-prompt-sub {
+  margin: 0;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  color: #fff;
+}
+
+.tv-dashboard__exit-discovery-prompt-cta {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 6px 24px;
+  border-radius: 74px;
+  background: #fff;
+  color: #000;
+  font-family: "Netflix Sans VF", "Netflix Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.tv-dashboard__exit-discovery-prompt-cta-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.tv-dashboard__exit-discovery-prompt-cta-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tv-dashboard__exit-discovery-game {
+  position: relative;
+  width: 207px;
+  height: 336px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  overflow: visible;
+  background: #000;
+}
+
+.tv-dashboard__exit-discovery-game img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+button.tv-dashboard__exit-discovery-prompt.tv-dashboard__dash-content-focusable,
+button.tv-dashboard__exit-discovery-game.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+/* Full-bleed art paints above the button inset ring — draw focus on ::after above cards (Figma 140:6528). */
+button.tv-dashboard__exit-discovery-prompt.tv-dashboard__dash-content-focusable--tile:focus-visible,
+button.tv-dashboard__exit-discovery-prompt.tv-dashboard__dash-content-focusable--tile.tv-dashboard__dash-content-focusable--tv-ring,
+button.tv-dashboard__exit-discovery-game.tv-dashboard__dash-content-focusable--tile:focus-visible,
+button.tv-dashboard__exit-discovery-game.tv-dashboard__dash-content-focusable--tile.tv-dashboard__dash-content-focusable--tv-ring {
+  box-shadow: none;
+}
+
+button.tv-dashboard__exit-discovery-prompt.tv-dashboard__dash-content-focusable--tile:focus-visible::after,
+button.tv-dashboard__exit-discovery-prompt.tv-dashboard__dash-content-focusable--tile.tv-dashboard__dash-content-focusable--tv-ring::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 3px solid #fff;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 4;
+  box-sizing: border-box;
+}
+
+button.tv-dashboard__exit-discovery-game.tv-dashboard__dash-content-focusable--tile:focus-visible::after,
+button.tv-dashboard__exit-discovery-game.tv-dashboard__dash-content-focusable--tile.tv-dashboard__dash-content-focusable--tv-ring::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 3px solid #fff;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 4;
+  box-sizing: border-box;
+}
+
+/* ----- Dashboard content D-pad focus (selected nav → stage); parents use pointer-events: none -----
+ * Default (pill / compact): white fill on :focus-visible — same language as bottom nav + header notif.
+ * Add .tv-dashboard__dash-content-focusable--tile on large cards: inset ring only (ring stays inside bounds).
+ * `--tv-ring`: gamepad/programmatic .focus() skips :focus-visible; JS mirrors ring (tv-dashboard.js).
+ */
+button.tv-dashboard__dash-content-focusable {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+button.tv-dashboard__dash-content-focusable:focus {
+  outline: none;
+}
+
+button.tv-dashboard__dash-content-focusable:focus-visible:not(.tv-dashboard__dash-content-focusable--tile),
+button.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring:not(
+    .tv-dashboard__dash-content-focusable--tile
+  ) {
+  background: #fff;
+  color: #000;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+button.tv-dashboard__dash-content-focusable--tile:focus-visible,
+button.tv-dashboard__dash-content-focusable--tile.tv-dashboard__dash-content-focusable--tv-ring {
+  outline: none;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+/* Absolute pill: white focus must not change layout (no outline offset / extra border). */
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable:focus-visible,
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring {
+  padding: 6px 12px;
+}
+
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable:focus-visible
+  .tv-dashboard__profile-focus-pill-inner
+  span,
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring
+  .tv-dashboard__profile-focus-pill-inner
+  span {
+  color: #000;
+}
+
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable:focus-visible
+  .tv-dashboard__profile-focus-pill-inner
+  img,
+button.tv-dashboard__profile-focus-pill.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring
+  .tv-dashboard__profile-focus-pill-inner
+  img {
+  filter: brightness(0) saturate(100%);
+}
+
+button.tv-dashboard__profile-focus-card--playing.tv-dashboard__dash-content-focusable {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+/* Full-bleed img paints above the button's own inset shadow — draw the ring on ::after above artwork. */
+button.tv-dashboard__profile-focus-card--playing.tv-dashboard__dash-content-focusable:focus-visible,
+button.tv-dashboard__profile-focus-card--playing.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring {
+  box-shadow: none;
+}
+
+button.tv-dashboard__profile-focus-card--playing.tv-dashboard__dash-content-focusable:focus-visible::after,
+button.tv-dashboard__profile-focus-card--playing.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 3px #fff;
+  pointer-events: none;
+  z-index: 2;
+}
+
+button.tv-dashboard__friends-focus-pill-primary.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+button.tv-dashboard__friends-focus-pill-primary.tv-dashboard__dash-content-focusable:focus-visible img,
+button.tv-dashboard__friends-focus-pill-primary.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring img {
+  filter: brightness(0) saturate(100%);
+}
+
+button.tv-dashboard__friends-focus-pill-primary.tv-dashboard__dash-content-focusable:focus-visible span,
+button.tv-dashboard__friends-focus-pill-primary.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring span {
+  color: #000;
+}
+
+button.tv-dashboard__friends-focus-player-card.tv-dashboard__dash-content-focusable {
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+button.tv-dashboard__controllers-focus-ready.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+button.tv-dashboard__controllers-focus-ready.tv-dashboard__dash-content-focusable:focus-visible span,
+button.tv-dashboard__controllers-focus-ready.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring span {
+  color: #000;
+}
+
+button.tv-dashboard__achievements-focus-card.tv-dashboard__dash-content-focusable,
+button.tv-dashboard__achievements-focus-locked.tv-dashboard__dash-content-focusable,
+button.tv-dashboard__achievements-focus-mystery.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+button.tv-dashboard__exit-focus-btn.tv-dashboard__dash-content-focusable {
+  border: none;
+}
+
+button.tv-dashboard__exit-focus-btn.tv-dashboard__dash-content-focusable:focus-visible span,
+button.tv-dashboard__exit-focus-btn.tv-dashboard__dash-content-focusable.tv-dashboard__dash-content-focusable--tv-ring span {
+  color: #000;
+}
+
+/* Controller-initiated exit-only flow — hide nav chrome; exit content only. */
+#app[data-dashboard-context="exit-only"] .tv-dashboard__primary-nav,
+#app[data-dashboard-context="exit-only"] .tv-dashboard__edge-nav,
+#app[data-dashboard-context="exit-only"] .tv-dashboard__header-notif-wrap,
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__primary-nav,
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__edge-nav,
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__header-notif-wrap,
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__key-guide {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.tv-dashboard__controllers-focus-card--connection-only {
+  display: none;
+}
+
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__controllers-focus-card--standard {
+  display: none;
+}
+
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__controllers-focus-card--connection-only {
+  display: block;
+}
+
+.tv-dashboard__controllers-focus-card--connection-only {
+  background: linear-gradient(145deg, #1a1f2e 0%, #0d1018 52%, #12151f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 24px 48px 24px 24px;
+  max-width: 720px;
+  overflow: visible;
+  position: relative;
+}
+
+.tv-dashboard__controllers-focus-card--connection-only .tv-dashboard__controllers-focus-qr {
+  width: 200px;
+  height: 200px;
+}
+
+.tv-dashboard__controllers-focus-row--connection-only {
+  align-items: center;
+  gap: 48px;
+}
+
+.tv-dashboard__controllers-focus-main--connection-only {
+  position: relative;
+  gap: 0;
+  padding-top: 0;
+  min-height: 0;
+  padding-right: 0;
+}
+
+.tv-dashboard__controllers-focus-steps {
+  margin: 12px 0 0;
+  padding: 0 0 0 1.25rem;
+  list-style: decimal;
+  font-family: "Netflix Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.tv-dashboard__controllers-focus-steps li {
+  padding-left: 0.35rem;
+}
+
+.tv-dashboard__controllers-focus-card--connection-only .tv-dashboard__controllers-focus-text p {
+  display: none;
+}
+
+.tv-dashboard__controllers-focus-phone-hero {
+  position: absolute;
+  right: -110px;
+  bottom: -62px;
+  width: 248px;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  z-index: 2;
+}
+
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__controllers-focus {
+  bottom: 94px;
+}
+
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__controllers-focus-inner {
+  overflow: visible;
+}

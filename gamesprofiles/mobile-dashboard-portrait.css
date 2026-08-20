@@ -1,0 +1,161 @@
+/**
+ * Evolution mobile dashboard — portrait orientation (393×852).
+ * Dashboard panel top 600px; peek rises 100px under panel, footer in bottom band.
+ */
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__shell {
+  /* Native 393px layout — no Figma→device upscale (that caused oversized type/spacing). */
+  --md-x: 1;
+  --md-y: 1;
+  --fc-md-peek-underlap: 100px;
+  width: 393px;
+  height: 852px;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__panel {
+  border-radius: 0 0 16px 16px;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__panel {
+  width: 100%;
+  height: 600px;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash:not(.is-open) .fc-mobile-dash__panel,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash.is-exiting .fc-mobile-dash__panel {
+  transform: translateY(-50%);
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash.is-open:not(.is-exiting) .fc-mobile-dash__panel {
+  transform: none;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__peek {
+  left: 0;
+  top: calc(600px - var(--fc-md-peek-underlap) * var(--md-y));
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__peek-bg {
+  left: calc(-24px * var(--md-x));
+  right: calc(-24px * var(--md-x));
+  width: calc(100% + 48px * var(--md-x));
+  top: 0;
+  bottom: 0;
+  height: auto;
+  transform: none;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 10%,
+    rgb(0, 0, 0) 26%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 10%,
+    rgb(0, 0, 0) 26%,
+    rgb(0, 0, 0) 100%
+  );
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__peek-scrim {
+  left: calc(-24px * var(--md-x));
+  right: calc(-24px * var(--md-x));
+  width: calc(100% + 48px * var(--md-x));
+  top: 0;
+  bottom: 0;
+  height: auto;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 10%,
+    rgb(0, 0, 0) 26%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 10%,
+    rgb(0, 0, 0) 26%,
+    rgb(0, 0, 0) 100%
+  );
+  background:
+    radial-gradient(
+      ellipse 100% 70% at 50% 0%,
+      rgba(68, 148, 236, 0.3) 0%,
+      rgba(68, 148, 236, 0) 100%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__peek-footer {
+  left: 50%;
+  right: auto;
+  width: 100%;
+  max-width: calc(328px * var(--md-x));
+  padding: calc(12px * var(--md-y)) calc(20px * var(--md-x)) calc(32px * var(--md-y));
+  transform: translateX(-50%);
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-footer,
+#app[data-controller-orientation="portrait"]
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__peek-footer {
+  transform: translateX(-50%) translateY(calc(-20px * var(--md-y)));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__peek-glow {
+  left: 50%;
+  bottom: calc(-72px * var(--md-y));
+  width: calc(420px * var(--md-x));
+  height: calc(160px * var(--md-y));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__content {
+  max-height: calc(600px - 76px);
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__shell {
+  --fc-md-header-band-h: calc(96px * var(--md-y));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__header {
+  padding-top: calc(40px * var(--md-y));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--notifications .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-detail-view="sub-page"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  max-height: none;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__missed-slot {
+  max-height: calc(600px - 76px);
+}
+
+/* L2 views stay within the 600px panel band */
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--friends-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--add-players-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--achievements-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--notifications,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--controller-settings-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--edit-profile-l2,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--notif-detail,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__view--add-players {
+  max-height: 600px;
+}

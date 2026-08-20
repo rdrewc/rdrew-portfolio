@@ -1,0 +1,202 @@
+/* TV game-invite notification toast — Figma node 61:6870 (Notification). Layer in #tvOuter above #tvDashboard / gameplay. */
+
+.tv-game-invite-toast-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#app:not(.state-in-game) .tv-game-invite-toast-layer {
+  display: none;
+}
+
+.tv-game-invite-toast {
+  position: absolute;
+  top: 24px;
+  right: 36px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  max-width: min(920px, calc(100% - 72px));
+  padding: 12px 24px;
+  margin: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-image:
+    linear-gradient(
+      246.56deg,
+      rgb(191, 28, 37) 6.82%,
+      rgba(65, 0, 100, 0.19) 34.35%,
+      rgba(65, 0, 100, 0) 53.44%,
+      rgba(65, 0, 100, 0) 76.25%
+    ),
+    linear-gradient(90deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 100%);
+  color: #fff;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tv-game-invite-toast--in {
+  transform: translateY(0);
+}
+
+.tv-game-invite-toast--out {
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 0.4s cubic-bezier(0.55, 0, 1, 0.45);
+}
+
+.tv-game-invite-toast__icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 57px;
+  height: 57px;
+}
+
+.tv-game-invite-toast__icon-left {
+  display: block;
+  width: 59px;
+  height: 59px;
+  max-width: none;
+  object-fit: cover;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 6px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Friend-request toast — profile thumbnail reads as a circular avatar (game-invite toast stays rounded-square). */
+.tv-game-invite-toast--friend-request .tv-game-invite-toast__icon-wrap {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.tv-game-invite-toast--friend-request .tv-game-invite-toast__icon-left {
+  border-radius: 50%;
+  width: 57px;
+  height: 57px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+.tv-game-invite-toast--achievement .tv-game-invite-toast__icon-left {
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tv-game-invite-toast__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  text-align: left;
+}
+
+.tv-game-invite-toast__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  letter-spacing: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  max-width: 100%;
+}
+
+.tv-game-invite-toast__sub {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+  opacity: 0.95;
+}
+
+.tv-game-invite-toast__netflix-n {
+  flex-shrink: 0;
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Full-screen placeholder when dashboard opens from toast (N) — Figma panel TBD */
+.tv-dashboard__game-invite-panel-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 64px;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+#app[data-dashboard-context="game-invite"] .tv-dashboard__game-invite-panel-shell {
+  display: flex;
+}
+
+#app[data-dashboard-context="game-invite"] .tv-dashboard__primary-nav,
+#app[data-dashboard-context="game-invite"] .tv-dashboard__edge-nav,
+#app[data-dashboard-context="game-invite"] .tv-dashboard__chrome,
+#app[data-dashboard-context="game-invite"] .tv-dashboard__header-notif-wrap {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Opened from notifications list — stack above notifications overlay */
+#app[data-game-invite-entry="notifications"][data-dashboard-context="game-invite"] .tv-dashboard__game-invite-panel-shell {
+  z-index: 20;
+}
+
+@keyframes tvGiPanelDrillIn {
+  from {
+    transform: scale(1.05);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tvGiPanelDrillOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.05);
+    opacity: 0;
+  }
+}
+
+.tv-dashboard__game-invite-panel-shell .game-invite-list--tv.tv-gi-panel--drill-in {
+  animation: tvGiPanelDrillIn 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center center;
+}
+
+.tv-dashboard__game-invite-panel-shell .game-invite-list--tv.tv-gi-panel--drill-out {
+  animation: tvGiPanelDrillOut 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center center;
+}

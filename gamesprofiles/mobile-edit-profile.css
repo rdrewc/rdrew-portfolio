@@ -1,0 +1,354 @@
+/**
+ * Evolution mobile — Edit Profile L2 (Set your online status).
+ * Radio list + slide-over transitions; landscape split uses shared peek panel.
+ */
+
+/* --- Radio list --- */
+.fc-mobile-edit-profile__radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--md-y));
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.fc-mobile-edit-profile__radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(12px * var(--md-x));
+  width: 100%;
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x));
+  border: none;
+  border-radius: calc(16px * var(--md-x));
+  background: var(--fc-md-list-surface-bg);
+  box-shadow: var(--fc-md-list-surface-shadow);
+  color: #fff;
+  text-align: left;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-edit-profile__radio::before {
+  content: none;
+}
+
+.fc-mobile-edit-profile__radio:focus {
+  outline: none;
+}
+
+.fc-mobile-edit-profile__radio:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.fc-mobile-edit-profile__radio-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: calc(4px * var(--md-y));
+  min-width: 0;
+}
+
+.fc-mobile-edit-profile__radio-title {
+  color: #fff;
+  font-weight: 600;
+  font-size: calc(16px * var(--md-y));
+  line-height: calc(22px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.fc-mobile-edit-profile__radio-desc {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(20px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.fc-mobile-edit-profile__radio-check {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  /* Match the beacon switch width (51px) so every row's text aligns at one left edge. */
+  flex: 0 0 calc(51px * var(--md-x));
+  align-items: center;
+  justify-content: flex-start;
+  align-self: center;
+  width: calc(51px * var(--md-x));
+  height: calc(24px * var(--md-y));
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-edit-profile__radio.is-selected .fc-mobile-edit-profile__radio-check {
+  opacity: 1;
+}
+
+.fc-mobile-edit-profile__radio-check svg {
+  display: block;
+  width: calc(24px * var(--md-x));
+  height: calc(24px * var(--md-y));
+}
+
+.fc-mobile-edit-profile__radio:not(.is-selected) .fc-mobile-edit-profile__radio-check {
+  visibility: hidden;
+}
+
+.fc-mobile-dash__content--edit-profile-l2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: calc(16px * var(--md-y));
+  min-height: 0;
+  padding-bottom: calc(48px * var(--md-y));
+}
+
+/* --- L2 slide transitions --- */
+.fc-mobile-dash__view--edit-profile-l2 {
+  z-index: 5;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--edit-profile-l2 {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+/* Open from home — home slides left */
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"]:not([data-mobile-edit-profile-return="detail"])
+  .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"]:not([data-mobile-edit-profile-return="detail"])
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"]:not([data-mobile-edit-profile-return="detail"])
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"]:not([data-mobile-edit-profile-return="detail"])
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+/* Open from profile detail — detail slides left underneath */
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--notif-detail {
+  z-index: 3;
+  transform: translateX(-16%);
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+  transition: transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+/* Overlay-card detail — hide lightbox while edit profile is open */
+.fc-mobile-dash[data-mobile-detail-view="overlay-card"][data-mobile-dashboard-l2="edit-profile"]:not(
+    [data-mobile-edit-profile-closing="overlay"]
+  )
+  .fc-mobile-dash__view--notif-detail {
+  transform: translateY(100%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Close back to sub-page profile detail — detail returns, edit profile slides out */
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail {
+  z-index: 3;
+  transform: none;
+  visibility: visible;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--notif-detail
+  .fc-mobile-dash__scroll-fade {
+  opacity: 1;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--edit-profile-l2 {
+  transform: translateX(100%);
+  visibility: visible;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]:not(
+    [data-mobile-edit-profile-return="detail"]
+  )
+  .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+  transition: transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+/* Close back to overlay-card profile detail */
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+  .fc-mobile-dash__view--notif-detail {
+  transform: none;
+  visibility: visible;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+  .fc-mobile-dash__view--edit-profile-l2 {
+  transform: translateX(100%);
+  visibility: visible;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--edit-profile-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--edit-profile-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-return="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="detail"]
+    .fc-mobile-dash__view--edit-profile-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+    .fc-mobile-dash__view--notif-detail,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"][data-mobile-edit-profile-closing="overlay"]
+    .fc-mobile-dash__view--edit-profile-l2 {
+    transition: none;
+  }
+}

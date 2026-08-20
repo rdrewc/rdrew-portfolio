@@ -1,0 +1,122 @@
+/**
+ * Shared presence dots — green (online/idle/connected), grey (offline/disconnected).
+ * Avatar dots are mobile-only; TV list rows keep inline dots before status text.
+ */
+
+.fc-presence-dot {
+  display: block;
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.fc-presence-dot--avatar {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  transform: translate(
+    calc(30% - calc(8px * var(--md-x, 1)) + var(--fc-presence-dot-x-nudge, 0px)),
+    calc(-28% + var(--fc-presence-dot-y-nudge, 0px))
+  );
+  width: calc(100% * var(--fc-presence-dot-ratio, 0.26));
+  height: calc(100% * var(--fc-presence-dot-ratio, 0.26));
+  min-width: calc(8px * var(--md-x, 1));
+  min-height: calc(8px * var(--md-x, 1));
+  border: calc(2px * var(--md-x, 1)) solid var(--fc-presence-dot-stroke, #080c11);
+}
+
+.fc-presence-dot--inline {
+  width: 8px;
+  height: 8px;
+  order: -1;
+}
+
+.fc-presence-dot--online {
+  background: #21d85e;
+}
+
+.fc-presence-dot--offline {
+  background: #8a8a8a;
+}
+
+/* Mobile avatar hosts — overflow visible so dots overlay the image edge */
+.fc-mobile-dash__avatar-wrap,
+.fc-mobile-dash__friend-avatar,
+.fc-mobile-dash__friend-row,
+.fc-mobile-notif__row,
+.fc-mobile-notif-detail__image-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+.fc-mobile-dash__avatar-wrap {
+  --fc-presence-dot-ratio: 0.25;
+  --fc-presence-dot-stroke: #080c11;
+  --fc-presence-dot-x-nudge: calc(6px * var(--md-x, 1));
+  --fc-presence-dot-y-nudge: calc(2px * var(--md-y, 1));
+}
+
+.fc-mobile-dash__friend-avatar {
+  --fc-presence-dot-ratio: 0.263;
+  --fc-presence-dot-stroke: #252c39;
+  --fc-presence-dot-x-nudge: calc(8px * var(--md-x, 1));
+  --fc-presence-dot-y-nudge: calc(2px * var(--md-y, 1));
+}
+
+.fc-mobile-notif__item--avatar-thumb .fc-mobile-notif__thumb {
+  --fc-presence-dot-ratio: 0.25;
+  --fc-presence-dot-stroke: #252c39;
+  --fc-presence-dot-x-nudge: calc(6px * var(--md-x, 1));
+  --fc-presence-dot-y-nudge: calc(2px * var(--md-y, 1));
+}
+
+.fc-mobile-notif-detail__image-wrap {
+  --fc-presence-dot-ratio: 0.2;
+  --fc-presence-dot-stroke: #252c39;
+}
+
+.fc-mobile-notif-detail__image-wrap:not(:has(.fc-mobile-notif-detail__image--avatar))
+  .fc-presence-dot--avatar {
+  display: none !important;
+}
+
+.fc-mobile-dash__status {
+  display: none !important;
+}
+
+.fc-mobile-dash__friend-status-dot,
+.fc-mobile-notif-detail__status-dot {
+  display: none !important;
+}
+
+.game-invite-list__status,
+.tv-dashboard__friends-focus-handle-status,
+.fc-mobile-dash__friend-status,
+.fc-mobile-notif-detail__status {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.game-invite-list__status img[hidden],
+.tv-dashboard__friends-focus-handle-status img[hidden],
+.fc-mobile-dash__friend-status-dot[hidden],
+#tvPlayerPanelPresenceDot[hidden] {
+  display: none !important;
+}
+
+.game-invite-list__status--idle span,
+.fc-mobile-dash__friend-status--idle .fc-mobile-dash__friend-status-text {
+  color: var(--fi-foreground, #fff);
+}
+
+.player-panel[data-presence-state="offline"] .tv-dashboard__friends-focus-handle-status span,
+.player-panel[data-presence-state="idle"] .tv-dashboard__friends-focus-handle-status span {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.player-panel[data-presence-state="offline"] .tv-dashboard__friends-focus-handle-status span {
+  color: rgba(255, 255, 255, 0.6);
+}

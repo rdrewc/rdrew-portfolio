@@ -1,0 +1,198 @@
+/* ----- Dashboard backdrop (Figma Overlay 14:2959) — separate layers, not flattened ----- */
+
+/* Stack holds overlay (masked) + UI layers (unmasked). Do not put mask-image here — it would fade invite/stage too. */
+.tv-dashboard__stack {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.tv-dashboard__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* No isolation: glow/particles <video> use mix-blend-mode:screen; other layers stay normal */
+  background: transparent;
+  overflow: hidden;
+  /* Alpha mask: top 35% ramps 25% → 100%; applies only to overlay art (not header/nav/stage/invite). */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 1) 35%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 1) 35%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  mask-mode: alpha;
+}
+
+.tv-dashboard__cmp {
+  position: absolute;
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+/* Dark Overlay — vignette over gameplay (keep alphas moderate so game reads through) */
+.tv-dashboard__cmp--dark-overlay {
+  inset: -2px;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.32) 22.917%,
+    rgba(0, 0, 0, 0.52) 74.64%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+/* Bottom-glow plate — full-frame raster (black field + magenta wash); see FIGMA_DASHBOARD_OVERLAY.bottomGlowPlate */
+.tv-dashboard__cmp--bottom-glow-plate {
+  z-index: 1;
+  inset: -2px;
+}
+
+.tv-dashboard__bottom-glow-plate-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  mix-blend-mode: normal;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Color Gradient (circle) — bottom ellipse image */
+.tv-dashboard__cmp--color-gradient-circle {
+  z-index: 2;
+  left: 50%;
+  top: 81.25%;
+  bottom: -21.11%;
+  width: 1635px;
+  max-width: none;
+  transform: translateX(-50%);
+}
+
+.tv-dashboard__circle-clip {
+  position: absolute;
+  inset: -34.79% -6.12%;
+  overflow: visible;
+}
+
+.tv-dashboard__circle-clip img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  max-width: none;
+  mix-blend-mode: normal;
+  filter: brightness(1.28) saturate(1.18);
+}
+
+/*
+ * Glow / particles: blend mode lives on the <video> so it composites with gameplay
+ * behind the backdrop. Opaque #000 wrappers + transform on the video were forcing a
+ * solid intermediate layer in some browsers (overlay looked opaque again).
+ */
+.tv-dashboard__cmp--glow-video,
+.tv-dashboard__cmp--particles-video {
+  overflow: hidden;
+  background: transparent;
+}
+
+.tv-dashboard__cmp--glow-video {
+  z-index: 3;
+  inset: -2px;
+}
+
+/*
+ * Color Gradient — Figma 14:3033 (full 1280×720; soft bottom glow, no clip).
+ * Inline SVG matches file (radialGradient + rect opacity 0.7); avoids CSS box crop.
+ */
+.tv-dashboard__cmp--color-gradient-radial {
+  z-index: 4;
+  inset: -2px;
+}
+
+.tv-dashboard__radial-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: normal;
+}
+
+.tv-dashboard__cmp--particles-video {
+  z-index: 5;
+  inset: -2px;
+}
+
+.tv-dashboard__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  outline: none;
+  /* Full strength by default; particles stay softer (see below). */
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+/* Screen blend — Figma Glow / Particles video fills only (not gradients, circle, or dimmer) */
+.tv-dashboard__video--glow,
+.tv-dashboard__video--particles {
+  mix-blend-mode: screen;
+}
+
+.tv-dashboard__video--glow {
+  opacity: 0.85;
+  filter: brightness(1.08);
+}
+
+.tv-dashboard__video--particles {
+  opacity: 0.7;
+}
+
+/* Primary menu / state composites sit above backdrop */
+.tv-dashboard__stage-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tv-dashboard__stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Programmatic focus target when D-pad moves from nav into content (see tv-dashboard.js). */
+#tvDashboard[data-content-focus="true"] .tv-dashboard__stage-wrap:focus {
+  outline: none;
+}
+
+#tvDashboard[data-content-focus="true"] .tv-dashboard__stage-wrap:focus-visible,
+#tvDashboard[data-content-focus="true"] .tv-dashboard__stage-wrap.tv-dashboard__stage-wrap--tv-ring {
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.32);
+}
+
+/* Temporary: backdrop only — hide Figma primary-state PNGs and menu chrome */
+.tv-dashboard__stage-wrap,
+.tv-dashboard__chrome,
+.tv-dashboard__edge-nav {
+  visibility: hidden;
+  pointer-events: none !important;
+}

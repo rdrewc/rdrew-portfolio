@@ -1,0 +1,400 @@
+/* iMessage composer — Figma 56:5519 (Imessage), opened from share sheet contact tap */
+
+.phone-imessage {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(0);
+  transition:
+    opacity 0.28s ease,
+    visibility 0.28s step-end,
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  background: #141415;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.phone-imessage--open {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity 0.28s ease,
+    visibility 0s step-start,
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.phone-imessage--open.phone-imessage--exit-down {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  visibility: visible;
+}
+
+.phone-imessage__shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  background: #141415;
+}
+
+.phone-imessage__header {
+  flex: 0 0 auto;
+  padding: 10px 20pt 12px;
+  box-sizing: border-box;
+  background: #141415;
+}
+
+.phone-imessage__top-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.phone-imessage__close {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 100px;
+  background: rgba(80, 80, 88, 0.85);
+  color: #e8e8ed;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.phone-imessage__close:hover {
+  background: rgba(99, 99, 102, 0.95);
+  color: #fff;
+}
+
+.phone-imessage__close:focus-visible {
+  outline: 2px solid rgba(10, 132, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.phone-imessage__to-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    "Helvetica Neue",
+    sans-serif;
+  font-size: 17px;
+  line-height: 22px;
+}
+
+.phone-imessage__to-field {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 16px;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  background: rgba(118, 118, 128, 0.24);
+}
+
+.phone-imessage__to-label {
+  flex-shrink: 0;
+  color: rgba(235, 235, 245, 0.55);
+  font-weight: 400;
+}
+
+.phone-imessage__to-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #fff;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-imessage__to-add {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 100px;
+  background: rgba(118, 118, 128, 0.35);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.phone-imessage__main {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #141415;
+}
+
+.phone-imessage__composer-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 20pt 48px;
+  box-sizing: border-box;
+  background: #141415;
+}
+
+.phone-imessage__composer-inner {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.phone-imessage__composer-above {
+  flex: 0 0 auto;
+}
+
+.phone-imessage__composer-spacer {
+  flex: 1 1 auto;
+  min-height: 16px;
+}
+
+.phone-imessage__link-preview {
+  position: relative;
+  width: 100%;
+  max-width: 268px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #003053;
+}
+
+.phone-imessage__link-preview-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1504 / 992;
+  max-height: 200px;
+  min-height: 120px;
+  overflow: hidden;
+}
+
+.phone-imessage__link-preview-hero-img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-imessage__link-preview-hero-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 63px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.15) 42.3%,
+    rgba(0, 0, 0, 0.21) 100%
+  );
+  pointer-events: none;
+}
+
+.phone-imessage__link-preview-fifa {
+  position: absolute;
+  left: calc(50% + 4.5px);
+  bottom: 15px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  max-width: calc(100% - 20px);
+  filter: drop-shadow(0 0 8.3px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.phone-imessage__link-preview-fifa-word {
+  display: block;
+  height: 32px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.phone-imessage__link-preview-fifa-num {
+  display: block;
+  height: 34px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.phone-imessage__link-preview-nmark {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 13.5px;
+  height: 24px;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.phone-imessage__link-preview-remove {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 19px;
+  height: 19px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.phone-imessage__link-preview-remove-bg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.phone-imessage__link-preview-remove-x {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  display: block;
+}
+
+.phone-imessage__link-preview-meta {
+  padding: 8px 20px 10px;
+  box-sizing: border-box;
+}
+
+.phone-imessage__link-preview-title {
+  margin: 0 0 2px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  letter-spacing: -0.2px;
+  color: #fff;
+}
+
+.phone-imessage__link-preview-url {
+  margin: 0;
+  font-size: 10px;
+  line-height: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.phone-imessage__body {
+  flex: 0 0 auto;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  /* Reserve send (52.5px) + gap (24pt); scroll already has 20pt padding-right */
+  padding-right: calc(52.5px + 16px + 24pt - 20pt);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.5px;
+  color: #fff;
+  text-align: left;
+}
+
+/* Figma 56:5974 — floating send, design size 52.5×40 */
+.phone-imessage__send {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 4;
+  width: 52.5px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 833px;
+  background: transparent;
+  cursor: default;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.phone-imessage__send-surface-wrap {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -1px;
+  bottom: -1px;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.phone-imessage__send-surface {
+  position: absolute;
+  left: -37.73%;
+  top: -49.4%;
+  width: 175.45%;
+  height: 198.81%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+}
+
+.phone-imessage__send-arrow {
+  position: absolute;
+  left: calc(50% - 0.25px);
+  top: calc(50% + 0.25px);
+  width: 15.5px;
+  height: 18.5px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: block;
+}

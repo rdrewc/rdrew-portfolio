@@ -1,0 +1,4001 @@
+/**
+ * Evolution mobile dashboard overlay — Figma 127:3959.
+ * Laid out at native NGC 852×393; scales with --fc-scale via .fc-device--ngc (same as controller art).
+ * Figma artboard 812×375 → device coords via --md-x / --md-y.
+ */
+
+.fc-mobile-dash {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#app[data-platform-experience="current"] .fc-mobile-dash {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.fc-mobile-dash.is-hidden {
+  visibility: hidden;
+  pointer-events: none !important;
+}
+
+.fc-mobile-dash.is-open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.fc-mobile-dash.is-exiting {
+  visibility: visible;
+  pointer-events: none;
+}
+
+/* Let friend rows receive clicks above in-game D-pad hit wedges (left side of NGC art) */
+#app[data-mobile-dashboard="open"] .fc-ngc-root .ngc-d-pad__nav-hit .ngc-d-pad__hit-path,
+#app[data-mobile-dashboard="open"] .fc-ngc-root .ngc-d-pad__arrow {
+  pointer-events: none !important;
+}
+
+.fc-mobile-dash__shell {
+  --md-x: calc(852 / 812);
+  --md-y: calc(393 / 375);
+  --fc-mobile-dash-enter-ms: 480ms;
+  --fc-mobile-dash-exit-ms: 240ms;
+  --fc-mobile-dash-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fc-mobile-dash-exit-ease: cubic-bezier(0.55, 0, 1, 0.45);
+  --fc-mobile-dash-view-ms: 320ms;
+  --fc-mobile-dash-view-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Slate palette — sheet 950, card 800, secondary btn 600/700 */
+  --fc-slate-950: #080c11;
+  --fc-slate-900: #10161d;
+  --fc-slate-800: #182028;
+  --fc-slate-700: #212b34;
+  --fc-slate-600: #293540;
+  --fc-slate-500: #384653;
+  --fc-slate-400: #4c5966;
+  --fc-md-panel-bg: var(--fc-slate-950);
+  --fc-md-header-chrome-inset: calc(16px * var(--md-x));
+  --fc-md-header-corner-r: calc(16px * var(--md-x));
+  --fc-md-content-inset-x: calc(16px * var(--md-x));
+  --fc-md-list-surface-bg: rgba(33, 43, 52, 0.8);
+  --fc-md-header-bg: var(--fc-md-list-surface-bg);
+  --fc-md-header-bg-opaque: var(--fc-slate-800);
+  --fc-md-header-band-h: calc(72px * var(--md-y));
+  --fc-md-header-content-gap: calc(12px * var(--md-y));
+  --fc-mobile-dash-find-friends-search-bar-h: calc(48px * var(--md-y));
+  --fc-md-list-surface-border: none;
+  --fc-md-list-surface-shadow:
+    0 calc(2px * var(--md-y)) calc(4px * var(--md-y)) rgba(0, 0, 0, 0.12),
+    0 0 calc(1px * var(--md-y)) rgba(0, 0, 0, 0.06);
+  --fc-md-list-surface-overlay: rgba(158, 189, 228, 0.08);
+  --fc-md-card-divider: rgba(76, 89, 102, 0.22);
+  --fc-md-secondary-btn-bg: var(--fc-slate-600);
+  --fc-md-secondary-btn-pressed-bg: var(--fc-slate-700);
+  --fc-md-secondary-btn-disabled-bg: var(--fc-slate-700);
+  --fc-md-muted-surface-bg: var(--fc-slate-700);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 852px;
+  height: 393px;
+  overflow: hidden;
+  background: var(--fc-slate-950);
+  opacity: 0;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash.is-open:not(.is-exiting) .fc-mobile-dash__shell {
+  opacity: 1;
+}
+
+/* White status toast — centered pill over dashboard content */
+.fc-mobile-dash__status-toast-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fc-mobile-dash__status-toast-layer.fc-mobile-dash__status-toast-layer--interactive {
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__status-toast-layer.fc-mobile-dash__status-toast-layer--interactive
+  .fc-mobile-dash__status-toast {
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__status-toast {
+  position: absolute;
+  top: calc(20px * var(--md-y));
+  left: 50%;
+  right: auto;
+  z-index: 1;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: calc(10px * var(--md-x));
+  width: fit-content;
+  min-width: 0;
+  max-width: min(calc(100% - calc(32px * var(--md-x))), calc(360px * var(--md-x)));
+  padding: calc(10px * var(--md-y)) calc(20px * var(--md-x));
+  margin: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: #fff;
+  color: #000;
+  font-family: "Netflix Sans", "Netflix Sans VF", "Segoe UI", system-ui, sans-serif;
+  box-shadow:
+    0 calc(4px * var(--md-y)) calc(12px * var(--md-y)) rgba(0, 0, 0, 0.35),
+    0 calc(1px * var(--md-y)) calc(3px * var(--md-y)) rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%) translateY(calc(-100% - calc(16px * var(--md-y))));
+  opacity: 0;
+  transition:
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fc-mobile-dash__status-toast--in {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.fc-mobile-dash__status-toast--out {
+  transform: translateX(-50%) translateY(calc(-100% - calc(16px * var(--md-y))));
+  opacity: 0;
+  transition:
+    transform 0.28s cubic-bezier(0.55, 0, 1, 0.45),
+    opacity 0.28s cubic-bezier(0.55, 0, 1, 0.45);
+}
+
+.fc-mobile-dash__status-toast-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  filter: brightness(0);
+}
+
+.fc-mobile-dash__status-toast-icon--dark {
+  filter: none;
+  width: calc(24px * var(--md-x));
+  height: calc(24px * var(--md-y));
+}
+
+.fc-mobile-dash__status-toast-icon[hidden] {
+  display: none;
+}
+
+.fc-mobile-dash__status-toast-text {
+  flex: 0 1 auto;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 600;
+  line-height: calc(20px * var(--md-y));
+  white-space: nowrap;
+}
+
+.fc-mobile-dash__status-toast--with-undo .fc-mobile-dash__status-toast-text {
+  flex: 1 1 auto;
+}
+
+.fc-mobile-dash__status-toast--with-undo {
+  max-width: min(calc(100% - calc(32px * var(--md-x))), calc(420px * var(--md-x)));
+}
+
+.fc-mobile-dash__status-toast-undo {
+  flex: 0 0 auto;
+  margin: 0;
+  margin-left: calc(16px * var(--md-x));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #000;
+  font-family: inherit;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 600;
+  line-height: calc(20px * var(--md-y));
+  text-decoration: underline;
+  text-underline-offset: calc(2px * var(--md-y));
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__status-toast-undo:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__status-toast-undo:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.35);
+  outline-offset: 2px;
+  border-radius: calc(2px * var(--md-x));
+}
+
+.fc-mobile-dash__status-toast-undo[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__status-toast {
+    transition: none;
+  }
+}
+
+.fc-mobile-dash.is-exiting .fc-mobile-dash__shell {
+  opacity: 0;
+  transition-duration: var(--fc-mobile-dash-exit-ms);
+  transition-timing-function: var(--fc-mobile-dash-exit-ease);
+}
+
+/* Open/close — shell fades; panel slides; peek buttons rise (landscape: panel from left) */
+.fc-mobile-dash__panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: calc(400px * var(--md-x));
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--fc-md-panel-bg);
+  opacity: 1;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: transform var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+  will-change: transform;
+}
+
+.fc-mobile-dash.is-open:not(.is-exiting) .fc-mobile-dash__panel {
+  transform: none;
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__peek-actions {
+  transition:
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease),
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    width var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    gap var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash:not(.is-open) .fc-mobile-dash__peek-actions {
+  opacity: 0;
+  transform: translateY(calc(14px * var(--md-y)));
+}
+
+.fc-mobile-dash.is-open:not(.is-exiting) .fc-mobile-dash__peek-actions {
+  opacity: 1;
+  transform: none;
+}
+
+.fc-mobile-dash.is-open:not(.is-exiting)[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-actions,
+.fc-mobile-dash.is-open:not(.is-exiting)[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__peek-actions {
+  transform: translate3d(0, calc(10px * var(--md-y)), 0);
+}
+
+.fc-mobile-dash.is-exiting .fc-mobile-dash__panel {
+  transform: translateX(-50%);
+  transition-duration: var(--fc-mobile-dash-exit-ms);
+  transition-timing-function: var(--fc-mobile-dash-exit-ease);
+}
+
+.fc-mobile-dash.is-exiting .fc-mobile-dash__peek-actions {
+  opacity: 0;
+  transform: translateY(calc(14px * var(--md-y)));
+  transition-duration: var(--fc-mobile-dash-exit-ms);
+  transition-timing-function: var(--fc-mobile-dash-exit-ease);
+}
+
+.fc-mobile-dash.is-hidden .fc-mobile-dash__shell,
+.fc-mobile-dash.is-hidden .fc-mobile-dash__panel,
+.fc-mobile-dash.is-hidden .fc-mobile-dash__peek-actions {
+  transition: none !important;
+}
+
+/* Controller swap — suppress L2/L3 and open/close transitions for one paint. */
+.fc-mobile-dash[data-local-player-swap="1"],
+.fc-mobile-dash[data-local-player-swap="1"] * {
+  transition: none !important;
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__shell,
+  .fc-mobile-dash__panel,
+  .fc-mobile-dash__peek-actions {
+    transition: none !important;
+  }
+
+  .fc-mobile-dash__scroll-fade {
+    transition: none;
+  }
+
+  .fc-mobile-dash__notif-top-glow {
+    transition: none;
+  }
+}
+
+.fc-mobile-dash__notif-top-glow {
+  transition: opacity var(--fc-missed-anim-ms, 360ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fc-mobile-dash:has(.fc-mobile-dash__missed-slot.is-missed-open) .fc-mobile-dash__notif-top-glow {
+  opacity: 1;
+}
+
+/* Bottom fade — per view so it slides with L2/home content during transitions */
+.fc-mobile-dash__scroll-fade {
+  position: absolute;
+  left: var(--fc-md-content-inset-x);
+  right: var(--fc-md-content-inset-x);
+  bottom: 0;
+  z-index: 2;
+  height: calc(44px * var(--md-y));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  background: linear-gradient(
+    to top,
+    var(--fc-slate-950) 0%,
+    rgb(8 12 17 / 0) 100%
+  );
+}
+
+.fc-mobile-dash__scroll-fade[data-md-scroll-fade="visible"] {
+  opacity: 1;
+}
+
+.fc-mobile-dash__scroll-fade[data-md-scroll-fade="end"] {
+  opacity: 0;
+}
+
+/* Scroll fade must win over view-switch opacity (e.g. add-players L2-style transitions) */
+.fc-mobile-dash__view .fc-mobile-dash__scroll-fade[data-md-scroll-fade="visible"] {
+  opacity: 1;
+}
+
+.fc-mobile-dash__view .fc-mobile-dash__scroll-fade[data-md-scroll-fade="end"] {
+  opacity: 0;
+}
+
+/* Home dashboard — 16px radius on edge toward peek (landscape: right; portrait override below) */
+.fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel {
+  border-radius: 0 16px 16px 0;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel {
+  border-radius: 0;
+}
+
+/* Landscape home + L2 — 40px left inset; panel grows 40px so content width is unchanged */
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__panel,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__panel,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__panel {
+  width: calc(440px * var(--md-x));
+  box-sizing: border-box;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--home,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--home,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--friends-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--friends-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--add-players-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--add-players-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--achievements-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--achievements-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--notifications,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--notifications,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--controller-settings-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--controller-settings-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--edit-profile-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--edit-profile-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--notif-detail,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--notif-detail,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--find-friends-l2,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--find-friends-l2,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__view--add-players,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__view--add-players {
+  left: calc(40px * var(--md-x));
+  width: auto;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__peek,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__peek,
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__peek,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__peek {
+  left: calc(438px * var(--md-x));
+  width: calc(374px * var(--md-x));
+}
+
+.fc-mobile-dash__top-glow {
+  position: absolute;
+  left: calc(16px * var(--md-x));
+  top: calc(36px * var(--md-y));
+  z-index: 0;
+  width: calc(1342px * var(--md-x));
+  height: calc(286px * var(--md-y));
+  pointer-events: none;
+  overflow: visible;
+  transform: translate(calc(-50% + 10%), -50%);
+}
+
+/* Landscape — header glow anchor inset with 40px left band */
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__top-glow,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-dashboard-view="home"] .fc-mobile-dash__top-glow {
+  left: calc(56px * var(--md-x));
+}
+
+.fc-mobile-dash__top-glow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__top-glow {
+  left: calc(16px * var(--md-x));
+  top: calc(36px * var(--md-y));
+  width: calc(1342px * var(--md-x));
+  height: calc(286px * var(--md-y));
+  transform: translate(calc(-50% + 10%), -50%);
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__top-glow img {
+  object-position: center center;
+}
+
+/* BackgroundGlow-Phone — Figma 156:4563; layered above Top Glow in header area */
+.fc-mobile-dash__bg-glow {
+  position: absolute;
+  left: calc(-322px * var(--md-x));
+  top: calc(-380px * var(--md-y));
+  bottom: 0;
+  z-index: 1;
+  width: calc(1000px * var(--md-x));
+  pointer-events: none;
+  overflow: visible;
+}
+
+.fc-mobile-dash__bg-glow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__bg-glow {
+  left: calc(-303px * var(--md-x));
+  top: calc(-380px * var(--md-y));
+}
+
+/* Header chrome — opaque fill + masked top glow; blocks scrolled card shadows underneath */
+.fc-mobile-dash__header-shape {
+  position: absolute;
+  left: var(--fc-md-header-chrome-inset);
+  right: var(--fc-md-header-chrome-inset);
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  border-radius: 0 0 var(--fc-md-header-corner-r) var(--fc-md-header-corner-r);
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--fc-md-header-bg-opaque);
+  box-shadow: var(--fc-md-list-surface-shadow);
+  isolation: isolate;
+}
+
+.fc-mobile-dash__header-shape::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--fc-md-list-surface-overlay);
+  mix-blend-mode: lighten;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fc-mobile-dash__header-shape-glow {
+  position: absolute;
+  left: 0;
+  top: calc(36px * var(--md-y));
+  z-index: 2;
+  opacity: 1;
+  width: calc(1342px * var(--md-x));
+  height: calc(286px * var(--md-y));
+  pointer-events: none;
+  transform: translate(calc(-50% + 10%), -50%);
+}
+
+.fc-mobile-dash__header-shape-glow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.fc-mobile-dash__header {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  min-height: var(--fc-md-header-band-h);
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(8px * var(--md-y));
+  box-sizing: border-box;
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.fc-mobile-dash__identity {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: calc(12px * var(--md-x));
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-left: calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__identity {
+  cursor: pointer;
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__actions {
+  padding-right: calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__identity:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: calc(2px * var(--md-y));
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-dash__avatar-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(48px * var(--md-x));
+  height: calc(48px * var(--md-x));
+}
+
+.fc-mobile-dash__avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.fc-mobile-dash__status {
+  position: absolute;
+  right: 0;
+  bottom: calc(2px * var(--md-y));
+  width: calc(12px * var(--md-x));
+  height: calc(12px * var(--md-x));
+  border-radius: 50%;
+  background: #21d85e;
+  box-shadow: 0 0 calc(15px * var(--md-x)) rgba(19, 143, 64, 0.75);
+}
+
+.fc-mobile-dash__meta {
+  min-width: 0;
+}
+
+.fc-mobile-dash__handle {
+  margin: 0;
+  font-size: calc(13px * var(--md-y));
+  font-weight: 500;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-mobile-dash__playing {
+  margin: calc(2px * var(--md-y)) 0 0;
+  font-size: calc(10px * var(--md-y));
+  line-height: 1.72;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-mobile-dash__playing-title {
+  font-size: calc(11px * var(--md-y));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.fc-mobile-dash__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--md-x));
+  flex: 0 0 auto;
+}
+
+.fc-mobile-dash__icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(32px * var(--md-x));
+  height: calc(32px * var(--md-x));
+  padding: calc(8px * var(--md-x));
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  box-sizing: border-box;
+  cursor: default;
+}
+
+/* Home Friends card search entry point — white magnifying glass */
+#fcMobileDashHomeFindFriendsSearchBtn {
+  color: #fff;
+}
+
+.fc-mobile-dash__icon-btn__badge {
+  position: absolute;
+  top: calc(4px * var(--md-y));
+  right: calc(4px * var(--md-x));
+  width: calc(8px * var(--md-x));
+  height: calc(8px * var(--md-y));
+  border-radius: 50%;
+  background: #e50914;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+
+.fc-mobile-dash__icon-btn--unread .fc-mobile-dash__icon-btn__badge {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fc-mobile-dash__icon-btn img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--md-y));
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: calc(8px * var(--md-y)) calc(16px * var(--md-x)) calc(32px * var(--md-y));
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior: none;
+}
+
+.fc-mobile-dash__content.is-scrollable {
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fc-mobile-dash__content.is-scrollable::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Home + L2 — header floats over content; content scrolls behind header chrome */
+.fc-mobile-dash__view--home,
+.fc-mobile-dash__view--notifications,
+.fc-mobile-dash__view--friends-l2,
+.fc-mobile-dash__view--add-players-l2,
+.fc-mobile-dash__view--achievements-l2,
+.fc-mobile-dash__view--controller-settings-l2,
+.fc-mobile-dash__view--edit-profile-l2,
+.fc-mobile-dash__view--find-friends-l2,
+.fc-mobile-dash__view--add-players {
+  display: block;
+  overflow: hidden;
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__header,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  flex-shrink: 0;
+  z-index: 3;
+  isolation: isolate;
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__content,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  flex: none;
+  min-height: 0;
+  padding-top: calc(var(--fc-md-header-band-h) + var(--fc-md-header-content-gap));
+}
+
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content {
+  padding-top: calc(var(--fc-md-header-band-h) + var(--fc-mobile-dash-find-friends-search-bar-h) + var(--fc-md-header-content-gap));
+  /* Base content adds 16px side padding; the suggested/results list + section
+     labels also carry a 16px margin, which double-insets them to 32px (narrower
+     than other pages). Zero the side padding so their own 16px margins set the
+     inset — matching the 16px card width used everywhere else. */
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content.is-scrollable,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__content.is-scrollable {
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+.fc-mobile-dash__card {
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: calc(16px * var(--md-x));
+  overflow: hidden;
+  background: var(--fc-md-list-surface-bg);
+  box-shadow: inset 0 calc(-1px * var(--md-y)) calc(3px * var(--md-y)) rgba(0, 0, 0, 0.18);
+}
+
+/* List-view surfaces — Slate 700 @ 80%, no stroke */
+.fc-mobile-dash__view--home .fc-mobile-dash__card,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__card,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__card,
+.fc-mobile-dash__view--notifications .fc-mobile-notif__list,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-settings-card,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-edit-profile__radio,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__card {
+  background: var(--fc-md-list-surface-bg);
+  border: none;
+  box-shadow: var(--fc-md-list-surface-shadow);
+}
+
+.fc-mobile-dash__card::before {
+  content: none;
+}
+
+.fc-mobile-dash__view--notifications .fc-mobile-notif__list::before,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list::before,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items::before,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list::before {
+  content: none;
+}
+
+.fc-mobile-dash__view--notifications .fc-mobile-notif__list,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list {
+  position: relative;
+  mix-blend-mode: normal;
+}
+
+.fc-mobile-dash__view--notifications .fc-mobile-notif__item,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list .fc-mobile-notif__item,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list .fc-mobile-notif__item {
+  position: relative;
+  z-index: 1;
+}
+
+.fc-mobile-dash__card-hdr {
+  position: relative;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(8px * var(--md-y));
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fc-mobile-dash__card-hdr--achievements {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--md-x));
+}
+
+.fc-mobile-dash__card-hdr-title {
+  flex: 0 0 auto;
+}
+
+.fc-mobile-dash__achievement-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--md-x));
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.fc-mobile-dash__achievement-progress-icon {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+.fc-mobile-dash__achievement-progress-count {
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+.fc-mobile-dash__card-divider {
+  height: 1px;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(76, 89, 102, 0) 0%,
+    var(--fc-md-card-divider) 33%,
+    var(--fc-md-card-divider) 66%,
+    rgba(76, 89, 102, 0) 100%
+  );
+}
+
+.fc-mobile-dash__card .fc-mobile-notif__divider {
+  background: rgba(76, 89, 102, 0.12);
+}
+
+.fc-mobile-dash__card-body {
+  min-height: calc(82px * var(--md-y));
+}
+
+/*
+ * Phase 0.5 (Controller Evolution only): no friends, presence, or notification center
+ * on the phone — achievement unlocks toast on TV instead (achievements stay on dashboard).
+ */
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashFriendsHomeCard,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashVoiceChatCard,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashBellBtn,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashMissedSlot,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashViewNotifications {
+  display: none !important;
+}
+
+/* Disconnected from session — hide notifications, collapse players */
+#app[data-profile-disconnected="true"] #fcMobileDashBellBtn,
+#app[data-profile-disconnected="true"] #fcMobileDashMissedSlot {
+  display: none !important;
+}
+
+#app[data-profile-disconnected="true"] .fc-mobile-dash__card--player-list .fc-mobile-dash__card-footer {
+  display: none !important;
+}
+
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"]
+  #fcMobileDashProfileMenu
+  [data-popover-action="my-profile"] {
+  display: none;
+}
+
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] .fc-presence-dot,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] .fc-mobile-dash__friend-status,
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] .fc-mobile-notif-detail__status {
+  display: none !important;
+}
+
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"]
+  .fc-mobile-dash__header
+  .fc-mobile-dash__playing {
+  display: none !important;
+}
+
+#app[data-platform-experience="evolution"] #fcMobileDashboard[data-platform-phase="0.5"] #fcMobileDashAchievementsCard {
+  display: block !important;
+}
+
+/* Phase 1.0+ — hide peek “Currently Playing” label + title; Phase 0.5 keeps them */
+#app[data-platform-experience="evolution"] #fcMobileDashboard:not([data-platform-phase="0.5"]) .fc-mobile-dash__peek-info {
+  display: none !important;
+}
+
+/*
+ * Achievements display (evolution control-panel select → data-achievements-display):
+ * in-menu     — more-menu item on, home card off
+ * inline-card — more-menu item off, home card on
+ * off         — both off
+ */
+.fc-mobile-dash[data-achievements-display="in-menu"] #fcMobileDashAchievementsCard,
+.fc-mobile-dash[data-achievements-display="off"] #fcMobileDashAchievementsCard {
+  display: none;
+}
+
+.fc-mobile-dash[data-achievements-display="inline-card"] #fcMobileDashProfileMenu [data-popover-action="achievements"],
+.fc-mobile-dash[data-achievements-display="off"] #fcMobileDashProfileMenu [data-popover-action="achievements"] {
+  display: none;
+}
+
+/*
+ * What you missed card (control-panel → data-missed-notif-display):
+ * overlay — sticky 20px from top, above dashboard content
+ * inline  — first block in home content, pushes list down
+ */
+.fc-mobile-dash__missed-slot {
+  --fc-missed-anim-ms: 360ms;
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__missed-slot[hidden] {
+  display: none !important;
+}
+
+.fc-mobile-dash__missed-slot-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fc-mobile-dash[data-missed-notif-display="overlay"] .fc-mobile-dash__missed-slot:not([hidden]) {
+  position: absolute;
+  top: calc(20px * var(--md-y));
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 0 calc(16px * var(--md-x));
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-missed-notif-display="overlay"] .fc-mobile-dash__missed-card {
+  pointer-events: auto;
+  transform: translateY(calc(-100% - 16px));
+  opacity: 0;
+  transition:
+    transform var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.fc-mobile-dash[data-missed-notif-display="overlay"] .fc-mobile-dash__missed-slot.is-missed-open .fc-mobile-dash__missed-card {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__view--home {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__view--home .fc-mobile-dash__missed-slot:not([hidden]) {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  flex: 0 0 auto;
+  margin-top: calc(var(--fc-md-header-band-h) + var(--fc-md-header-content-gap));
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 0fr;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    grid-template-rows var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    padding-top var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    padding-bottom var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__view--home .fc-mobile-dash__content {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: calc(8px * var(--md-y));
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"]
+  .fc-mobile-dash__view--home:not(:has(.fc-mobile-dash__missed-slot:not([hidden])))
+  .fc-mobile-dash__content {
+  padding-top: calc(var(--fc-md-header-band-h) + var(--fc-md-header-content-gap));
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__view--home .fc-mobile-dash__missed-slot.is-missed-open {
+  grid-template-rows: 1fr;
+  padding-top: calc(4px * var(--md-y));
+  padding-bottom: calc(4px * var(--md-y));
+  opacity: 1;
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__view--home .fc-mobile-dash__missed-card {
+  transform: translateY(calc(-10px * var(--md-y)));
+  opacity: 0;
+  transition:
+    transform var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--fc-missed-anim-ms) cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.fc-mobile-dash[data-missed-notif-display="inline"]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__missed-slot.is-missed-open
+  .fc-mobile-dash__missed-card {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.fc-mobile-dash__missed-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--md-y));
+  width: 100%;
+  padding: calc(12px * var(--md-y)) calc(12px * var(--md-x)) calc(14px * var(--md-y));
+  border: none;
+  border-radius: calc(16px * var(--md-x));
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-shadow:
+    0 calc(8px * var(--md-y)) calc(16px * var(--md-y)) rgba(0, 0, 0, 0.5),
+    0 0 calc(2px * var(--md-y)) rgba(0, 0, 0, 0.4);
+  background-color: rgba(18, 24, 36, 0.82);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(34, 44, 64, 0.96) 0%,
+      rgba(26, 32, 48, 0.9) 42%,
+      rgba(38, 28, 46, 0.94) 100%
+    ),
+    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(72, 132, 196, 0.14) 0%, transparent 72%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(176, 92, 132, 0.12) 0%, transparent 72%);
+  isolation: isolate;
+}
+
+.fc-mobile-dash__missed-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(142, 196, 228, 0.72) 0%,
+    rgba(118, 138, 176, 0.18) 38%,
+    rgba(148, 108, 156, 0.16) 62%,
+    rgba(210, 142, 176, 0.58) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fc-mobile-dash__missed-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fc-mobile-dash__missed-hdr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+}
+
+.fc-mobile-dash__missed-hdr-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+}
+
+.fc-mobile-dash__missed-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: calc(28px * var(--md-x));
+  height: calc(28px * var(--md-y));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.65;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-dash__missed-dismiss img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__missed-dismiss:hover {
+  opacity: 0.9;
+}
+
+.fc-mobile-dash__missed-dismiss:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__missed-dismiss:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: calc(2px * var(--md-y));
+  opacity: 1;
+}
+
+.fc-mobile-dash__missed-body {
+  display: flex;
+  align-items: center;
+  gap: calc(10px * var(--md-x));
+  min-width: 0;
+}
+
+.fc-mobile-dash__missed-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(48px * var(--md-x));
+  height: calc(48px * var(--md-y));
+  border: 0.6px solid rgba(76, 89, 102, 0.4);
+  border-radius: calc(8px * var(--md-x));
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.fc-mobile-dash__missed-thumb--avatar-only {
+  border-radius: 50%;
+  overflow: visible;
+}
+
+.fc-mobile-dash__missed-thumb-game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-dash__missed-thumb--avatar-only .fc-mobile-dash__missed-thumb-game {
+  border-radius: 50%;
+}
+
+.fc-mobile-dash__missed-thumb-avatar {
+  position: absolute;
+  right: calc(-3px * var(--md-x));
+  bottom: calc(-3px * var(--md-y));
+  width: calc(19px * var(--md-x));
+  height: calc(19px * var(--md-y));
+  border: 0.524px solid rgba(76, 89, 102, 0.4);
+  border-radius: 50%;
+  object-fit: cover;
+  background: #111;
+}
+
+.fc-mobile-dash__missed-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(2px * var(--md-y));
+}
+
+.fc-mobile-dash__missed-title {
+  margin: 0;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 700;
+  line-height: calc(20px * var(--md-y));
+  color: #fff;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  max-width: 100%;
+}
+
+.fc-mobile-dash__missed-sub {
+  margin: 0;
+  font-size: calc(13px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(18px * var(--md-y));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-mobile-dash__missed-sub-lead {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
+}
+
+.fc-mobile-dash__missed-sub-game {
+  color: #fff;
+  font-weight: 600;
+}
+
+.fc-mobile-dash__missed-actions {
+  width: 100%;
+}
+
+.fc-mobile-dash__missed-actions .fc-mobile-notif__cta-stage {
+  min-height: calc(32px * var(--md-y));
+}
+
+.fc-mobile-dash__missed-actions .fc-mobile-notif__cta .fc-mobile-notif__btn:first-child {
+  background: #fff;
+  color: #000;
+}
+
+.fc-mobile-dash__missed-actions .fc-mobile-notif__cta .fc-mobile-notif__btn:first-child.fc-mobile-notif__btn--loading {
+  background: var(--fc-md-secondary-btn-disabled-bg);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__missed-slot {
+    --fc-missed-anim-ms: 0ms;
+  }
+
+  .fc-mobile-dash[data-missed-notif-display="overlay"] .fc-mobile-dash__missed-card,
+  .fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__missed-card,
+  .fc-mobile-dash[data-missed-notif-display="inline"] .fc-mobile-dash__missed-slot:not([hidden]) {
+    transition: none;
+  }
+}
+
+/* Inline achievements card — list row item */
+.fc-mobile-dash__card--achievements .fc-mobile-dash__card-body {
+  min-height: 0;
+}
+
+.fc-mobile-dash__achievement-list {
+  list-style: none;
+  margin: 0;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(16px * var(--md-y));
+  display: flex;
+  flex-direction: column;
+  gap: calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__achievement-item {
+  display: flex;
+  align-items: center;
+  gap: calc(12px * var(--md-x));
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.fc-mobile-dash__achievement-thumb {
+  flex: 0 0 auto;
+  width: calc(64px * var(--md-x));
+  height: calc(64px * var(--md-y));
+  border-radius: calc(12px * var(--md-x));
+  overflow: hidden;
+  background: var(--fc-md-secondary-btn-pressed-bg);
+}
+
+.fc-mobile-dash__achievement-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fc-mobile-dash__achievement-item--mystery .fc-mobile-dash__achievement-thumb {
+  background: transparent;
+}
+
+.fc-mobile-dash__achievement-text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(2px * var(--md-y));
+  min-width: 0;
+}
+
+.fc-mobile-dash__achievement-title {
+  margin: 0;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-mobile-dash__achievement-desc {
+  margin: 0;
+  font-size: calc(13px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(20px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-mobile-dash__achievement-date {
+  margin: 0;
+  font-size: calc(12px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(16px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fc-mobile-dash__achievement-status {
+  margin: 0;
+  font-size: calc(12px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(16px * var(--md-y));
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fc-mobile-dash__achievement-item--locked .fc-mobile-dash__achievement-thumb img {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+
+.fc-mobile-dash__achievement-item--locked .fc-mobile-dash__achievement-title,
+.fc-mobile-dash__achievement-item--locked .fc-mobile-dash__achievement-desc,
+.fc-mobile-dash__achievement-item--mystery .fc-mobile-dash__achievement-title {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.fc-mobile-dash__achievement-empty {
+  margin: 0;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(16px * var(--md-y));
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+#fcMobileDashAchievementsSeeAllBtn {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Solo session — header + Add People only (no co-player body area) */
+.fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-divider,
+.fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-body {
+  display: none !important;
+}
+
+.fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-hdr {
+  padding-bottom: calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-footer {
+  padding-top: calc(4px * var(--md-y));
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-dash__card-body {
+  min-height: 0;
+}
+
+/* Player list rows — match home Friends card list sizing and spacing */
+.fc-mobile-dash__card--player-list .fc-mobile-dash__player-list-items {
+  margin: 0;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(12px * var(--md-y));
+  border-radius: 0;
+  background: transparent;
+  mix-blend-mode: normal;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__divider {
+  display: none;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__item {
+  position: relative;
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__card--player-list:has(.is-list-more-open) {
+  overflow: visible;
+  z-index: 2;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-dash__card-body:has(.is-list-more-open) {
+  overflow: visible;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__badge {
+  display: none;
+}
+
+.fc-mobile-dash__card--player-list .fc-presence-dot--avatar {
+  display: none;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__card[role="button"] {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__item {
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__card[role="button"]:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__card[role="button"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-dash__card--player-list .fc-mobile-notif__row-more {
+  z-index: 2;
+}
+
+.fc-mobile-dash__done-add-players-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  min-height: calc(36px * var(--md-y));
+  padding: calc(8px * var(--md-y)) calc(14px * var(--md-x));
+  border: 0;
+  border-radius: 9999px;
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(20px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.fc-mobile-dash__done-add-players-btn img {
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  flex: 0 0 auto;
+}
+
+.fc-mobile-dash__done-add-players-btn:active {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.fc-mobile-dash[data-mobile-connection-only="true"]:not([data-add-players-screen="sub-page"]) #fcMobileDashAddPeopleBtn {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-connection-only="true"]:not([data-add-players-screen="sub-page"]) #fcMobileDashDoneAddPlayersBtn {
+  display: inline-flex;
+}
+
+.fc-mobile-notif__item.is-player-list-connecting .fc-mobile-notif__thumb-game--connecting {
+  object-fit: contain;
+  background: #0a0a0a;
+}
+
+.fc-mobile-dash[data-mobile-connection-only="true"]:not([data-add-players-screen="sub-page"]) .fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-divider,
+.fc-mobile-dash[data-mobile-connection-only="true"]:not([data-add-players-screen="sub-page"]) .fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-body {
+  display: block;
+}
+
+.fc-mobile-dash[data-mobile-connection-only="true"]:not([data-add-players-screen="sub-page"]) .fc-mobile-dash__card--player-list.is-collapsed .fc-mobile-dash__card-footer {
+  display: block;
+}
+
+.fc-mobile-dash__card-footer {
+  padding: 0 calc(16px * var(--md-x)) calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  min-height: calc(32px * var(--md-y));
+  padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+  border: 0;
+  border-radius: 9999px;
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.fc-mobile-dash__pill-btn:active,
+.fc-mobile-dash__friends-see-all:active,
+.fc-mobile-dash__peek-continue:active {
+  background: var(--fc-md-secondary-btn-pressed-bg);
+}
+
+.fc-mobile-dash__pill-btn img {
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-x));
+  flex: 0 0 auto;
+}
+
+/* Right peek — game art + anchored play controls (Figma 153:6622) */
+.fc-mobile-dash__peek {
+  position: absolute;
+  left: calc(398px * var(--md-x));
+  top: 0;
+  z-index: 0;
+  width: calc(414px * var(--md-x));
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+.fc-mobile-dash__peek-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 12%,
+    rgb(0, 0, 0) 30%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 12%,
+    rgb(0, 0, 0) 30%,
+    rgb(0, 0, 0) 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__peek-bg,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__peek-bg {
+  left: calc(-48px * var(--md-x));
+  right: calc(-24px * var(--md-x));
+  width: calc(100% + 72px * var(--md-x));
+  top: 0;
+  bottom: 0;
+  height: auto;
+}
+
+.fc-mobile-dash__peek-bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.08);
+  transform-origin: center;
+  filter: blur(calc(4px * var(--md-x)));
+}
+
+.fc-mobile-dash__peek-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform: translateZ(0);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 12%,
+    rgb(0, 0, 0) 30%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 12%,
+    rgb(0, 0, 0) 30%,
+    rgb(0, 0, 0) 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  background:
+    radial-gradient(
+      ellipse 80% 56% at 50% 0.14%,
+      rgba(68, 148, 236, 0.3) 0%,
+      rgba(68, 148, 236, 0) 100%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Landscape — bleed left-edge fade over the image + panel seam */
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__peek,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__peek {
+  overflow: visible;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__peek-scrim,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__peek-scrim {
+  left: calc(-48px * var(--md-x));
+  right: calc(-24px * var(--md-x));
+  width: calc(100% + 72px * var(--md-x));
+  top: 0;
+  bottom: 0;
+  height: auto;
+  background:
+    radial-gradient(
+      ellipse 80% 56% at 50% 0.14%,
+      rgba(68, 148, 236, 0.3) 0%,
+      rgba(68, 148, 236, 0) 100%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.fc-mobile-dash__peek-glow {
+  position: absolute;
+  left: calc(50% - 8px * var(--md-x));
+  bottom: calc(-105px * var(--md-y));
+  z-index: 1;
+  width: calc(600px * var(--md-x));
+  height: calc(210px * var(--md-y));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash__peek-glow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fc-mobile-dash__peek-footer {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(12px * var(--md-y));
+  width: calc(328px * var(--md-x));
+  max-width: 100%;
+  padding: calc(16px * var(--md-y)) calc(48px * var(--md-x)) calc(24px * var(--md-y));
+  box-sizing: border-box;
+  transform: translateX(-50%);
+  transition: transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+/* Landscape — peek footer spans peek panel width; actions stay centered column */
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__peek-footer,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__peek-footer {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: none;
+  padding: calc(16px * var(--md-y)) calc(24px * var(--md-x)) calc(24px * var(--md-y));
+  transform: none;
+  align-items: center;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash__peek-play,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash__peek-play {
+  width: 100%;
+  max-width: calc(328px * var(--md-x));
+}
+
+#app[data-controller-orientation="landscape"]
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__peek-footer,
+#app:not([data-controller-orientation="portrait"])
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"]
+  .fc-mobile-dash__peek-footer,
+#app[data-controller-orientation="landscape"]
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__peek-footer,
+#app:not([data-controller-orientation="portrait"])
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+  .fc-mobile-dash__peek-footer {
+  transform: translateY(calc(-20px * var(--md-y)));
+}
+
+.fc-mobile-dash__peek-play {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-areas:
+    "info"
+    "actions";
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: calc(16px * var(--md-y));
+  width: 100%;
+  transition: gap var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__peek-info {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  transition: transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__peek-label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: calc(12px * var(--md-y));
+  line-height: calc(18px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.fc-mobile-dash__peek-game {
+  margin: 0;
+  color: #fff;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.fc-mobile-dash__peek-actions {
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(8px * var(--md-y));
+  width: 100%;
+  transition: gap var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__peek-continue,
+.fc-mobile-dash__peek-stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  min-height: calc(32px * var(--md-y));
+  padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+  border: 0;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    width var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    max-width var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    min-height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    padding var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    gap var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    background var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__peek-continue {
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+  transform-origin: center center;
+  overflow: hidden;
+}
+
+@keyframes fc-peek-continue-shrink {
+  from {
+    width: 100%;
+    max-width: 100%;
+    padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+    gap: calc(8px * var(--md-x));
+  }
+
+  to {
+    width: calc(32px * var(--md-x));
+    max-width: calc(32px * var(--md-x));
+    padding: calc(8px * var(--md-x));
+    gap: 0;
+  }
+}
+
+.fc-mobile-dash__peek-continue span {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 12em;
+  opacity: 1;
+  transition:
+    max-width var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity calc(var(--fc-mobile-dash-view-ms) * 0.75) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__peek-continue img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  flex: 0 0 auto;
+  filter: brightness(0) invert(1);
+}
+
+.fc-mobile-dash__peek-stop {
+  height: calc(32px * var(--md-y));
+  max-height: calc(32px * var(--md-y));
+  padding-top: calc(4px * var(--md-y));
+  padding-bottom: calc(4px * var(--md-y));
+  background: transparent;
+  color: #fff;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    max-height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    min-height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    padding var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    margin var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+/* Detail open — compact peek (overlay card L3 or sub-page L2) */
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-footer,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-footer {
+  transform: translateX(-50%) translateY(calc(-20px * var(--md-y)));
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-play,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-play {
+  grid-template-areas: "info actions";
+  grid-template-columns: minmax(0, 1fr) minmax(calc(32px * var(--md-x)), 1fr);
+  column-gap: calc(20px * var(--md-x));
+  row-gap: 0;
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-info,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-info {
+  align-self: center;
+  width: auto;
+  min-width: 0;
+  transform: translateY(calc(10px * var(--md-y)));
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-actions,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-actions {
+  align-self: center;
+  width: 100%;
+  gap: 0;
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-continue,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-continue {
+  width: calc(32px * var(--md-x));
+  max-width: calc(32px * var(--md-x));
+  height: calc(32px * var(--md-y));
+  min-height: calc(32px * var(--md-y));
+  padding: calc(8px * var(--md-x));
+  gap: 0;
+  animation: fc-peek-continue-shrink var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease) forwards;
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-continue span,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-continue span {
+  max-width: 0;
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-stop,
+.fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"] .fc-mobile-dash__peek-stop {
+  opacity: 0;
+  max-height: 0;
+  min-height: 0;
+  height: 0;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    max-height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    min-height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    height var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    padding var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    margin var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__peek-play,
+  .fc-mobile-dash__peek-footer,
+  .fc-mobile-dash__peek-info,
+  .fc-mobile-dash__peek-actions,
+  .fc-mobile-dash__peek-continue,
+  .fc-mobile-dash__peek-continue span,
+  .fc-mobile-dash__peek-stop {
+    transition-duration: 0.01ms !important;
+  }
+
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-continue,
+  .fc-mobile-dash[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__peek-continue {
+    animation-duration: 0.01ms !important;
+  }
+
+  .fc-mobile-dash.is-open:not(.is-exiting)[data-peek-buttons="minimize-on-detail"][data-mobile-dashboard-l3="detail"] .fc-mobile-dash__peek-actions,
+  .fc-mobile-dash.is-open:not(.is-exiting)[data-peek-buttons="minimize-on-detail"][data-mobile-detail-view="sub-page"][data-mobile-dashboard-l2="detail"]
+    .fc-mobile-dash__peek-actions {
+    transform: translate3d(0, calc(10px * var(--md-y)), 0);
+  }
+}
+
+/* --- View switching: home (127:3959) vs Add Players (129:7959) --- */
+.fc-mobile-dash__view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  transition: transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__view.is-hidden {
+  display: none !important;
+}
+
+/* Panel views — fade header/content/scroll-fade in sync with slide motion */
+.fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__header,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__content,
+.fc-mobile-dash__view--notifications .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--edit-profile-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-detail-view="sub-page"] .fc-mobile-dash__view--notif-detail .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  transition: opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease);
+}
+
+.fc-mobile-dash__view--home {
+  z-index: 2;
+}
+
+.fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash__view--home .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash__view--add-players {
+  z-index: 4;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--add-players .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--add-players {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--add-players .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+/* Add Players panel enter — ride dashboard open (same as toast → sub-page); no slide from right */
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"] .fc-mobile-dash__view--add-players {
+  transform: none;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    visibility 0s linear var(--fc-mobile-dash-enter-ms),
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"][data-mobile-dashboard-view="add-players"]
+  .fc-mobile-dash__view--add-players {
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    visibility 0s linear 0s,
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"] .fc-mobile-dash__view--add-players .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"] .fc-mobile-dash__view--add-players .fc-mobile-dash__content {
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"]:not([data-mobile-dashboard-view="add-players"])
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"]:not([data-mobile-dashboard-view="add-players"])
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__content {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"][data-mobile-dashboard-view="add-players"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"][data-mobile-dashboard-view="add-players"]
+  .fc-mobile-dash__view--add-players
+  .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"][data-mobile-dashboard-view="add-players"]
+  .fc-mobile-dash__view--home {
+  transform: none;
+  pointer-events: none;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+/*
+ * L2 panel enter — external deep links ride the dashboard open slide (no sub-page slide from right).
+ * Set data-mobile-dashboard-l2-enter="panel" before opening; stage the L2 before is-open.
+ */
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]
+  :is(
+    .fc-mobile-dash__view--friends-l2,
+    .fc-mobile-dash__view--achievements-l2,
+    .fc-mobile-dash__view--controller-settings-l2,
+    .fc-mobile-dash__view--add-players-l2,
+    .fc-mobile-dash__view--edit-profile-l2,
+    .fc-mobile-dash__view--find-friends-l2
+  ) {
+  transform: none;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    visibility 0s linear var(--fc-mobile-dash-enter-ms),
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="friends"]
+  .fc-mobile-dash__view--friends-l2,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="achievements"]
+  .fc-mobile-dash__view--achievements-l2,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="controller-settings"]
+  .fc-mobile-dash__view--controller-settings-l2,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="add-players"]
+  .fc-mobile-dash__view--add-players-l2,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="edit-profile"]
+  .fc-mobile-dash__view--edit-profile-l2,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="find-friends"]
+  .fc-mobile-dash__view--find-friends-l2 {
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    visibility 0s linear 0s,
+    opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="friends"])
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="friends"])
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="friends"])
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="achievements"])
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="achievements"])
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="achievements"])
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="controller-settings"])
+  .fc-mobile-dash__view--controller-settings-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="controller-settings"])
+  .fc-mobile-dash__view--controller-settings-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="controller-settings"])
+  .fc-mobile-dash__view--controller-settings-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="add-players"])
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="add-players"])
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="add-players"])
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="edit-profile"])
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="edit-profile"])
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="edit-profile"])
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="find-friends"])
+  .fc-mobile-dash__view--find-friends-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="find-friends"])
+  .fc-mobile-dash__view--find-friends-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]:not([data-mobile-dashboard-l2="find-friends"])
+  .fc-mobile-dash__view--find-friends-l2
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="friends"]
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="friends"]
+  .fc-mobile-dash__view--friends-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="achievements"]
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="achievements"]
+  .fc-mobile-dash__view--achievements-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="controller-settings"]
+  .fc-mobile-dash__view--controller-settings-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="controller-settings"]
+  .fc-mobile-dash__view--controller-settings-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="add-players"]
+  .fc-mobile-dash__view--add-players-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="edit-profile"]
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="edit-profile"]
+  .fc-mobile-dash__view--edit-profile-l2
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="find-friends"]
+  .fc-mobile-dash__view--find-friends-l2
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2="find-friends"]
+  .fc-mobile-dash__view--find-friends-l2
+  .fc-mobile-dash__content {
+  opacity: 1;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2] .fc-mobile-dash__view--home {
+  transform: none;
+  pointer-events: none;
+  transition: opacity var(--fc-mobile-dash-enter-ms) var(--fc-mobile-dash-enter-ease);
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2]
+  .fc-mobile-dash__view--home
+  .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"]
+    :is(
+      .fc-mobile-dash__view--friends-l2,
+      .fc-mobile-dash__view--achievements-l2,
+      .fc-mobile-dash__view--controller-settings-l2,
+      .fc-mobile-dash__view--add-players-l2,
+      .fc-mobile-dash__view--edit-profile-l2,
+      .fc-mobile-dash__view--find-friends-l2
+    ),
+  .fc-mobile-dash[data-mobile-dashboard-l2-enter="panel"][data-mobile-dashboard-l2] .fc-mobile-dash__view--home {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--add-players,
+  .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-view="add-players"] .fc-mobile-dash__view--add-players,
+  .fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"] .fc-mobile-dash__view--add-players,
+  .fc-mobile-dash[data-mobile-dashboard-add-players-enter="panel"][data-mobile-dashboard-view="add-players"]
+    .fc-mobile-dash__view--home {
+    transition: none;
+  }
+}
+
+/* Add Players header — game boxart lockup (129:7961) */
+.fc-mobile-dash__header--invite .fc-mobile-dash__identity {
+  display: none;
+}
+
+.fc-mobile-dash__game-lockup {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: calc(12px * var(--md-x));
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-left: calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__game-art {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(48px * var(--md-x));
+  height: calc(48px * var(--md-x));
+  overflow: visible;
+}
+
+.fc-mobile-dash__game-art > img:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(8px * var(--md-x));
+  object-fit: cover;
+}
+
+.fc-mobile-dash__game-host {
+  position: absolute;
+  z-index: 1;
+  right: calc(-2px * var(--md-x));
+  bottom: calc(-2px * var(--md-y));
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-x));
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 calc(1px * var(--md-x)) var(--fc-slate-950);
+}
+
+.fc-mobile-dash__view--add-players .fc-mobile-dash__game-host {
+  display: none;
+}
+
+.fc-mobile-dash__content--invite {
+  box-sizing: border-box;
+}
+
+.fc-mobile-dash__card--share {
+  padding: calc(4px * var(--md-y)) 0;
+}
+
+.fc-mobile-dash__share-actions {
+  display: flex;
+  align-items: stretch;
+  gap: calc(12px * var(--md-x));
+  padding: calc(8px * var(--md-y)) calc(16px * var(--md-x)) calc(8px * var(--md-y));
+}
+
+.fc-mobile-dash__share-action-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__share-action-btn:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__share-action-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+/* Home friends — same panel chrome as other cards; list sits in panel body (no inner list frame) */
+.fc-mobile-dash__card--friends-home {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-dash__home-friends-list {
+  margin: 0;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(12px * var(--md-y));
+  border-radius: 0;
+  background: transparent;
+  mix-blend-mode: normal;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__divider {
+  display: none;
+}
+
+/* Align friend avatars with header profile (no unread badge gutter) */
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__badge {
+  display: none;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__card[role="button"] {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__item {
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__card[role="button"]:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__card--friends-home .fc-mobile-notif__card[role="button"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+  border-radius: calc(8px * var(--md-x));
+}
+
+.fc-mobile-dash__card--friends-home.is-collapsed .fc-mobile-dash__card-divider,
+.fc-mobile-dash__card--friends-home.is-collapsed .fc-mobile-dash__home-friends-list,
+.fc-mobile-dash__card--friends-home.is-collapsed .fc-mobile-dash__friends-see-all-wrap {
+  display: none !important;
+}
+
+.fc-mobile-dash__card--friends-home.is-collapsed .fc-mobile-dash__card-hdr {
+  padding-bottom: calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__card--friends-home.is-collapsed .fc-mobile-dash__card-footer {
+  padding-top: calc(4px * var(--md-y));
+}
+
+.fc-mobile-dash__friends-l2-empty {
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(24px * var(--md-y));
+}
+
+/* Shared "no friends" empty state — Home, Friends (L2) and Add Players lists */
+.fc-mobile-dash__friends-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: calc(4px * var(--md-y));
+  padding: calc(28px * var(--md-y)) calc(16px * var(--md-x)) calc(32px * var(--md-y));
+}
+
+.fc-mobile-dash__friends-empty-icon {
+  width: calc(72px * var(--md-x));
+  height: calc(72px * var(--md-x));
+  object-fit: contain;
+  margin-bottom: calc(6px * var(--md-y));
+}
+
+.fc-mobile-dash__friends-empty-title {
+  margin: 0;
+  font-size: calc(13px * var(--md-y));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.fc-mobile-dash__friends-empty-subtitle {
+  margin: 0;
+  font-size: calc(16px * var(--md-y));
+  font-weight: 700;
+  color: #fff;
+}
+
+.fc-mobile-dash__friends-empty-state .fc-mobile-dash__pill-btn {
+  margin-top: calc(16px * var(--md-y));
+}
+
+.fc-mobile-dash__friends-see-all-wrap {
+  padding: calc(4px * var(--md-y)) calc(16px * var(--md-x)) calc(12px * var(--md-y));
+}
+
+.fc-mobile-dash__friends-see-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8px * var(--md-x));
+  width: 100%;
+  min-height: calc(32px * var(--md-y));
+  margin: 0;
+  padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+  border: 0;
+  border-radius: 9999px;
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__friends-see-all img {
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  flex: 0 0 auto;
+}
+
+.fc-mobile-dash__friends-see-all:focus {
+  outline: none;
+}
+
+.fc-mobile-dash__friends-see-all:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+/* Friends L2 — slide in over home (same motion as notifications) */
+.fc-mobile-dash__view--friends-l2 {
+  z-index: 3;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--friends-l2 {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--friends-l2 .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash__content--friends-l2 {
+  gap: calc(12px * var(--md-y));
+}
+
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list {
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(16px * var(--md-y));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list .fc-mobile-notif__divider {
+  display: none;
+}
+
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list .fc-mobile-notif__badge {
+  display: none;
+}
+
+.fc-mobile-dash__view--friends-l2 .fc-mobile-dash__friends-l2-list .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--friends-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="friends"] .fc-mobile-dash__view--friends-l2 {
+    transition: none;
+  }
+}
+
+/* Find Friends L2 — slide in over home (same motion as friends / notifications) */
+.fc-mobile-dash__view--find-friends-l2 {
+  z-index: 3;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--find-friends-l2 {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--find-friends-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="find-friends"] .fc-mobile-dash__view--find-friends-l2 {
+    transition: none;
+  }
+}
+
+/* Find Friends L2 — header search bar */
+.fc-mobile-dash__header--find-friends-l2 {
+  display: flex;
+  flex-direction: column;
+  /* Base .fc-mobile-dash__header sets align-items:center + justify-content:space-between,
+     which in a column flex centers/shrinks children horizontally. Stretch so the
+     title row (left-aligned back button + title) and search bar fill the width. */
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: calc(10px * var(--md-y));
+}
+
+.fc-mobile-dash__find-friends-search-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--md-x));
+  height: var(--fc-mobile-dash-find-friends-search-bar-h);
+  /* 16px side margin so the field is inset within the header band instead of
+     sitting flush on its left/right edges. */
+  margin: 0 calc(16px * var(--md-x));
+  padding: 0 calc(12px * var(--md-x));
+  border-radius: calc(12px * var(--md-x));
+  background: rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+}
+
+/* Amber ring on the search field when the search errors (not found / own handle). */
+.fc-mobile-dash__find-friends-search-bar--error {
+  box-shadow: inset 0 0 0 calc(1.5px * var(--md-x)) #e0a93c;
+}
+
+/* Search error state — amber warning under the search field, aligned with it
+   (32px = 16px header padding + 16px search-bar margin; content has 0 side padding). */
+.fc-mobile-dash__find-friends-error {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--md-x));
+  padding: calc(4px * var(--md-y)) calc(16px * var(--md-x)) 0 calc(32px * var(--md-x));
+  color: #e0a93c;
+}
+
+.fc-mobile-dash__find-friends-error[hidden] {
+  display: none;
+}
+
+.fc-mobile-dash__find-friends-error-icon {
+  flex: 0 0 auto;
+}
+
+.fc-mobile-dash__find-friends-error-text {
+  margin: 0;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  color: #e0a93c;
+}
+
+.fc-mobile-dash__find-friends-search-icon {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fc-mobile-dash__find-friends-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  caret-color: #fff;
+}
+
+.fc-mobile-dash__find-friends-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.fc-mobile-dash__find-friends-input:focus {
+  outline: none;
+}
+
+/* Find Friends L2 — suggested / loading / results states */
+.fc-mobile-dash__content--find-friends-l2 {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--md-y));
+}
+
+.fc-mobile-dash__find-friends-section-label {
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) 0;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fc-mobile-dash__find-friends-results .fc-mobile-dash__card-divider {
+  margin: calc(8px * var(--md-y)) calc(16px * var(--md-x)) 0;
+}
+
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list {
+  margin: calc(8px * var(--md-y)) calc(16px * var(--md-x)) 0;
+  /* 16px internal side padding so rows are inset within the card, matching the
+     Friends L2 list card (padding: 16px) — otherwise rows sit on the card edges. */
+  padding: calc(8px * var(--md-y)) calc(16px * var(--md-x));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list .fc-mobile-notif__divider,
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list .fc-mobile-notif__badge {
+  display: none;
+}
+
+.fc-mobile-dash__view--find-friends-l2 .fc-mobile-dash__find-friends-list .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+.fc-mobile-dash__find-friends-add-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(28px * var(--md-x));
+  height: calc(28px * var(--md-x));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__find-friends-add-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Sent = check icon at full strength (not the dimmed disabled look). */
+.fc-mobile-dash__find-friends-add-btn.is-sent:disabled {
+  opacity: 1;
+}
+
+/* Brief loading spinner shown between tap and the check. */
+.fc-mobile-dash__find-friends-add-btn-spinner {
+  width: calc(14px * var(--md-x));
+  height: calc(14px * var(--md-x));
+  border-radius: 50%;
+  border: calc(1.6px * var(--md-x)) solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  animation: fc-mobile-dash-find-friends-spin 0.7s linear infinite;
+}
+
+.fc-mobile-dash__find-friends-empty-text {
+  margin: 0;
+  padding: calc(24px * var(--md-y)) calc(16px * var(--md-x));
+  text-align: center;
+  font-size: calc(14px * var(--md-y));
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fc-mobile-dash__find-friends-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(32px * var(--md-y)) 0;
+}
+
+/* Respect the hidden attribute — display:flex above otherwise overrides the UA
+   [hidden]{display:none}, showing the spinner before any search is attempted.
+   JS toggles .hidden: shown only during the search delay, hidden otherwise. */
+.fc-mobile-dash__find-friends-loading[hidden] {
+  display: none;
+}
+
+.fc-mobile-dash__find-friends-spinner {
+  width: calc(28px * var(--md-x));
+  height: calc(28px * var(--md-x));
+  border-radius: 50%;
+  border: calc(2.5px * var(--md-x)) solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  animation: fc-mobile-dash-find-friends-spin 0.8s linear infinite;
+}
+
+@keyframes fc-mobile-dash-find-friends-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Find Friends L2 — on-screen keyboard */
+.fc-mobile-dash__find-friends-keyboard {
+  /* Direct child of .fc-mobile-dash__shell (852px full phone), so left/right:0
+     spans the whole device width across both dashboard panel and game peek.
+     High z-index + pointer-events keep it above every panel (root is
+     pointer-events:none). */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--md-y));
+  padding: calc(8px * var(--md-y)) calc(6px * var(--md-x)) calc(10px * var(--md-y));
+  background: var(--fc-slate-800);
+  box-sizing: border-box;
+  /* Slide up from below. Closed (this base) uses a snappy slide-down ease;
+     .is-open uses an easeOutBack for a subtle bounce on present. */
+  transform: translateY(110%);
+  transition: transform 190ms cubic-bezier(0.4, 0, 1, 1);
+  will-change: transform;
+}
+
+.fc-mobile-dash__find-friends-keyboard.is-open {
+  transform: translateY(0);
+  transition: transform 300ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__find-friends-keyboard,
+  .fc-mobile-dash__find-friends-keyboard.is-open {
+    transition: none;
+  }
+}
+
+/* Respect the hidden attribute — the display:flex above otherwise overrides the
+   UA [hidden]{display:none}, so the keyboard would show at startup. JS toggles
+   .hidden on input focus/blur and on close. */
+.fc-mobile-dash__find-friends-keyboard[hidden] {
+  display: none;
+}
+
+.fc-mobile-dash__kbd-predictive {
+  display: flex;
+  align-items: stretch;
+  padding: calc(4px * var(--md-y)) calc(3px * var(--md-x)) calc(10px * var(--md-y));
+  font-size: calc(15px * var(--md-y));
+  color: #fff;
+}
+
+/* Three equal-width suggestion columns, each word centered (native iOS bar). */
+.fc-mobile-dash__kbd-predictive-word {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: calc(4px * var(--md-y)) 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Vertical dividers between the columns (not on the outer edges). */
+.fc-mobile-dash__kbd-predictive-word + .fc-mobile-dash__kbd-predictive-word::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 55%;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.fc-mobile-dash__kbd-predictive-word--quoted {
+  font-style: italic;
+}
+
+.fc-mobile-dash__kbd-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--md-x));
+}
+
+.fc-mobile-dash__kbd-row--indent {
+  padding: 0 calc(16px * var(--md-x));
+}
+
+.fc-mobile-dash__kbd-key {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(38px * var(--md-y));
+  min-width: 0;
+  border: 0;
+  border-radius: calc(6px * var(--md-x));
+  background: var(--fc-slate-600);
+  color: #fff;
+  font-size: calc(15px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  text-transform: lowercase;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-dash__kbd-key:active {
+  background: var(--fc-slate-500);
+}
+
+.fc-mobile-dash__kbd-key--wide {
+  flex: 1.5 1 0;
+}
+
+.fc-mobile-dash__kbd-key--decorative {
+  color: rgba(255, 255, 255, 0.55);
+  cursor: default;
+}
+
+.fc-mobile-dash__kbd-key--decorative:active {
+  background: var(--fc-slate-600);
+}
+
+.fc-mobile-dash__kbd-row--bottom .fc-mobile-dash__kbd-key--sys {
+  flex: 1 1 0;
+}
+
+.fc-mobile-dash__kbd-key--space {
+  flex: 5 1 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.fc-mobile-dash__kbd-key--search {
+  flex: 1.6 1 0;
+  background: #3b82f6;
+  font-size: calc(14px * var(--md-y));
+  text-transform: none;
+}
+
+.fc-mobile-dash__kbd-key--search:active {
+  background: #2f6fd6;
+}
+
+/* Emoji / mic — icon only, no key background (native iOS style) */
+.fc-mobile-dash__kbd-key--util {
+  flex: 0 0 auto;
+  width: calc(40px * var(--md-x));
+  background: transparent;
+  color: #fff;
+}
+
+.fc-mobile-dash__kbd-key--util:active {
+  background: transparent;
+}
+
+/* Landscape: emoji + 123 + space + search + mic all inline in the bottom row
+   (matches native landscape). Portrait: emoji sits bottom-left and mic
+   bottom-right in a strip below the keys, so the bottom row is just
+   123 / space / search — mirroring the native portrait layout. */
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__find-friends-keyboard {
+  padding-bottom: calc(48px * var(--md-y));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__kbd-key--util {
+  position: absolute;
+  bottom: calc(8px * var(--md-y));
+  width: calc(44px * var(--md-x));
+  height: calc(44px * var(--md-y));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__kbd-key--util-emoji {
+  left: calc(12px * var(--md-x));
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash__kbd-key--util-mic {
+  right: calc(12px * var(--md-x));
+}
+
+/* Add Players L2 — slide in over home (connection-only sub-page) */
+.fc-mobile-dash__view--add-players-l2 {
+  z-index: 3;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__add-players-l2-footer {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__scroll-fade,
+.fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__add-players-l2-footer {
+  opacity: 1;
+}
+
+.fc-mobile-dash__content--add-players-l2 {
+  gap: calc(12px * var(--md-y));
+  padding-bottom: calc(72px * var(--md-y));
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items {
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x)) calc(16px * var(--md-y));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items .fc-mobile-notif__divider {
+  display: none;
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items .fc-mobile-notif__badge {
+  display: none;
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__player-list-items .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+.fc-mobile-dash__view--add-players-l2 .fc-mobile-dash__scroll-fade {
+  display: none;
+}
+
+.fc-mobile-dash__add-players-l2-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(16px * var(--md-y));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.fc-mobile-dash__add-players-l2-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(72px * var(--md-y));
+  background: linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.92) 28%, #141414 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fc-mobile-dash__add-players-l2-footer .fc-mobile-dash__done-add-players-btn {
+  display: flex;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--add-players-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="add-players"] .fc-mobile-dash__view--add-players-l2 {
+    transition: none;
+  }
+}
+
+/* Achievements L2 — slide in over home (same motion as friends / notifications) */
+.fc-mobile-dash__view--achievements-l2 {
+  z-index: 3;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--achievements-l2 {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    opacity var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--achievements-l2 .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash__content--achievements-l2 {
+  gap: calc(12px * var(--md-y));
+}
+
+.fc-mobile-dash__card--achievements-l2 {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-mobile-dash__card--achievements-l2 .fc-mobile-dash__card-body {
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--achievements-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="achievements"] .fc-mobile-dash__view--achievements-l2 {
+    transition: none;
+  }
+}
+
+/* Controller Settings L2 — slide in over home (same motion as friends / notifications) */
+.fc-mobile-dash__view--controller-settings-l2 {
+  z-index: 3;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear var(--fc-mobile-dash-view-ms);
+}
+
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__header,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content,
+.fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--home {
+  transform: translateX(-16%);
+  pointer-events: none;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--home .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--home .fc-mobile-dash__content,
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--home .fc-mobile-dash__scroll-fade {
+  opacity: 0;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--controller-settings-l2 {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--fc-mobile-dash-view-ms) var(--fc-mobile-dash-view-ease),
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__header,
+.fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--controller-settings-l2 .fc-mobile-dash__content {
+  opacity: 1;
+}
+
+.fc-mobile-dash__content--controller-settings-l2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: calc(16px * var(--md-y));
+  min-height: 0;
+  padding-bottom: calc(48px * var(--md-y));
+}
+
+.fc-mobile-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--md-y));
+  width: 100%;
+}
+
+.fc-mobile-settings-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(12px * var(--md-x));
+  width: 100%;
+  margin: 0;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x));
+  border: 0;
+  border-radius: calc(16px * var(--md-x));
+  background: var(--fc-md-list-surface-bg);
+  box-shadow: inset 0 calc(-1px * var(--md-y)) calc(3px * var(--md-y)) rgba(0, 0, 0, 0.18);
+  color: #fff;
+  text-align: left;
+  box-sizing: border-box;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-mobile-settings-card::before {
+  content: none;
+}
+
+.fc-mobile-settings-card__text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: calc(4px * var(--md-y));
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.fc-mobile-settings-card__title {
+  font-weight: 600;
+  font-size: calc(16px * var(--md-y));
+  line-height: calc(24px * var(--md-y));
+  color: #fff;
+}
+
+.fc-mobile-settings-card__value,
+.fc-mobile-settings-card__desc {
+  font-weight: 400;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.fc-mobile-settings-card__chevron {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  transform: rotate(180deg);
+  opacity: 0.85;
+}
+
+.fc-mobile-settings-card--nav,
+.fc-mobile-settings-card--action {
+  cursor: pointer;
+}
+
+.fc-mobile-settings-card--nav:focus,
+.fc-mobile-settings-card--action:focus {
+  outline: none;
+}
+
+.fc-mobile-settings-card--nav:focus-visible,
+.fc-mobile-settings-card--action:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.fc-mobile-settings-card--action {
+  justify-content: flex-start;
+}
+
+.fc-mobile-settings-card--toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(12px * var(--md-x));
+  row-gap: calc(10px * var(--md-y));
+  align-items: start;
+}
+
+.fc-mobile-settings-card--toggle .fc-mobile-settings-card__text {
+  display: contents;
+}
+
+.fc-mobile-settings-switch {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  width: calc(51px * var(--md-x));
+  height: calc(31px * var(--md-y));
+  margin-top: calc(2px * var(--md-y));
+  cursor: pointer;
+}
+
+.fc-mobile-settings-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fc-mobile-settings-switch__track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--fc-md-secondary-btn-bg);
+  transition: background 0.2s ease;
+}
+
+.fc-mobile-settings-switch__track::after {
+  content: "";
+  position: absolute;
+  top: calc(2px * var(--md-y));
+  left: calc(2px * var(--md-x));
+  width: calc(27px * var(--md-x));
+  height: calc(27px * var(--md-y));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 calc(1px * var(--md-y)) calc(3px * var(--md-y)) rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.fc-mobile-settings-switch input:checked + .fc-mobile-settings-switch__track {
+  background: #007aff;
+}
+
+.fc-mobile-settings-switch input:checked + .fc-mobile-settings-switch__track::after {
+  transform: translateX(calc(20px * var(--md-x)));
+}
+
+.fc-mobile-settings-switch input:focus-visible + .fc-mobile-settings-switch__track {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.fc-mobile-settings-card--mic {
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(16px * var(--md-y));
+}
+
+.fc-mobile-settings-card--mic.is-disabled .fc-mobile-settings-mic-slider {
+  opacity: 0.45;
+}
+
+.fc-mobile-settings-card__mic-top {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(12px * var(--md-x));
+  row-gap: calc(10px * var(--md-y));
+  width: 100%;
+}
+
+.fc-mobile-settings-card__header-row {
+  display: contents;
+}
+
+.fc-mobile-settings-card__header-row .fc-mobile-settings-card__title,
+.fc-mobile-settings-card--toggle .fc-mobile-settings-card__title {
+  grid-column: 1;
+  grid-row: 1;
+  flex: initial;
+  min-width: 0;
+}
+
+.fc-mobile-settings-card__header-row .fc-mobile-settings-switch,
+.fc-mobile-settings-card--toggle .fc-mobile-settings-switch {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+}
+
+.fc-mobile-settings-card__mic-top > .fc-mobile-settings-card__desc,
+.fc-mobile-settings-card--toggle .fc-mobile-settings-card__desc {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: 100%;
+  margin: 0;
+}
+
+.fc-mobile-settings-mic-slider {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.fc-mobile-settings-mic-slider__track-col {
+  display: contents;
+}
+
+.fc-mobile-settings-mic-slider__ticks {
+  grid-column: 2;
+  grid-row: 1;
+  height: calc(4px * var(--md-y));
+  background-image: radial-gradient(
+    circle at left center,
+    rgba(255, 255, 255, 0.28) calc(1px * var(--md-x)),
+    transparent calc(1px * var(--md-x))
+  );
+  background-size: calc(100% / 18) 100%;
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+}
+
+.fc-mobile-settings-mic-slider__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: calc(12px * var(--md-x));
+  row-gap: calc(8px * var(--md-y));
+  width: 100%;
+}
+
+.fc-mobile-settings-mic-slider__icon {
+  flex: 0 0 auto;
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  color: rgba(255, 255, 255, 0.72);
+  object-fit: contain;
+  align-self: center;
+}
+
+.fc-mobile-settings-mic-slider__icon--low {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.fc-mobile-settings-mic-slider__icon--high {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.fc-mobile-settings-range {
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
+  flex: initial;
+  min-width: 0;
+  height: calc(32px * var(--md-y));
+  overflow: visible;
+  --range-fill: 40%;
+  --range-track-height: calc(24px * var(--md-y));
+  --range-thumb-height: calc(32px * var(--md-y));
+  --range-thumb-width: calc(6px * var(--md-x));
+}
+
+.fc-mobile-settings-range__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--range-track-height);
+  border-radius: calc(12px * var(--md-y));
+  background: var(--fc-md-secondary-btn-pressed-bg);
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.fc-mobile-settings-range__fill {
+  width: var(--range-fill);
+  height: 100%;
+  border-radius: inherit;
+  background: #007aff;
+}
+
+.fc-mobile-settings-range__input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: calc(32px * var(--md-y));
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-settings-range__input:disabled {
+  cursor: default;
+}
+
+.fc-mobile-settings-range__input::-webkit-slider-runnable-track {
+  height: var(--range-track-height);
+  margin-top: calc(4px * var(--md-y));
+  border-radius: calc(12px * var(--md-y));
+  background: transparent;
+  border: 0;
+}
+
+.fc-mobile-settings-range__input::-moz-range-track {
+  height: var(--range-track-height);
+  border-radius: calc(12px * var(--md-y));
+  background: transparent;
+  border: 0;
+}
+
+.fc-mobile-settings-range__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--range-thumb-width);
+  height: var(--range-thumb-height);
+  margin-top: calc((var(--range-track-height) - var(--range-thumb-height)) / 2);
+  border: 0;
+  border-radius: calc(3px * var(--md-x));
+  background: #fff;
+  box-shadow: 0 calc(1px * var(--md-y)) calc(2px * var(--md-y)) rgba(0, 0, 0, 0.25);
+}
+
+.fc-mobile-settings-range__input::-moz-range-thumb {
+  width: var(--range-thumb-width);
+  height: var(--range-thumb-height);
+  border: 0;
+  border-radius: calc(3px * var(--md-x));
+  background: #fff;
+  box-shadow: 0 calc(1px * var(--md-y)) calc(2px * var(--md-y)) rgba(0, 0, 0, 0.25);
+}
+
+.fc-mobile-settings-range__input:focus {
+  outline: none;
+}
+
+.fc-mobile-settings-range__input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.fc-mobile-settings-range__input:focus-visible::-moz-range-thumb {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-mobile-dash__view--controller-settings-l2,
+  .fc-mobile-dash__view--edit-profile-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="controller-settings"] .fc-mobile-dash__view--controller-settings-l2,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--home,
+  .fc-mobile-dash[data-mobile-dashboard-l2="edit-profile"] .fc-mobile-dash__view--edit-profile-l2,
+  .fc-mobile-settings-switch__track,
+  .fc-mobile-settings-switch__track::after {
+    transition: none;
+  }
+}
+
+.fc-mobile-dash__card--friends {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Invite friends — match home Friends card list sizing and spacing */
+.fc-mobile-dash__card--friends .fc-mobile-dash__friends-list {
+  margin: 0;
+  padding: calc(12px * var(--md-y)) calc(16px * var(--md-x)) calc(12px * var(--md-y));
+  border-radius: 0;
+  background: transparent;
+  mix-blend-mode: normal;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fc-mobile-notif-item-gap) * var(--md-y));
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__divider {
+  display: none;
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__item-wrap {
+  gap: 0;
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__card {
+  gap: 0;
+  cursor: default;
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__row {
+  align-items: center;
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fc-mobile-dash__card--friends .fc-mobile-notif__row .fc-mobile-dash__invite-btn {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.fc-mobile-dash__invite-btn {
+  flex: 0 0 auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(5rem * var(--md-x));
+  min-height: calc(30px * var(--md-y));
+  border: 0;
+  border-radius: 9999px;
+  padding: calc(4px * var(--md-y)) calc(12px * var(--md-x));
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-dash__invite-btn:disabled {
+  cursor: default;
+}
+
+.fc-mobile-dash__invite-btn-label {
+  white-space: nowrap;
+}
+
+.fc-mobile-dash__invite-btn-loader {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-mobile-dash__invite-btn-loader img {
+  display: block;
+  width: calc(18px * var(--md-x));
+  height: calc(18px * var(--md-y));
+  opacity: 0.4;
+  animation: fc-mobile-dash-invite-spin 0.8s linear infinite;
+}
+
+@keyframes fc-mobile-dash-invite-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fc-mobile-dash__invite-btn-confirm {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  gap: calc(4px * var(--md-x));
+  white-space: nowrap;
+}
+
+.fc-mobile-dash__invite-btn-confirm img {
+  display: block;
+  width: calc(18px * var(--md-x));
+  height: calc(18px * var(--md-y));
+  flex-shrink: 0;
+}
+
+.fc-mobile-dash__invite-btn-confirm-text {
+  color: #2bb871;
+  font-weight: 500;
+  font-size: calc(14px * var(--md-y));
+  line-height: calc(21px * var(--md-y));
+}
+
+.fc-mobile-dash__invite-btn--loading {
+  background: var(--fc-md-secondary-btn-disabled-bg);
+  pointer-events: none;
+}
+
+.fc-mobile-dash__invite-btn--loading .fc-mobile-dash__invite-btn-label,
+.fc-mobile-dash__invite-btn--loading .fc-mobile-dash__invite-btn-confirm {
+  display: none;
+}
+
+.fc-mobile-dash__invite-btn--loading .fc-mobile-dash__invite-btn-loader {
+  display: flex;
+}
+
+.fc-mobile-dash__invite-btn--invited {
+  background: transparent;
+  pointer-events: none;
+}
+
+.fc-mobile-dash__invite-btn--invited .fc-mobile-dash__invite-btn-label,
+.fc-mobile-dash__invite-btn--invited .fc-mobile-dash__invite-btn-loader {
+  display: none;
+}
+
+.fc-mobile-dash__invite-btn--invited .fc-mobile-dash__invite-btn-confirm {
+  display: flex;
+}
+
+/* Disconnect controller confirmation — centered over full controller shell */
+.fc-mobile-stop-modal {
+  --md-x: calc(852 / 812);
+  --md-y: calc(393 / 375);
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px * var(--md-y)) calc(16px * var(--md-x));
+  box-sizing: border-box;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.24s ease,
+    visibility 0s linear 0.24s;
+}
+
+.fc-mobile-stop-modal.is-open {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity 0.24s ease,
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-stop-modal[hidden] {
+  display: none !important;
+}
+
+.fc-mobile-stop-modal:not([hidden]).is-open {
+  display: flex;
+}
+
+.fc-mobile-stop-modal__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-stop-modal__card {
+  position: relative;
+  z-index: 1;
+  width: min(560px, calc(100% - 32px * var(--md-x)));
+  min-height: calc(168px * var(--md-y));
+  margin: 0;
+  padding: calc(32px * var(--md-y)) calc(24px * var(--md-x)) calc(28px * var(--md-y));
+  border-radius: calc(20px * var(--md-x));
+  border: 0;
+  background: #1c1c1e;
+  box-shadow:
+    0 calc(12px * var(--md-y)) calc(40px * var(--md-y)) rgba(0, 0, 0, 0.5),
+    0 calc(2px * var(--md-y)) calc(8px * var(--md-y)) rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+}
+
+.fc-mobile-stop-modal__close {
+  position: absolute;
+  top: calc(16px * var(--md-y));
+  right: calc(16px * var(--md-x));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(32px * var(--md-x));
+  height: calc(32px * var(--md-y));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-stop-modal__close img {
+  display: block;
+  width: calc(16px * var(--md-x));
+  height: calc(16px * var(--md-y));
+  opacity: 0.9;
+}
+
+.fc-mobile-stop-modal__close:focus {
+  outline: none;
+}
+
+.fc-mobile-stop-modal__close:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.fc-mobile-stop-modal__title {
+  margin: 0;
+  padding-right: calc(28px * var(--md-x));
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: calc(22px * var(--md-y));
+  font-weight: 700;
+  line-height: calc(28px * var(--md-y));
+  color: #fff;
+  text-align: left;
+}
+
+.fc-mobile-stop-modal__message {
+  margin: calc(16px * var(--md-y)) 0 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 400;
+  line-height: calc(20px * var(--md-y));
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+}
+
+.fc-mobile-stop-modal__actions {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: calc(10px * var(--md-x));
+  margin-top: calc(32px * var(--md-y));
+}
+
+.fc-mobile-stop-modal__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(32px * var(--md-y));
+  margin: 0;
+  padding: calc(5px * var(--md-y)) calc(12px * var(--md-x)) calc(6px * var(--md-y));
+  border: 0;
+  border-radius: 9999px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: calc(14px * var(--md-y));
+  font-weight: 500;
+  line-height: calc(21px * var(--md-y));
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  white-space: nowrap;
+}
+
+.fc-mobile-stop-modal__btn--leave {
+  background: #fff;
+  color: #000;
+}
+
+.fc-mobile-stop-modal__btn--end-all {
+  background: var(--fc-md-secondary-btn-bg);
+  color: #fff;
+}
+
+.fc-mobile-stop-modal__btn:focus {
+  outline: none;
+}
+
+.fc-mobile-stop-modal__btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+

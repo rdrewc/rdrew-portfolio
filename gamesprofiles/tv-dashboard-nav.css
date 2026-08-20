@@ -1,0 +1,640 @@
+/* Primary bottom nav — Figma 14:3041, 87:7576 (Primary Menu - States), 971×42, gap 12px, 64px from TV safe bottom */
+
+.tv-dashboard__primary-nav {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+  z-index: 10;
+  max-width: 971px;
+  width: max-content;
+  box-sizing: border-box;
+  pointer-events: auto;
+  transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+/* Selected content or header Notifications control — slightly shrink nav (Figma TV density) */
+#tvDashboard[data-content-focus="true"] .tv-dashboard__primary-nav,
+#tvDashboard[data-header-notif-focus="true"] .tv-dashboard__primary-nav {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.tv-dashboard__primary-nav-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  transform-origin: center bottom;
+}
+
+/* ----- Dashboard open: nav scales from 20% → 100%, then items fade L→R ----- */
+@keyframes tv-dash-nav-inner-in {
+  from {
+    transform: scale(0.2);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes tv-dash-nav-item-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tv-dashboard:not(.is-open) .tv-dashboard__primary-nav-inner {
+  transform: scale(0.2);
+}
+
+.tv-dashboard:not(.is-open) .tv-dashboard__primary-nav-inner .tv-dashboard__nav-item {
+  opacity: 0;
+}
+
+/* Smooth deceleration into rest (ease-out–expo style); slightly longer so motion reads from tiny scale */
+.tv-dashboard.is-open .tv-dashboard__primary-nav-inner {
+  animation: tv-dash-nav-inner-in 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tv-dashboard.is-open .tv-dashboard__primary-nav-inner .tv-dashboard__nav-item {
+  opacity: 0;
+  animation: tv-dash-nav-item-in 0.42s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard.is-open .tv-dashboard__primary-nav-inner > button.tv-dashboard__nav-item:first-of-type {
+  animation-delay: 0.22s;
+}
+
+.tv-dashboard.is-open .tv-dashboard__nav-cluster > .tv-dashboard__nav-item:nth-child(1) {
+  animation-delay: 0.29s;
+}
+
+.tv-dashboard.is-open .tv-dashboard__nav-cluster > .tv-dashboard__nav-item:nth-child(2) {
+  animation-delay: 0.36s;
+}
+
+.tv-dashboard.is-open .tv-dashboard__nav-cluster > .tv-dashboard__nav-item:nth-child(3) {
+  animation-delay: 0.43s;
+}
+
+.tv-dashboard.is-open .tv-dashboard__nav-cluster > .tv-dashboard__nav-item:nth-child(4) {
+  animation-delay: 0.5s;
+}
+
+.tv-dashboard.is-open .tv-dashboard__primary-nav-inner > button.tv-dashboard__nav-item:last-of-type {
+  animation-delay: 0.57s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-dashboard:not(.is-open) .tv-dashboard__primary-nav-inner,
+  .tv-dashboard.is-open .tv-dashboard__primary-nav-inner {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .tv-dashboard:not(.is-open) .tv-dashboard__primary-nav-inner .tv-dashboard__nav-item,
+  .tv-dashboard.is-open .tv-dashboard__primary-nav-inner .tv-dashboard__nav-item {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ----- Main nav tab change: content slides in from the right; cards fade with staged gaps ----- */
+@keyframes tv-dash-nav-content-slide {
+  from {
+    transform: translateX(200px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes tv-dash-nav-card-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tv-dash-nav-strip-gap-outer {
+  from {
+    gap: 48px;
+  }
+  to {
+    gap: 12px;
+  }
+}
+
+@keyframes tv-dash-nav-strip-gap-inner {
+  from {
+    gap: 36px;
+  }
+  to {
+    gap: 12px;
+  }
+}
+
+@keyframes tv-dash-nav-profile-gap-tighten {
+  from {
+    gap: 44px;
+  }
+  to {
+    gap: 16px;
+  }
+}
+
+@keyframes tv-dash-nav-exit-actions-gap {
+  from {
+    gap: 36px;
+  }
+  to {
+    gap: 16px;
+  }
+}
+
+.tv-dashboard__dash-nav-enter.tv-dashboard__profile-focus-inner {
+  animation-name: tv-dash-nav-content-slide, tv-dash-nav-profile-gap-tighten;
+  animation-duration: 0.44s, 0.52s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.33, 1, 0.65, 1);
+  animation-delay: 0s, 0s;
+  animation-fill-mode: forwards, forwards;
+}
+
+.tv-dashboard__dash-nav-enter.tv-dashboard__friends-focus-inner,
+.tv-dashboard__dash-nav-enter.tv-dashboard__achievements-focus-inner,
+.tv-dashboard__dash-nav-enter.tv-dashboard__controllers-focus-inner,
+.tv-dashboard__dash-nav-enter.tv-dashboard__exit-focus-inner,
+.tv-dashboard__dash-nav-enter.tv-dashboard__exit-discovery-inner {
+  animation: tv-dash-nav-content-slide 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-track {
+  animation: tv-dash-nav-strip-gap-outer 0.52s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards {
+  animation: tv-dash-nav-strip-gap-inner 0.52s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-track {
+  animation: tv-dash-nav-strip-gap-outer 0.52s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards {
+  animation: tv-dash-nav-strip-gap-inner 0.52s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track {
+  animation: tv-dash-nav-strip-gap-outer 0.52s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__profile-focus-inner > .tv-dashboard__profile-focus-card {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.34s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__profile-focus-inner > .tv-dashboard__profile-focus-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__profile-focus-inner > .tv-dashboard__profile-focus-card:nth-child(2) {
+  animation-delay: 0.22s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-title-card {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.34s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+  animation-delay: 0.08s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.34s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(1) {
+  animation-delay: 0.18s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(2) {
+  animation-delay: 0.26s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(3) {
+  animation-delay: 0.34s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(4) {
+  animation-delay: 0.42s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(6) {
+  animation-delay: 0.58s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(7) {
+  animation-delay: 0.66s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button:nth-child(8) {
+  animation-delay: 0.74s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-header {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.34s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+  animation-delay: 0.08s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.34s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(1) {
+  animation-delay: 0.16s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(2) {
+  animation-delay: 0.21s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(3) {
+  animation-delay: 0.26s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(4) {
+  animation-delay: 0.31s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(5) {
+  animation-delay: 0.36s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(6) {
+  animation-delay: 0.41s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(7) {
+  animation-delay: 0.46s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(8) {
+  animation-delay: 0.51s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(9) {
+  animation-delay: 0.56s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(10) {
+  animation-delay: 0.61s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(11) {
+  animation-delay: 0.66s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(12) {
+  animation-delay: 0.71s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(13) {
+  animation-delay: 0.76s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(14) {
+  animation-delay: 0.81s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button:nth-child(15) {
+  animation-delay: 0.86s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__controllers-focus-card {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.38s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+  animation-delay: 0.12s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-card {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.38s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+  animation-delay: 0.1s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions {
+  animation: tv-dash-nav-exit-actions-gap 0.48s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions > button {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.32s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions > button:nth-child(1) {
+  animation-delay: 0.22s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions > button:nth-child(2) {
+  animation-delay: 0.34s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button {
+  opacity: 0;
+  animation: tv-dash-nav-card-fade-in 0.38s cubic-bezier(0.33, 1, 0.65, 1) forwards;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button:nth-child(3) {
+  animation-delay: 0.26s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button:nth-child(4) {
+  animation-delay: 0.34s;
+}
+
+.tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button:nth-child(5) {
+  animation-delay: 0.42s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-dashboard__dash-nav-enter.tv-dashboard__profile-focus-inner {
+    animation: none !important;
+    transform: none !important;
+    gap: 16px !important;
+  }
+
+  .tv-dashboard__dash-nav-enter.tv-dashboard__friends-focus-inner,
+  .tv-dashboard__dash-nav-enter.tv-dashboard__achievements-focus-inner,
+  .tv-dashboard__dash-nav-enter.tv-dashboard__controllers-focus-inner,
+  .tv-dashboard__dash-nav-enter.tv-dashboard__exit-focus-inner,
+  .tv-dashboard__dash-nav-enter.tv-dashboard__exit-discovery-inner {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-track,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-track,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track {
+    animation: none !important;
+    gap: 12px !important;
+  }
+
+  .tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions {
+    animation: none !important;
+    gap: 16px !important;
+  }
+
+  .tv-dashboard__dash-nav-enter .tv-dashboard__profile-focus-inner > .tv-dashboard__profile-focus-card,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-title-card,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__friends-focus-player-cards > button,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-header,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__achievements-focus-cards > button,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__controllers-focus-card,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-card,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__exit-focus-actions > button,
+  .tv-dashboard__dash-nav-enter .tv-dashboard__exit-discovery-track > button {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Middle cluster: Profile · Friends · Controllers · Achievements (Figma “Man Nav”) */
+.tv-dashboard__nav-cluster {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 24px;
+}
+
+.tv-dashboard__nav-item {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 5px 16px;
+  margin: 0;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  gap: 8px;
+}
+
+.tv-dashboard__nav-item:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.tv-dashboard__nav-item:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.tv-dashboard__nav-item:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Focused: white pill, dark ink — D-pad focus on the main nav row (Figma Button / primary emphasis) */
+.tv-dashboard__nav-item--focused {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.15);
+  cursor: default;
+}
+
+.tv-dashboard__nav-item--focused:hover {
+  color: #000;
+}
+
+/* Selected — Figma 87:7816: Button surface-secondary + foreground-secondary (Hawkins tokens) */
+.tv-dashboard__nav-item--selected {
+  background: rgba(128, 128, 128, 0.4);
+  color: #fff;
+  border-radius: 21px;
+  padding: 6px 16px;
+  gap: 12px;
+  font-weight: 500;
+  line-height: 27px;
+  cursor: default;
+}
+
+.tv-dashboard__nav-item--selected .tv-dashboard__nav-item__label {
+  opacity: 0.95;
+}
+
+/* Profile gamertag stays heavier than menu labels */
+.tv-dashboard__nav-item--selected .tv-dashboard__nav-item__handle {
+  font-weight: 600;
+}
+
+.tv-dashboard__nav-item--selected:not(.tv-dashboard__nav-item--avatar) .tv-dashboard__nav-item__icon img,
+.tv-dashboard__nav-item--selected:not(.tv-dashboard__nav-item--avatar) .tv-dashboard__nav-item__icon svg {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+/* Icons — monochrome: unfocused white; focused black */
+.tv-dashboard__nav-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+}
+
+.tv-dashboard__nav-item__icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.tv-dashboard__nav-item:not(.tv-dashboard__nav-item--avatar) .tv-dashboard__nav-item__icon img {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Focused: match label (#000) — Figma assets are light-on-dark; force dark glyphs on the white pill */
+.tv-dashboard__nav-item--focused:not(.tv-dashboard__nav-item--avatar) .tv-dashboard__nav-item__icon img {
+  filter: brightness(0) saturate(100%);
+  opacity: 1;
+}
+
+/* Profile: full-color avatar, circular */
+.tv-dashboard__nav-item--avatar .tv-dashboard__nav-item__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.tv-dashboard__nav-item--avatar .tv-dashboard__nav-item__icon img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  filter: none;
+  opacity: 1;
+}
+
+/* Icon-only: Profile (no label) */
+.tv-dashboard__nav-item--icon-only {
+  min-width: 42px;
+  padding-left: 8px;
+  padding-right: 8px;
+  gap: 0;
+}
+
+/* gap: 0 — spacing before handle uses margin on the label so nothing reserves width until reveal */
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--focused.tv-dashboard__nav-item--icon-only,
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--selected.tv-dashboard__nav-item--icon-only {
+  gap: 0;
+  padding-left: 12px;
+  padding-right: 16px;
+}
+
+/* Profile: game handle hidden by default; reveal on nav Focused or content Selected */
+.tv-dashboard__nav-item--avatar .tv-dashboard__nav-item__label--handle {
+  display: block;
+  margin: 0;
+  padding: 0;
+  /* Flex would otherwise honor text min-content width despite max-width: 0 */
+  flex: 0 0 0;
+  min-width: 0;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle;
+  pointer-events: none;
+  transition:
+    max-width 0.38s ease,
+    opacity 0.28s ease,
+    margin-left 0.38s ease;
+  transition-delay: 0s;
+}
+
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--focused .tv-dashboard__nav-item__label--handle,
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--selected .tv-dashboard__nav-item__label--handle {
+  flex: 0 1 auto;
+  max-width: 240px;
+  opacity: 1;
+}
+
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--focused .tv-dashboard__nav-item__label--handle {
+  margin-left: 10px;
+  transition-delay: 0.5s;
+}
+
+.tv-dashboard__nav-item--avatar.tv-dashboard__nav-item--selected .tv-dashboard__nav-item__label--handle {
+  margin-left: 12px;
+  transition-delay: 0s;
+}
+
+.tv-dashboard__nav-item--avatar:not(.tv-dashboard__nav-item--focused):not(.tv-dashboard__nav-item--selected)
+  .tv-dashboard__nav-item__label--handle {
+  margin-left: 0;
+  transition-delay: 0s;
+  transition-duration: 0.14s, 0.12s, 0.14s;
+}
+
+.tv-dashboard__nav-item__handle {
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: inherit;
+}
+
+.tv-dashboard__nav-item--avatar .tv-dashboard__nav-item__label--handle .tv-dashboard__nav-item__handle {
+  min-width: 0;
+}
+
+.tv-dashboard__nav-item__label:empty {
+  display: none;
+}

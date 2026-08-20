@@ -1,0 +1,35 @@
+/*
+ * Shared TV sheet header chrome — Close vs Back toggles.
+ *
+ * Button markup and base styling live on `.game-invite-tv__close` in
+ * tv-invite-list.css (Game Invite TV sheet). Player Panel reuses
+ * that same control; only the attribute driving Close↔Back differs:
+ *
+ *   Game Invite TV (notifications drill): #app[data-game-invite-entry="notifications"]
+ *   Player Panel (stacked flows):       #app[data-player-panel-close-mode="back"]
+ *
+ * Keep new sheet headers aligned with `.game-invite-tv__close` + children so
+ * visual/interaction fixes apply once.
+ */
+
+/* Player Panel — Back stack (returns to underlying sheet; same glyphs as GI TV) */
+#app[data-player-panel-close-mode="back"] .tv-dashboard__player-panel-shell .game-invite-tv__close-icon--x {
+  display: none;
+}
+
+#app[data-player-panel-close-mode="back"] .tv-dashboard__player-panel-shell .game-invite-tv__close-icon--back {
+  display: block;
+}
+
+#app[data-player-panel-close-mode="back"] .tv-dashboard__player-panel-shell .game-invite-tv__close-label--close {
+  display: none;
+}
+
+#app[data-player-panel-close-mode="back"] .tv-dashboard__player-panel-shell .game-invite-tv__close-label--back {
+  display: inline;
+}
+
+/* Player panel header: reuse GI TV close pill geometry inside Figma player card header */
+.tv-dashboard__player-panel-shell .player-panel__header .game-invite-tv__close {
+  flex-shrink: 0;
+}

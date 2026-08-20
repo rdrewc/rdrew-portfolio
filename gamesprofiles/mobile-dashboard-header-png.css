@@ -1,0 +1,72 @@
+/**
+ * Mobile dashboard — PNG experiments (header fill + panel top glow).
+ *
+ * Header fill: data-mobile-header-fill="png" (Modifications → Header fill).
+ * Top glow: data-mobile-top-glow="png" (Modifications → Top glow).
+ *
+ * REVERT: remove the <link> to this file in index.html, delete assets under
+ * assets/raster/mobile-dashboard-header-bg/, and remove the related controls in index.html.
+ */
+
+.fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape::before {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape-glow {
+  display: none;
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape {
+  background-image: url("assets/raster/mobile-dashboard-header-bg/header-fill-landscape.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+}
+
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-header-fill="png"] .fc-mobile-dash__header-shape {
+  background-image: url("assets/raster/mobile-dashboard-header-bg/header-fill-portrait.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+}
+
+/* Panel top glow — PNG asset, 1015×1015, centered, y -2 */
+.fc-mobile-dash[data-mobile-top-glow="png"] .fc-mobile-dash__top-glow {
+  left: 50%;
+  top: calc(-2px * var(--md-y));
+  width: calc(1015px * var(--md-x));
+  height: calc(1015px * var(--md-y));
+  transform: translateX(-50%);
+}
+
+#app[data-controller-orientation="landscape"] .fc-mobile-dash[data-mobile-top-glow="png"][data-mobile-dashboard-view="home"] .fc-mobile-dash__top-glow,
+#app:not([data-controller-orientation="portrait"]) .fc-mobile-dash[data-mobile-top-glow="png"][data-mobile-dashboard-view="home"] .fc-mobile-dash__top-glow,
+#app[data-controller-orientation="portrait"] .fc-mobile-dash[data-mobile-top-glow="png"] .fc-mobile-dash__top-glow {
+  left: 50%;
+  top: calc(-2px * var(--md-y));
+  width: calc(1015px * var(--md-x));
+  height: calc(1015px * var(--md-y));
+  transform: translateX(-50%);
+}
+
+.fc-mobile-dash[data-mobile-top-glow="png"] .fc-mobile-dash__top-glow img {
+  display: none;
+}
+
+.fc-mobile-dash[data-mobile-top-glow="png"] .fc-mobile-dash__top-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("assets/raster/mobile-dashboard-header-bg/top-glow.png");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}

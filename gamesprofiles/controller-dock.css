@@ -1,0 +1,379 @@
+/**
+ * Multi-local controller dock — full active phone + small-phone row for all locals.
+ * Enabled via #app[data-controller-dock-mode="multi"].
+ */
+
+.controller-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 1280px;
+  flex-shrink: 0;
+}
+
+.controller-dock__primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.controller-dock__primary .phone-outer {
+  width: 100%;
+}
+
+.controller-dock__active-player {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent, #c99598);
+  text-align: center;
+}
+
+#app[data-controller-dock-mode="multi"] {
+  --controller-dock-primary-gap: 40px;
+  --controller-dock-thumb-scale: 0.26;
+}
+
+#app[data-controller-dock-mode="multi"] .controller-dock {
+  gap: 0;
+}
+
+#app[data-controller-dock-mode="multi"] .controller-dock__primary {
+  flex-shrink: 0;
+}
+
+#app[data-controller-dock-mode="multi"] .controller-dock__primary .phone-outer {
+  margin-bottom: var(--controller-dock-primary-gap);
+}
+
+#app[data-controller-dock-mode="multi"] .controller-dock__thumbs {
+  margin-top: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.controller-dock__thumbs {
+  display: none;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  width: 100%;
+  padding: 0 0.5rem 0.25rem;
+  box-sizing: border-box;
+}
+
+#app[data-controller-dock-mode="multi"] .controller-dock__thumbs {
+  display: flex;
+}
+
+.controller-dock__thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.35rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+  color: var(--text-muted, #8b90a0);
+  transition: color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.controller-dock__thumb:hover {
+  color: var(--text, #e8eaed);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.controller-dock__thumb:focus {
+  outline: none;
+}
+
+.controller-dock__thumb:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-ring-focus, rgba(201, 149, 152, 0.55));
+}
+
+.controller-dock__thumb.is-selected {
+  cursor: default;
+  color: var(--accent, #c99598);
+}
+
+.controller-dock__thumb.is-selected:hover {
+  background: transparent;
+}
+
+.controller-dock__thumb.is-selected .controller-dock__thumb-bezel {
+  border-color: var(--accent, #c99598);
+  box-shadow:
+    0 0 0 2px var(--accent-dim, rgba(201, 149, 152, 0.38)),
+    0 4px 20px rgba(201, 149, 152, 0.18);
+}
+
+.controller-dock__thumb.is-selected .controller-dock__thumb-label {
+  color: var(--accent, #c99598);
+}
+
+.controller-dock__thumb-bezel {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #04060a;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#app[data-controller-orientation="landscape"] .controller-dock__thumb-bezel,
+#app:not([data-controller-orientation]) .controller-dock__thumb-bezel {
+  width: calc(852px * var(--controller-dock-thumb-scale, 0.26));
+  height: calc(393px * var(--controller-dock-thumb-scale, 0.26));
+  border-radius: calc(50px * var(--controller-dock-thumb-scale, 0.26));
+}
+
+#app[data-controller-orientation="portrait"] .controller-dock__thumb-bezel {
+  width: calc(393px * var(--controller-dock-thumb-scale, 0.26));
+  height: calc(852px * var(--controller-dock-thumb-scale, 0.26));
+  border-radius: calc(40px * var(--controller-dock-thumb-scale, 0.26));
+}
+
+.controller-dock__thumb-bezel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+.controller-dock__thumb-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.controller-dock__thumb-scaler {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.controller-dock__thumb-device {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 852px;
+  height: 393px;
+  transform: scale(var(--controller-dock-thumb-scale, 0.26));
+  transform-origin: 0 0;
+  pointer-events: none;
+  background: #04060a;
+}
+
+#app[data-controller-orientation="portrait"] .controller-dock__thumb-device {
+  width: 393px;
+  height: 852px;
+}
+
+.controller-dock__thumb-device .fc-ngc-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.controller-dock__thumb-device .fc-ngc-layer.is-hidden {
+  display: none !important;
+}
+
+.controller-dock__thumb-device .ngc-d-pad__nav-hit,
+.controller-dock__thumb-device button {
+  display: none !important;
+}
+
+/* Thumbs always show the painted NGC face (primary may hide controls when dashboard is open). */
+.controller-dock__thumb-device .ngc-d-pad,
+.controller-dock__thumb-device .ngc-button-set,
+.controller-dock__thumb-device .ngc-controls,
+.controller-dock__thumb-device .ngc-thumbstick,
+.controller-dock__thumb-device .ngc-loader {
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+.controller-dock__thumb-device .controller-dock__thumb-toast-slot {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.controller-dock__thumb-toast {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: min(340px, calc(100% - 24px));
+  min-height: 72px;
+  padding: 12px;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #fff;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.5),
+    0 0 2px rgba(0, 0, 0, 0.4);
+  background-color: #000;
+  background-image:
+    radial-gradient(
+      ellipse 120% 90% at 50% 135%,
+      rgba(247, 99, 107, 0.3) 0%,
+      rgba(146, 83, 132, 0.15) 35%,
+      rgba(44, 66, 156, 0) 70%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 50% 100%,
+      rgba(44, 66, 156, 0.15) 0%,
+      rgba(0, 0, 0, 0) 65%
+    ),
+    radial-gradient(
+      ellipse 80% 55% at 50% -25%,
+      rgba(57, 66, 101, 1) 0%,
+      rgba(28, 33, 50, 0.5) 45%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(90deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 100%);
+  transform: translateX(-50%) translateY(calc(-100% - 20px));
+  opacity: 0;
+  transition:
+    transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease;
+}
+
+.controller-dock__thumb-toast--in {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.controller-dock__thumb-toast--out {
+  transform: translateX(-50%) translateY(calc(-100% - 20px));
+  opacity: 0;
+  transition:
+    transform 0.4s cubic-bezier(0.55, 0, 1, 0.45),
+    opacity 0.28s ease;
+}
+
+.controller-dock__thumb-toast-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 0.6px solid rgba(128, 128, 128, 0.4);
+  border-radius: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.controller-dock__thumb-toast-game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.controller-dock__thumb-toast-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 19px;
+  height: 19px;
+  border: 0.524px solid rgba(128, 128, 128, 0.4);
+  border-radius: 50%;
+  object-fit: cover;
+  background: #111;
+}
+
+.controller-dock__thumb-toast-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding-right: 6px;
+  text-align: left;
+}
+
+.controller-dock__thumb-toast-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: 0;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.controller-dock__thumb-toast-body {
+  margin: 0;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.controller-dock__thumb-toast--friend-request .controller-dock__thumb-toast-thumb,
+.controller-dock__thumb-toast--friend-request .controller-dock__thumb-toast-game {
+  border-radius: 50%;
+}
+
+.controller-dock__thumb-toast--friend-request .controller-dock__thumb-toast-badge,
+.controller-dock__thumb-toast--friend-request .controller-dock__thumb-toast-body {
+  display: none;
+}
+
+.controller-dock__thumb-toast--achievement .controller-dock__thumb-toast-badge {
+  display: none;
+}
+
+.controller-dock__thumb-label {
+  max-width: calc(852px * var(--controller-dock-thumb-scale, 0.26) + 2rem);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+#app[data-controller-orientation="portrait"] .controller-dock__thumb-label {
+  max-width: calc(393px * var(--controller-dock-thumb-scale, 0.26) + 2rem);
+}

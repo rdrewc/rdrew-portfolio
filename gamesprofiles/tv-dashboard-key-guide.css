@@ -1,0 +1,41 @@
+/* Key guide — Figma 56:6067 (KeyGuide), 22pt from left / 18pt from bottom of TV dashboard */
+
+.tv-dashboard__key-guide {
+  position: absolute;
+  left: 22pt;
+  bottom: 18pt;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.tv-dashboard__key-guide-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.tv-dashboard__key-guide-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.tv-dashboard__key-guide-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.tv-dashboard__key-guide-label {
+  margin: 0;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}

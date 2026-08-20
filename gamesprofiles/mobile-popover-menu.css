@@ -1,0 +1,184 @@
+/**
+ * Evolution mobile pop-over menu — anchored dropdown for header + list-row actions.
+ */
+
+.fc-mobile-popover-menu__anchor {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.fc-mobile-popover-menu__trigger {
+  cursor: pointer;
+}
+
+.fc-mobile-popover-menu {
+  position: absolute;
+  top: calc(100% + 8px * var(--md-y));
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: calc(220px * var(--md-x));
+  padding: calc(8px * var(--md-y)) 0;
+  border: 0;
+  border-radius: calc(14px * var(--md-x));
+  background: var(--fc-slate-800);
+  box-shadow: 0 calc(8px * var(--md-y)) calc(24px * var(--md-y)) rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(calc(-4px * var(--md-y))) scale(0.98);
+  transform-origin: top right;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0s linear 0.18s;
+}
+
+.fc-mobile-popover-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0s linear 0s;
+}
+
+.fc-mobile-popover-menu[hidden] {
+  display: none !important;
+}
+
+.fc-mobile-popover-menu:not([hidden]).is-open {
+  display: flex;
+}
+
+.fc-mobile-popover-menu__item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: calc(14px * var(--md-y)) calc(20px * var(--md-x));
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
+  font-family: "Netflix Sans", "Netflix Sans VF", "Segoe UI", system-ui, sans-serif;
+  font-size: calc(15px * var(--md-y));
+  font-weight: 700;
+  line-height: calc(22px * var(--md-y));
+  color: #fff;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fc-mobile-popover-menu__item:hover,
+.fc-mobile-popover-menu__item:focus-visible {
+  background: transparent;
+  outline: none;
+}
+
+.fc-mobile-popover-menu__item--destructive {
+  color: #e54d42;
+}
+
+.fc-mobile-popover-menu__item--destructive:hover,
+.fc-mobile-popover-menu__item--destructive:focus-visible {
+  background: transparent;
+}
+
+.fc-mobile-popover-menu__item[hidden] {
+  display: none;
+}
+
+.fc-mobile-popover-menu__divider {
+  display: block;
+  width: 100%;
+  height: 0;
+  margin: calc(8px * var(--md-y)) 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #3a444e;
+}
+
+.fc-mobile-popover-menu--list-row {
+  z-index: 100;
+  min-width: calc(220px * var(--md-x));
+}
+
+/* Portaled list-row menus — above sticky headers, sibling rows, and scroll clips */
+.fc-mobile-dash__list-row-menu-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu {
+  pointer-events: auto;
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu:not(.fc-mobile-popover-menu--opens-up) {
+  transform: translateY(calc(-4px * var(--md-y))) scale(0.98);
+  transform-origin: top right;
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu:not(.fc-mobile-popover-menu--opens-up).is-open {
+  transform: translateY(0) scale(1);
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu.fc-mobile-popover-menu--opens-up {
+  transform: translateY(calc(4px * var(--md-y))) scale(0.98);
+  transform-origin: bottom right;
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu.fc-mobile-popover-menu--opens-up.is-open {
+  transform: translateY(0) scale(1);
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu--align-left:not(.fc-mobile-popover-menu--opens-up) {
+  transform-origin: top left;
+}
+
+.fc-mobile-dash__list-row-menu-layer .fc-mobile-popover-menu--align-left.fc-mobile-popover-menu--opens-up {
+  transform-origin: bottom left;
+}
+
+.fc-mobile-popover-menu--scrollable {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.fc-mobile-popover-menu--scrollable .fc-mobile-popover-menu__item,
+.fc-mobile-popover-menu--scrollable .fc-mobile-popover-menu__divider {
+  flex-shrink: 0;
+}
+
+.fc-mobile-notif__item.is-list-more-open {
+  position: relative;
+  z-index: 2;
+}
+
+.fc-mobile-notif__row-more {
+  flex: 0 0 auto;
+  align-self: center;
+  position: relative;
+}
+
+.fc-mobile-notif__row-more-btn {
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+/* While a list-row menu is open, keep other row "..." triggers from stacking above it */
+.fc-mobile-dash.is-list-row-more-open .fc-mobile-notif__item:not(.is-list-more-open) .fc-mobile-notif__row-more-btn {
+  pointer-events: none;
+}

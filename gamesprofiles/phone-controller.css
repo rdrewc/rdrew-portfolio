@@ -1,0 +1,1516 @@
+/**
+ * Connected controller — layered images (paths in phone-controller-assets.js).
+ * Outer chrome: .phone-frame only. UI is drawn at Figma resolution then scaled to fit the frame.
+ */
+
+/* Fill the screen bezel; center the design canvas */
+.fc-ui-fit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Clips the scaled draw; size matches the scaled design box (avoids transform overflow) */
+.fc-scaler {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.phone-landscape .fc-scaler {
+  width: calc(852px * var(--fc-scale, 1));
+  height: calc(393px * var(--fc-scale, 1));
+}
+
+.phone-portrait .fc-scaler {
+  width: calc(393px * var(--fc-scale, 1));
+  height: calc(852px * var(--fc-scale, 1));
+}
+
+.fc-scaler .fc-device--ngc,
+.fc-scaler .fc-device--ncc,
+.fc-scaler .fc-device--ios {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--fc-scale, 1));
+  transform-origin: 0 0;
+  max-width: none;
+  max-height: none;
+}
+
+.fc-mount {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fc-mount.is-hidden {
+  display: none !important;
+}
+
+.fc-device--ngc {
+  position: relative;
+  width: 852px;
+  height: 393px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 0;
+  background: #04060a;
+  overflow: hidden;
+}
+
+.fc-device--ncc {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.fc-device--ios {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.fc-ngc-root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Painted NGC is for keyboard/gamepad — no mouse hover, focus ring, or press chrome */
+.fc-ngc-root .ngc-icon-btn:hover,
+.fc-ngc-root .ngc-voice-pill:hover,
+.fc-ngc-root .ngc-button-set__btn:hover,
+.app[data-state="in-game"] .fc-ngc-root .ngc-d-pad__nav-hit:has(.ngc-d-pad__hit-path:hover) {
+  transform: none;
+}
+
+.fc-ngc-root .ngc-button-set__btn:hover {
+  z-index: 0;
+}
+
+.fc-ngc-root .ngc-icon-btn,
+.fc-ngc-root .ngc-button-set__btn,
+.fc-ngc-root .ngc-d-pad__nav-hit,
+.fc-ngc-root .ngc-d-pad__arrow {
+  cursor: default;
+}
+
+.fc-ngc-root .ngc-icon-btn:focus,
+.fc-ngc-root .ngc-icon-btn:focus-visible,
+.fc-ngc-root .ngc-button-set__btn:focus,
+.fc-ngc-root .ngc-button-set__btn:focus-visible,
+.fc-ngc-root .ngc-d-pad__nav-hit:focus,
+.fc-ngc-root .ngc-d-pad__nav-hit:focus-visible {
+  outline: none;
+}
+
+.fc-ngc-root .ngc-button-set__btn:active,
+.fc-ngc-root .ngc-icon-btn:active,
+.fc-ngc-root .ngc-d-pad__nav-hit:active {
+  transform: none;
+}
+
+.fc-ngc-layer {
+  position: absolute;
+  inset: 0;
+  background: #04060a;
+}
+
+.fc-ngc-layer.is-hidden {
+  display: none !important;
+}
+
+.fc-ngc-bg {
+  position: absolute;
+  left: -94px;
+  top: -400px;
+  width: 1000px;
+  height: 800px;
+  pointer-events: none;
+}
+
+.fc-ngc-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Top control row (326×82 Figma frame) — 16px from controller top; buttons cross-centered */
+.ngc-controls {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  width: 326px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.ngc-controls--voice {
+  width: 490px;
+  max-width: calc(100% - 32px);
+}
+
+.ngc-icon-btn {
+  position: relative;
+  flex-shrink: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: default;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+}
+
+.ngc-icon-btn--pill {
+  width: 50px;
+  height: 34px;
+}
+
+.ngc-icon-btn--round,
+.ngc-icon-btn--n {
+  width: 50px;
+  height: 50px;
+}
+
+/* Top-row Netflix N — toggles TV dashboard (Current); Profile opens mobile dashboard (Evolution); TV icon opens TV dashboard (Evolution) */
+.ngc-icon-btn--n {
+  cursor: pointer;
+}
+
+#app[data-platform-experience="current"] .ngc-btn-art--evolution {
+  display: none;
+}
+
+#app[data-platform-experience="evolution"] .ngc-btn-art--current {
+  display: none;
+}
+
+#app[data-platform-experience="evolution"] [data-ngc-slot="home"] .ngc-icon-btn__inner {
+  inset: 8%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+#app[data-platform-experience="evolution"] [data-ngc-slot="home"] .ngc-btn-art--profile {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#app[data-platform-experience="evolution"] [data-ngc-slot="left"] .ngc-btn-art--evolution-tv,
+#app[data-platform-experience="evolution"] [data-ngc-slot="left"] .ngc-btn-art--evolution-exit {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+#app[data-platform-experience="evolution"][data-tv-dash="off"] [data-ngc-slot="left"] .ngc-btn-art--evolution-tv {
+  display: none;
+}
+
+#app[data-platform-experience="evolution"][data-tv-dash="off"] [data-ngc-slot="left"] .ngc-btn-art--evolution-exit {
+  display: block;
+}
+
+#app[data-platform-experience="evolution"]:not([data-tv-dash="off"]) [data-ngc-slot="left"] .ngc-btn-art--evolution-exit {
+  display: none;
+}
+
+#app[data-platform-experience="evolution"] [data-ngc-slot="left"] {
+  cursor: pointer;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ngc-icon-btn:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Top-row controls only — gradient stroke #FF3434 → #821CE9 @ 40% (not ABXY / d-pad). */
+.ngc-icon-btn--pill .ngc-icon-btn__bg,
+.ngc-icon-btn--n .ngc-icon-btn__bg {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: 17px;
+  background-image:
+    linear-gradient(rgba(30, 16, 30, 0.35), rgba(30, 16, 30, 0.35)),
+    linear-gradient(135deg, rgba(255, 52, 52, 0.4), rgba(130, 28, 233, 0.4));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.ngc-icon-btn--n .ngc-icon-btn__bg {
+  border-radius: 25px;
+}
+
+.ngc-icon-btn--round .ngc-icon-btn__bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 16, 30, 0.35);
+  border: 1px solid #ff3434;
+  border-radius: 200px;
+  box-sizing: border-box;
+}
+
+.ngc-icon-btn__inner {
+  position: absolute;
+  left: 26%;
+  right: 26%;
+  top: 14.71%;
+  bottom: 14.71%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.ngc-icon-btn--n .ngc-icon-btn__inner {
+  inset: 28% 36.5% 28% 37.5%;
+  border-radius: 0;
+}
+
+.ngc-icon-btn__inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* Hit area = full control; clicks go to .ngc-icon-btn (not inner layers) */
+.ngc-icon-btn__bg,
+.ngc-icon-btn__inner {
+  pointer-events: none;
+}
+
+/* Voice mic capsule — same stroke/fill system as .ngc-icon-btn--pill (gradient border @ 40%, dim fill) */
+.ngc-voice-pill {
+  flex-shrink: 0;
+  width: 128px;
+  height: 50px;
+  padding: 4px;
+  border: 2px solid transparent;
+  border-radius: 25px;
+  box-sizing: border-box;
+  background-image:
+    linear-gradient(rgba(30, 16, 30, 0.35), rgba(30, 16, 30, 0.35)),
+    linear-gradient(135deg, rgba(255, 52, 52, 0.4), rgba(130, 28, 233, 0.4));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  pointer-events: auto;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ngc-voice-pill:hover {
+    transform: scale(1.02);
+  }
+}
+
+.ngc-voice-pill__in {
+  height: 100%;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-sizing: border-box;
+  pointer-events: none;
+  background: transparent;
+}
+
+.ngc-voice-pill__in img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  pointer-events: none;
+}
+
+/* Thumbstick */
+.ngc-thumbstick {
+  position: absolute;
+  left: 60px;
+  top: 82px;
+  width: 226px;
+  height: 231px;
+  border: 1px solid #571b24;
+  border-radius: 1000px;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ngc-thumbstick__center {
+  position: absolute;
+  left: 59px;
+  top: 59px;
+  width: 106px;
+  height: 106px;
+}
+
+.ngc-thumbstick__center img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.ngc-thumbstick__ring {
+  position: absolute;
+  left: 59px;
+  top: 59px;
+  width: 106px;
+  height: 106px;
+  -webkit-mask-size: 106px 106px;
+  mask-size: 106px 106px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+
+.ngc-thumbstick__ring-inner {
+  position: absolute;
+  inset: -8%;
+  overflow: hidden;
+}
+
+.ngc-thumbstick__ring-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ABXY cluster */
+.ngc-button-set {
+  position: absolute;
+  left: 493px;
+  top: 60px;
+  width: 288px;
+  height: 286px;
+  pointer-events: none;
+}
+
+.ngc-button-set__btn {
+  position: absolute;
+  display: block;
+  pointer-events: auto;
+  cursor: pointer;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+  z-index: 0;
+}
+
+.ngc-button-set__btn img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ngc-button-set__btn:hover {
+    transform: scale(1.02);
+    z-index: 2;
+  }
+}
+
+/* Figma layout insets (ButtonSet4) */
+.ngc-button-set .ngc-b-a {
+  left: 38.13%;
+  right: 0.07%;
+  top: 37.69%;
+  bottom: 0.07%;
+}
+
+.ngc-button-set .ngc-b-b {
+  left: 48.69%;
+  right: 7.39%;
+  top: 0.79%;
+  bottom: 56.21%;
+}
+
+.ngc-button-set .ngc-b-y {
+  left: 13.45%;
+  right: 42.28%;
+  top: 13.2%;
+  bottom: 42.22%;
+}
+
+.ngc-button-set .ngc-b-x {
+  left: 0;
+  right: 57.3%;
+  top: 49.3%;
+  bottom: 7.7%;
+}
+
+/* FIFA: only A, B, X (no Y) */
+.fc-ngc-layer--fifa .ngc-b-y {
+  display: none;
+}
+
+/* D-pad (Platform) — 240×240 base + per-direction arrows (assets/raster/) */
+.ngc-d-pad {
+  position: absolute;
+  left: 60px;
+  top: 82px;
+  width: 240px;
+  height: 240px;
+  border-radius: 84px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ngc-d-pad__base {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 240px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ngc-d-pad__base img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ngc-d-pad__arrow {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.ngc-d-pad__arrow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ngc-d-pad__arrow--l {
+  left: 30px;
+  top: calc(50% + 0.5px);
+  width: 28px;
+  height: 25px;
+  transform: translateY(-50%);
+}
+
+.ngc-d-pad__arrow--d {
+  left: calc(50% - 0.5px);
+  top: 186px;
+  width: 25px;
+  height: 28px;
+  transform: translateX(-50%);
+}
+
+.ngc-d-pad__arrow--r {
+  left: 186px;
+  top: calc(50% + 0.5px);
+  width: 28px;
+  height: 25px;
+  transform: translateY(-50%);
+}
+
+.ngc-d-pad__arrow--u {
+  left: calc(50% + 0.5px);
+  top: 30px;
+  width: 25px;
+  height: 28px;
+  transform: translateX(-50%);
+}
+
+/*
+ * D-pad TV nav hits — vector wedges (same path, rotated per direction).
+ * Pointer events on the path only so the hit region matches the triangle, not the button bbox.
+ */
+.ngc-d-pad__nav-hit {
+  position: absolute;
+  z-index: 5;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+}
+
+.ngc-d-pad__hit-svg {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ngc-d-pad__hit-path {
+  fill: transparent;
+  stroke: none;
+  pointer-events: none;
+}
+
+/* Invite sheet uses same NGC TV nav (invitePanelNavigateVertical); lobby uses moveLobbyTvFocusVertical — both need hits active */
+.app[data-state="in-game"] .ngc-d-pad__nav-hit .ngc-d-pad__hit-path {
+  pointer-events: visiblePainted;
+  cursor: pointer;
+}
+
+.app[data-state="in-game"] .ngc-d-pad__arrow {
+  pointer-events: auto;
+}
+
+/* Down wedge: wide edge toward bottom of viewBox (platform layer D-pad). */
+.ngc-d-pad__nav-hit--down .ngc-d-pad__hit-svg {
+  transform: none;
+}
+
+.ngc-d-pad__nav-hit--up .ngc-d-pad__hit-svg {
+  transform: rotate(180deg);
+}
+
+.ngc-d-pad__nav-hit--left .ngc-d-pad__hit-svg {
+  transform: rotate(90deg);
+}
+
+.ngc-d-pad__nav-hit--right .ngc-d-pad__hit-svg {
+  transform: rotate(-90deg);
+}
+
+/* 240×240 pad: center 201px-wide wedges; 19.5px = (240 − 201) / 2 */
+.ngc-d-pad__nav-hit--down {
+  left: 19.5px;
+  bottom: 0;
+  width: 201px;
+  height: 119px;
+}
+
+.ngc-d-pad__nav-hit--up {
+  left: 19.5px;
+  top: 0;
+  width: 201px;
+  height: 119px;
+}
+
+.ngc-d-pad__nav-hit--left {
+  left: 0;
+  top: 19.5px;
+  width: 119px;
+  height: 201px;
+}
+
+.ngc-d-pad__nav-hit--right {
+  right: 0;
+  top: 19.5px;
+  width: 119px;
+  height: 201px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .app[data-state="in-game"] .ngc-d-pad__nav-hit:has(.ngc-d-pad__hit-path:hover) {
+    transform: scale(1.02);
+  }
+}
+
+.fc-ngc-layer--platform .ngc-b-y,
+.fc-ngc-layer--platform .ngc-b-x {
+  display: none;
+}
+
+/* Loading */
+.ngc-loader {
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 196px);
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+.ngc-loader img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Invisible assist control — hit area did not line up with the painted N; .ngc-icon-btn--n handles clicks in HTML */
+.fc-ngc-n {
+  position: absolute;
+  left: 32.2%;
+  top: 20%;
+  width: 9.5%;
+  height: 19.5%;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.001);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+  visibility: hidden;
+}
+
+/* Not connected (portrait) */
+.fc-ncc-root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #fff;
+  background: #000;
+}
+
+.fc-ncc-root.is-hidden {
+  display: none !important;
+}
+
+.ncc-header {
+  position: absolute;
+  left: 50%;
+  top: 56px;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 50.5px;
+}
+
+.ncc-header img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ncc-body {
+  position: absolute;
+  left: 50%;
+  top: 196px;
+  transform: translateX(-50%);
+  width: 320px;
+  text-align: center;
+}
+
+.ncc-hero {
+  width: 125px;
+  height: 125px;
+  margin: 0 auto 0.5rem;
+}
+
+.ncc-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ncc-title {
+  font-size: 18px;
+  line-height: 27px;
+  margin: 0 0 8px;
+  font-weight: 400;
+}
+
+.ncc-sub {
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 0 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ncc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px 11px;
+  background: #fff;
+  color: #000;
+  border: 0;
+  border-radius: 4px;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: default;
+}
+
+.ncc-btn-primary img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.ncc-profile {
+  position: absolute;
+  left: 50%;
+  bottom: 164px;
+  transform: translateX(-50%);
+  width: 350px;
+  max-width: calc(100% - 24px);
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  background: rgba(158, 189, 228, 0.1);
+  -webkit-backdrop-filter: blur(50px);
+  backdrop-filter: blur(50px);
+  mix-blend-mode: light;
+}
+
+.ncc-profile__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: left;
+}
+
+.ncc-avatar {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ncc-avatar--mask {
+  -webkit-mask-size: 50px 50px;
+  mask-size: 50px 50px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+
+.ncc-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ncc-text {
+  text-align: left;
+  width: 214px;
+}
+
+.ncc-name {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.ncc-handle-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ncc-handle-row img {
+  width: 16px;
+  height: 16px;
+}
+
+.ncc-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.ncc-stacked .ncc-btn-primary {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ncc-stacked-tert {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  background: transparent;
+  color: #fff;
+  border: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  cursor: default;
+}
+
+/* Figma 2:9459 Profile Row — signed out (INSTANCE 350×116): frosted plate + stacked buttons */
+.ncc-profile--signedout {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  mix-blend-mode: normal;
+}
+
+.ncc-profile-signedout__backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: rgba(158, 189, 228, 0.1);
+  -webkit-backdrop-filter: blur(50px);
+  backdrop-filter: blur(50px);
+  mix-blend-mode: lighten;
+  pointer-events: none;
+}
+
+.ncc-profile-signedout__row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ncc-profile-signedout__column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.ncc-offline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+.ncc-offline img {
+  width: 10px;
+  height: 10px;
+}
+
+.ncc-footer {
+  position: absolute;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  width: 320px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ncc-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+  cursor: default;
+}
+
+.ncc-footer .ncc-help {
+  margin-top: 16px;
+}
+
+.ncc-help img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Invite: dim + sheet — Figma 113:3107 Invite Mobile */
+button.ncc-invite-dim {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.ncc-invite-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: block;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-dim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ncc-invite-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  max-height: 92%;
+  background: #161616;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 52px;
+  border-bottom-right-radius: 52px;
+  overflow: hidden auto;
+  color: #fff;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 0;
+  transform: translateY(100%);
+  transition: transform 150ms ease-out;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-sheet {
+  transform: translateY(0);
+}
+
+.ncc-invite-contents {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 48px;
+}
+
+/* Full-bleed header art behind sheet content — fade via CSS mask (no PNG mask asset). */
+.ncc-invite-hero-bg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: min(280px, 48%);
+  max-height: 340px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ncc-invite-hero-bg__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0.35;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 28%, rgba(0, 0, 0, 0.55) 52%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 28%, rgba(0, 0, 0, 0.55) 52%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  display: block;
+}
+
+.ncc-invite-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  padding: 20px 12px 20px 20px;
+  box-sizing: border-box;
+  /* Poster is absolutely positioned; reserve its vertical footprint so body copy starts below it */
+  min-height: calc(20px + 200px + 20px);
+}
+
+.ncc-invite-hdr__n-img {
+  display: block;
+  width: 14px;
+  height: 24px;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+
+.ncc-invite-hdr__poster {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ncc-invite-hdr__x {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.ncc-invite-hdr__x img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  object-fit: contain;
+}
+
+.ncc-invite-poster-card {
+  width: 143px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ncc-invite-poster-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ncc-game-box {
+  position: relative;
+  width: 143px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ncc-game-box__fc {
+  position: absolute;
+  inset: 0 0 0 -0.7%;
+}
+
+.ncc-game-box__fc img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ncc-game-box__logo {
+  position: absolute;
+  left: 8.39%;
+  right: 8.39%;
+  bottom: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+}
+
+.ncc-game-box__logo img {
+  max-height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.ncc-game-box__logo .logo-left {
+  flex: 0 0 55%;
+}
+
+.ncc-game-box__logo .logo-mid,
+.ncc-game-box__logo .logo-right {
+  position: absolute;
+  height: 32px;
+  object-fit: contain;
+}
+
+.ncc-game-box__logo .logo-mid {
+  right: 21.85%;
+  top: 10.61%;
+  width: 20%;
+}
+
+.ncc-game-box__logo .logo-right {
+  right: 1.38%;
+  top: 10.53%;
+  width: 18%;
+}
+
+.ncc-game-box__logo .logo-left {
+  left: 1.21%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60%;
+  max-width: 132px;
+}
+
+.ncc-invite-h1 {
+  font-size: 28px;
+  line-height: 35px;
+  text-align: center;
+  font-weight: 700;
+  margin: 16px 16px 0;
+  padding: 0 16px;
+}
+
+.ncc-step-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+
+/* Vertical segment between step badges — badge column + body column (see .ncc-step gap) */
+.ncc-invite-step-connector {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 24px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.ncc-invite-step-connector__lane {
+  flex: 0 0 44px;
+  width: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.ncc-invite-step-connector__tail {
+  flex: 1;
+  min-width: 0;
+}
+
+.ncc-invite-step-connector__bar {
+  width: 2px;
+  height: 100%;
+  min-height: 12px;
+  border-radius: 1px;
+  background: rgba(229, 9, 20, 0.48);
+  transform: scaleY(0);
+  transform-origin: top center;
+  opacity: 0;
+}
+
+/* Staggered step / line choreography — runs when sheet is visible */
+@keyframes ncc-invite-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ncc-invite-line-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.ncc-invite-anim-step {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--1 {
+  animation: ncc-invite-step-in 250ms cubic-bezier(0.4, 0, 0.68, 0.06) 400ms forwards;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-anim-line--12 .ncc-invite-step-connector__bar {
+  animation: ncc-invite-line-in 150ms cubic-bezier(0.4, 0, 0.68, 0.06) 500ms forwards;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--2 {
+  animation: ncc-invite-step-in 250ms cubic-bezier(0.4, 0, 0.68, 0.06) 650ms forwards;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-anim-line--23 .ncc-invite-step-connector__bar {
+  animation: ncc-invite-line-in 150ms cubic-bezier(0.4, 0, 0.68, 0.06) 800ms forwards;
+}
+
+#fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--3 {
+  animation: ncc-invite-step-in 250ms cubic-bezier(0.4, 0, 0.68, 0.06) 950ms forwards;
+}
+
+.ncc-step-list > .ncc-step {
+  margin-bottom: 0;
+}
+
+.ncc-step-list > .ncc-step:last-of-type {
+  margin-bottom: 4px;
+}
+
+.ncc-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 8px 0;
+}
+
+/* No vertical gap between step rows and connector lines */
+.ncc-step-list > .ncc-invite-anim-step--1,
+.ncc-step-list > .ncc-invite-anim-step--2 {
+  padding-bottom: 0;
+}
+
+.ncc-step-list > .ncc-invite-anim-step--2,
+.ncc-step-list > .ncc-invite-anim-step--3 {
+  padding-top: 0;
+}
+
+.ncc-step__num {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(229, 9, 20, 0.6);
+  border-radius: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #161616;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.ncc-step p {
+  margin: 0;
+  flex: 1;
+  padding-top: 8px;
+}
+
+.ncc-invite-inline-link {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  cursor: default;
+}
+
+.ncc-invite-footer {
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  margin: 0 20px 0;
+  padding-top: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.ncc-invite-footer-link {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ncc-invite-dim,
+  .ncc-invite-sheet {
+    transition: none !important;
+  }
+
+  #fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--1,
+  #fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--2,
+  #fccInvite.ncc--invite-animate-in .ncc-invite-anim-step--3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  #fccInvite.ncc--invite-animate-in .ncc-invite-anim-line .ncc-invite-step-connector__bar {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: scaleY(1) !important;
+  }
+}
+
+/* Invite: footer position shifted (Figma) */
+.ncc--invite .ncc-footer {
+  top: 710px;
+  bottom: auto;
+}
+
+/* Profile row z-index for invite (above dim on base content) */
+.ncc--invite .ncc-profile {
+  z-index: 2;
+  bottom: 114px;
+}
+
+.ncc--invite .ncc-body {
+  z-index: 1;
+}
+
+.ncc--invite .ncc-body {
+  padding-bottom: 0;
+}
+
+.ncc-pill-secondary {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(128, 128, 128, 0.4);
+  border: 0;
+  border-radius: 4px;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+/* Keyboard → painted NGC affordance (see initNgcKeyboardCallout in index.html) */
+@keyframes fc-ngc-key-callout {
+  0% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+  45% {
+    filter: drop-shadow(0 0 10px rgba(230, 179, 11, 0.5)) drop-shadow(0 0 22px rgba(255, 255, 255, 0.22));
+    transform: scale(1.04);
+  }
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+}
+
+.fc-ngc-root .fc-ngc-key-callout {
+  animation: fc-ngc-key-callout 0.4s ease-out;
+  z-index: 8 !important;
+}
+
+.fc-ngc-root .ngc-icon-btn.fc-ngc-key-callout {
+  z-index: 12 !important;
+}
+
+/* D-pad arrows: glow on the wrapper; scale the inner img so we do not replace translateX/translateY centering. */
+@keyframes fc-ngc-dpad-arrow-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65)) drop-shadow(0 0 14px rgba(230, 179, 11, 0.45));
+  }
+}
+
+@keyframes fc-ngc-dpad-arrow-img-scale {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.fc-ngc-root .ngc-d-pad__arrow.fc-ngc-key-callout {
+  animation: fc-ngc-dpad-arrow-glow 0.36s ease-out;
+  z-index: 7 !important;
+}
+
+.fc-ngc-root .ngc-d-pad__arrow.fc-ngc-key-callout img {
+  animation: fc-ngc-dpad-arrow-img-scale 0.36s ease-out;
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes fc-ngc-key-callout {
+    0%,
+    100% {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+    50% {
+      opacity: 0.88;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+      transform: none;
+    }
+  }
+
+  .fc-ngc-root .fc-ngc-key-callout {
+    animation-duration: 0.28s;
+  }
+
+  @keyframes fc-ngc-dpad-arrow-glow {
+    0%,
+    100% {
+      filter: none;
+    }
+    50% {
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
+    }
+  }
+
+  @keyframes fc-ngc-dpad-arrow-img-scale {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.04);
+    }
+  }
+}

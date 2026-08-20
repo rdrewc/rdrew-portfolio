@@ -1,0 +1,1149 @@
+/* Game Invite List — Figma node 1:6683 (get_design_context + project HTML/CSS; no Tailwind). */
+/* Netflix Sans: restore when tooling resolves @netflixdesign (internal/Vite). Omitted so public static hosts don’t fail @import. */
+
+#app[data-dashboard-context="invite"] .tv-dashboard__primary-nav,
+#app[data-dashboard-context="invite"] .tv-dashboard__edge-nav,
+#app[data-dashboard-context="invite"] .tv-dashboard__chrome,
+#app[data-dashboard-context="invite"] .tv-dashboard__header-notif-wrap {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.tv-dashboard__invite-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#app[data-dashboard-context="invite"] .tv-dashboard__invite-shell {
+  display: flex;
+}
+
+/* TV toast — Figma 54:3840 (Toast), bottom safe area; over gameplay + dashboard (Evolution keeps TV dashboard closed) */
+.tv-dashboard__toast-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 48px 96px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#app:not(.state-in-game) .tv-dashboard__toast-layer {
+  display: none;
+}
+
+/* Connection-only controllers panel — toast below panel card (nav hidden; default 96px overlaps panel). */
+#app[data-dashboard-context="controllers-only"] .tv-dashboard__toast-layer {
+  padding: 0 48px 24px;
+}
+
+.tv-invite-toast {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  max-width: min(680px, calc(100% - 32px));
+  padding: 12px 24px;
+  margin: 0;
+  border-radius: 9999px;
+  background: #fff;
+  color: #000;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 27px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(calc(100% + 48px));
+  opacity: 0;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.32s ease;
+}
+
+.tv-invite-toast__text {
+  margin: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tv-invite-toast--in {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.tv-invite-toast--out {
+  transform: translateY(calc(100% + 48px));
+  opacity: 0;
+  transition:
+    transform 0.34s cubic-bezier(0.55, 0, 1, 0.45),
+    opacity 0.28s ease;
+}
+
+.tv-invite-toast__icon {
+  display: flex;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+}
+
+.tv-invite-toast__icon img {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+.game-invite-list__share-btn--busy {
+  opacity: 0.42;
+  pointer-events: none;
+  cursor: default;
+}
+
+.game-invite-list__item--state-off-service-focused .game-invite-list__share-btn.game-invite-list__share-btn--busy {
+  opacity: 0.42;
+}
+
+/* ----- Figma variables (from design context) scoped to this component ----- */
+.game-invite-list {
+  /* Border radius */
+  --fi-br-large: 16px;
+  --fi-br-xl: 20px;
+  --fi-br-32: 32px;
+  --fi-br-btn: 21px;
+  --fi-br-avatar: 6865px;
+
+  /* Colors */
+  --fi-border-subtle: rgba(128, 128, 128, 0.4);
+  --fi-border-white-04: rgba(255, 255, 255, 0.04);
+  --fi-surface-highlight-dim: rgba(128, 128, 128, 0.2);
+  --fi-surface-mid: #232323;
+  --fi-foreground: #fff;
+  --fi-foreground-subtle: rgba(255, 255, 255, 0.7);
+  --fi-foreground-dim: rgba(255, 255, 255, 0.5);
+  --fi-btn-fg-tertiary: rgba(255, 255, 255, 0.7);
+  --fi-btn-surface-primary-focused: #fff;
+  --fi-btn-fg-primary-focused: #000;
+
+  /* Typography tokens */
+  --fi-title-small-size: 22px;
+  --fi-title-small-lh: 29px;
+  --fi-body-heavy-size: 20px;
+  --fi-body-heavy-lh: 27px;
+  --fi-label-size: 14px;
+  --fi-label-lh: 19px;
+  --fi-label-small-size: 12px;
+  --fi-label-small-lh: 17px;
+  --fi-btn-text-size: 20px;
+  --fi-btn-text-lh: 27px;
+
+  position: relative;
+  width: 600px;
+  max-width: min(600px, calc(100vw - 64px));
+  height: 694px;
+  max-height: min(694px, calc(100% - 48px));
+  overflow: hidden;
+  border-radius: var(--fi-br-large);
+  pointer-events: none;
+  font-family: "Netflix Sans", "Netflix Sans VF", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.game-invite-list__pane {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 600px;
+  height: 694px;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Panel and hero are separate compositing layers so the hero mask never affects the panel fill. */
+.game-invite-list__panel-shadow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.1));
+}
+
+.game-invite-list__panel-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--fi-br-large);
+  border: 1px solid var(--fi-border-white-04);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161616 0%, #020202 75%, #101010 100%);
+}
+
+/* Header art: above panel fill, below all `.game-invite-list__content` UI. */
+.game-invite-list__hero-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 62.54%;
+  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--fi-br-large) var(--fi-br-large) 0 0;
+  pointer-events: none;
+}
+
+/* Hero: alpha mask on image only (blends into panel; does not affect panel layer). */
+.game-invite-list__hero-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 260px;
+}
+
+/* Same hero treatment as Game Invite TV (61:6933): full-bleed art, soft via opacity — no SVG mask (mask + missing PNG hid the list hero). */
+.game-invite-list__hero-mask img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.game-invite-list__content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 600px;
+  height: 560px;
+  padding: 18px 44px 56px 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  pointer-events: auto;
+}
+
+.game-invite-list__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+/* Close + logo (centered) + end spacer — logo vertically aligned with Close row */
+.game-invite-list__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+.game-invite-list__header-start,
+.game-invite-list__header-end {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.game-invite-list__header-start {
+  justify-content: flex-start;
+}
+
+.game-invite-list__header-end {
+  justify-content: flex-end;
+}
+
+.game-invite-list__header-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.75);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.game-invite-list__close {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 16px;
+  min-height: 30px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--fi-br-btn);
+  background: transparent;
+  color: var(--fi-btn-fg-tertiary);
+  font: inherit;
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.game-invite-list__close:focus {
+  outline: none;
+}
+
+/* Same Button Focus treatment as Invite / Send (surface + primary-focused foreground) */
+.game-invite-list__close > .game-invite-list__invite-btn-surface {
+  border-radius: var(--fi-br-btn);
+  background: #fff;
+  opacity: 0;
+}
+
+.game-invite-list__close--state-focused > .game-invite-list__invite-btn-surface {
+  opacity: 1;
+}
+
+.game-invite-list__close-fill {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-invite-list__close--state-focused .game-invite-list__close-fill {
+  color: #000;
+}
+
+.game-invite-list__close--state-focused .game-invite-list__close-fill img {
+  filter: brightness(0);
+}
+
+.game-invite-list__close-fill img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.game-invite-list__header-more {
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 42px;
+  overflow: hidden;
+}
+
+/* Logo — 56px tall, width follows intrinsic aspect ratio */
+.game-invite-list__logo {
+  position: relative;
+  height: 56px;
+  width: auto;
+  max-width: min(100%, 420px);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+}
+
+.game-invite-list__logo-img {
+  display: block;
+  height: 56px;
+  width: auto;
+  max-height: 56px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.game-invite-list__title-wrap {
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+  margin-top: -20px;
+}
+
+.game-invite-list__title {
+  margin: 0;
+  text-align: center;
+  width: 100%;
+  font-size: var(--fi-title-small-size);
+  font-weight: 400;
+  line-height: var(--fi-title-small-lh);
+  color: var(--fi-foreground);
+}
+
+.game-invite-list__list {
+  width: 512px;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.game-invite-list__list-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Moves between rows; follows focused item as focus advances through the full list */
+.game-invite-list__list-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--fi-br-large);
+  background: var(--fi-surface-highlight-dim);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition:
+    top 0.1s ease-out,
+    height 0.1s ease-out,
+    opacity 0.08s ease;
+}
+
+.game-invite-list__list-highlight--visible {
+  opacity: 1;
+}
+
+.game-invite-list__list-track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.game-invite-list__item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 140px 12px 8px;
+  border-radius: var(--fi-br-large);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.game-invite-list__thumb {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+}
+
+.game-invite-list__thumb--icon {
+  padding: 22px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.game-invite-list__thumb--icon img {
+  width: 50px;
+  height: 50px;
+  display: block;
+}
+
+.game-invite-list__thumb--avatar {
+  position: relative;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.game-invite-list__thumb--avatar .game-invite-list__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--fi-br-avatar);
+  overflow: hidden;
+  background: var(--fi-surface-mid);
+  border: 1px solid var(--fi-border-subtle);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.game-invite-list__thumb--avatar .game-invite-list__avatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.game-invite-list__body {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.game-invite-list__name {
+  margin: 0;
+  width: 100%;
+  font-size: var(--fi-body-heavy-size);
+  font-weight: 500;
+  line-height: var(--fi-body-heavy-lh);
+  color: var(--fi-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-invite-list__sub {
+  margin: 0;
+  width: 100%;
+  font-size: var(--fi-label-size);
+  font-weight: 400;
+  line-height: var(--fi-label-lh);
+  color: var(--fi-foreground-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-invite-list__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0;
+}
+
+.game-invite-list__status img {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.game-invite-list__status span {
+  font-size: var(--fi-label-small-size);
+  font-weight: 500;
+  line-height: var(--fi-label-small-lh);
+  white-space: nowrap;
+}
+
+.game-invite-list__status--online span {
+  color: var(--fi-foreground);
+}
+
+.game-invite-list__status--idle span {
+  color: var(--fi-foreground);
+}
+
+.game-invite-list__status--offline span {
+  color: var(--fi-foreground-dim);
+}
+
+/* Button Focus — Invite / Share: opacity fades (debounced in JS); reserve row padding-right for absolute pills */
+.game-invite-list__invite-btn {
+  display: flex;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--fi-br-btn);
+  background: transparent;
+  cursor: default;
+  min-height: 30px;
+  min-width: 5rem;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.game-invite-list__invite-btn:focus {
+  outline: none;
+}
+
+.game-invite-list__item--state-button-focus .game-invite-list__invite-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 0.2s ease-in 0.08s,
+    transform 0.2s ease-in 0.08s;
+}
+
+.game-invite-list__share-btn {
+  display: flex;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--fi-br-btn);
+  background: transparent;
+  cursor: default;
+  min-height: 30px;
+  min-width: 5rem;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.game-invite-list__share-btn:focus {
+  outline: none;
+}
+
+.game-invite-list__item--state-off-service-focused .game-invite-list__share-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 0.2s ease-in 0.08s,
+    transform 0.2s ease-in 0.08s;
+}
+
+.game-invite-list__share-btn-surface,
+.game-invite-list__invite-btn-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--fi-br-btn);
+  pointer-events: none;
+}
+
+.game-invite-list__share-btn-surface {
+  background: #fff;
+}
+
+/* Invite pill — Figma 56:6141 (Default / Focus / Loading / Confirmation) */
+.game-invite-list__invite-btn > .game-invite-list__invite-btn-surface {
+  background: rgba(128, 128, 128, 0.7);
+}
+
+.game-invite-list__share-btn > span:last-child {
+  position: relative;
+  z-index: 1;
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  color: #000;
+  white-space: nowrap;
+}
+
+.game-invite-list__invite-btn-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-height: 27px;
+}
+
+.game-invite-list__invite-btn-label {
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.game-invite-list__item--state-button-focus
+  .game-invite-list__invite-btn:not(.game-invite-list__invite-btn--loading):not(.game-invite-list__invite-btn--invited)
+  > .game-invite-list__invite-btn-surface {
+  background: #fff;
+}
+
+.game-invite-list__item--state-button-focus
+  .game-invite-list__invite-btn:not(.game-invite-list__invite-btn--loading):not(.game-invite-list__invite-btn--invited)
+  .game-invite-list__invite-btn-label {
+  color: #000;
+}
+
+/* Friend row: keep Invite pill visible while loading or after confirmation (focus may move) */
+.game-invite-list__item--invite-pending-ui .game-invite-list__invite-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 0.2s ease-in,
+    transform 0.2s ease-in;
+}
+
+@keyframes game-invite-invite-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.game-invite-list__invite-btn--loading {
+  cursor: default;
+}
+
+.game-invite-list__invite-btn--loading > .game-invite-list__invite-btn-surface {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+.game-invite-list__invite-btn--loading .game-invite-list__invite-btn-label {
+  display: none;
+}
+
+/* Loading: Loader.png (document-relative src in HTML — avoids CSS url() resolution issues) */
+.game-invite-list__invite-btn-loader {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.game-invite-list__invite-btn--loading .game-invite-list__invite-btn-loader {
+  display: flex;
+}
+
+.game-invite-list__invite-loader-img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  opacity: 0.4;
+  animation: game-invite-invite-spin 0.8s linear infinite;
+}
+
+/* Confirmation: overlay inner so fade + slide run (display:none blocks transitions) */
+.game-invite-list__invite-btn-confirm {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(12px);
+  pointer-events: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.45s;
+}
+
+.game-invite-list__invite-btn--invited > .game-invite-list__invite-btn-surface {
+  background: transparent;
+}
+
+.game-invite-list__invite-btn--invited .game-invite-list__invite-btn-label,
+.game-invite-list__invite-btn--invited .game-invite-list__invite-btn-loader {
+  display: none;
+}
+
+.game-invite-list__invite-btn--invited .game-invite-list__invite-btn-confirm {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  pointer-events: auto;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-invite-list__invite-btn-confirm {
+    transform: none;
+    transition: opacity 0.18s ease;
+  }
+
+  .game-invite-list__invite-btn--invited .game-invite-list__invite-btn-confirm {
+    transform: none;
+  }
+}
+
+.game-invite-list__invite-btn-check-img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.game-invite-list__invite-btn-confirm-text {
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  color: #2bb871;
+  white-space: nowrap;
+}
+
+.game-invite-list__invite-btn--invited {
+  min-width: 173px;
+  padding: 6px 12px;
+}
+
+/* ----- Game Invite TV detail — Figma 61:6933 (reuses list pane / panel-bg / hero shell) ----- */
+.game-invite-tv__sheet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 600px;
+  height: 560px;
+  padding: 24px 44px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.game-invite-tv__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 42px;
+  flex-shrink: 0;
+}
+
+/* Close + actions: same focus treatment as list (white surface + black label / icon) — see .game-invite-list__close--state-focused, .game-invite-list__item--state-button-focus .invite-btn.
+ * Reused by Player Panel (#tvPlayerPanelClose). Close vs Back toggles: notifications drill below + tv-dashboard-panel-header.css */
+.game-invite-tv__close {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 16px;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 32px;
+  background: transparent;
+  color: var(--fi-btn-fg-tertiary);
+  font: inherit;
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.game-invite-tv__close:focus {
+  outline: none;
+}
+
+.game-invite-tv__close > .game-invite-list__invite-btn-surface {
+  border-radius: 32px;
+  background: #fff;
+  opacity: 0;
+}
+
+.game-invite-tv__close.game-invite-tv__focusable--current > .game-invite-list__invite-btn-surface {
+  opacity: 1;
+}
+
+.game-invite-tv__close-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-invite-tv__close.game-invite-tv__focusable--current .game-invite-tv__close-inner {
+  color: #000;
+}
+
+.game-invite-tv__close.game-invite-tv__focusable--current .game-invite-tv__close-inner img {
+  filter: brightness(0);
+}
+
+.game-invite-tv__close:hover:not(.game-invite-tv__focusable--current) {
+  color: var(--fi-foreground);
+}
+
+.game-invite-tv__close img {
+  display: block;
+  flex-shrink: 0;
+}
+
+.game-invite-tv__close-label--back {
+  display: none;
+}
+
+/* Inline SVG + currentColor — matches label; avoids mask luminance treating black art as “hole” (reversed glyph). */
+.game-invite-tv__close-icon--back {
+  display: none;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.game-invite-tv__close-icon--back svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+#app[data-game-invite-entry="notifications"] .game-invite-tv__close-icon--x {
+  display: none;
+}
+
+#app[data-game-invite-entry="notifications"] .game-invite-tv__close-icon--back {
+  display: block;
+}
+
+#app[data-game-invite-entry="notifications"] .game-invite-tv__close-label--close {
+  display: none;
+}
+
+#app[data-game-invite-entry="notifications"] .game-invite-tv__close-label--back {
+  display: inline;
+}
+
+.game-invite-tv__header-end {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.game-invite-tv__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  gap: 16px;
+}
+
+.game-invite-tv__lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.game-invite-tv__logo {
+  line-height: 0;
+}
+
+.game-invite-tv__logo img {
+  display: block;
+  width: 186px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.game-invite-tv__title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: center;
+}
+
+.game-invite-tv__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  color: var(--fi-foreground);
+}
+
+.game-invite-tv__game {
+  margin: 0;
+  font-size: var(--fi-label-size);
+  line-height: var(--fi-label-lh);
+  color: var(--fi-foreground);
+}
+
+.game-invite-tv__time {
+  margin: 0;
+  font-size: var(--fi-label-size);
+  line-height: var(--fi-label-lh);
+  color: var(--fi-foreground-dim);
+}
+
+.game-invite-tv__cta-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.game-invite-tv__message {
+  width: 100%;
+  text-align: center;
+}
+
+.game-invite-tv__message p {
+  margin: 0;
+  font-size: var(--fi-body-heavy-size);
+  font-weight: 400;
+  line-height: var(--fi-body-heavy-lh);
+  color: var(--fi-foreground-subtle);
+}
+
+.game-invite-tv__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.game-invite-tv__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.game-invite-tv__btn:focus {
+  outline: none;
+}
+
+.game-invite-tv__btn > .game-invite-list__invite-btn-surface {
+  border-radius: 24px;
+  background: rgba(128, 128, 128, 0.7);
+}
+
+.game-invite-tv__btn.game-invite-tv__focusable--current > .game-invite-list__invite-btn-surface {
+  background: #fff;
+}
+
+.game-invite-tv__btn-label {
+  position: relative;
+  z-index: 1;
+  font-size: var(--fi-btn-text-size);
+  font-weight: 500;
+  line-height: var(--fi-btn-text-lh);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.game-invite-tv__btn.game-invite-tv__focusable--current .game-invite-tv__btn-label {
+  color: #000;
+}
+
+.game-invite-tv__btn:hover:not(.game-invite-tv__focusable--current) > .game-invite-list__invite-btn-surface {
+  background: rgba(128, 128, 128, 0.85);
+}
+
+/* Prototype control: show invite/share pills on every row (focused row = white pill; others = default). */
+#app[data-invite-list-action="always"] .game-invite-list__invite-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#app[data-invite-list-action="always"] .game-invite-list__share-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#app[data-invite-list-action="always"] .game-invite-list__share-btn--busy {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* Share row default pill when not TV-focused — matches invite default (gray surface, light label). */
+#app[data-invite-list-action="always"]
+  .game-invite-list__item--share:not(.game-invite-list__item--state-off-service-focused)
+  .game-invite-list__share-btn:not(.game-invite-list__share-btn--busy)
+  > .game-invite-list__share-btn-surface {
+  background: rgba(128, 128, 128, 0.7);
+}
+
+#app[data-invite-list-action="always"]
+  .game-invite-list__item--share:not(.game-invite-list__item--state-off-service-focused)
+  .game-invite-list__share-btn:not(.game-invite-list__share-btn--busy)
+  > span:last-child {
+  color: #fff;
+}
+
+#app[data-invite-list-action="always"]
+  .game-invite-list__item--share.game-invite-list__item--state-off-service-focused
+  .game-invite-list__share-btn:not(.game-invite-list__share-btn--busy)
+  > .game-invite-list__share-btn-surface {
+  background: #fff;
+}
+
+#app[data-invite-list-action="always"]
+  .game-invite-list__item--share.game-invite-list__item--state-off-service-focused
+  .game-invite-list__share-btn:not(.game-invite-list__share-btn--busy)
+  > span:last-child {
+  color: #000;
+}
