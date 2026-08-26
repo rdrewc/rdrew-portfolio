@@ -3,3 +3,5 @@ wrangler.jsonc
 .git
 .github
 README.md
+.claude
+*.sh

@@ -1,0 +1,77 @@
+{
+  "title": "Friends Leaderboards",
+  "section": "Games Social",
+  "slides": [
+    {
+      "id": "title",
+      "src": "assets/slides/01.jpg",
+      "thumb": "assets/thumbs/01.jpg",
+      "title": "Friends Leaderboards",
+      "notes": "Weekly friend ranking concept — Jinu22, Ellicake, Zoeooo049 on the podium."
+    },
+    {
+      "id": "live-services",
+      "src": "assets/slides/02.jpg",
+      "thumb": "assets/thumbs/02.jpg",
+      "title": "Friends Leaderboards already exist in Live Services",
+      "notes": "The dev-facing functionality is already there. The plan is a select set of priority cloud titles for the first test — Pictionary, Boggle, Scrabble, Netflix Star, Minigolf — so we can validate the friends value across surfaces."
+    },
+    {
+      "id": "player-journey",
+      "src": "assets/slides/03.jpg",
+      "thumb": "assets/thumbs/03.jpg",
+      "title": "The Player Journey — Phases & Intents",
+      "notes": "Peruse, Prep, Play, Post Game, Play Again. Leaderboards are aimed at the Post Game and Play Again phases, where retention lives."
+    },
+    {
+      "id": "overlay-home",
+      "src": "assets/slides/04.jpg",
+      "thumb": "assets/thumbs/04.jpg",
+      "title": "Overlay and Home Continuity",
+      "notes": "The existing friend list component, lightly tweaked, gets us a leaderboard today — and the same board should carry to the future Home screen or any other surface that proves effective."
+    },
+    {
+      "id": "cross-platform",
+      "src": "assets/slides/05.jpg",
+      "thumb": "assets/thumbs/05.jpg",
+      "title": "Cross Platform",
+      "notes": "Details Pages on tv have been identified as a surface where friends leaderboards could live — a Leaderboards row in the DP's action list opens the board, and “See all” expands it."
+    },
+    {
+      "id": "tv-dp",
+      "src": "assets/slides/06.jpg",
+      "thumb": "assets/thumbs/06.jpg",
+      "title": "What about the future of tv DP?",
+      "notes": "Evolved DP on tv is approaching testing, and the drawer and tab structure leaves room for more flexible content types — a board sitting beside Minigolf here."
+    },
+    {
+      "id": "entice-connection",
+      "src": "assets/slides/07.jpg",
+      "thumb": "assets/thumbs/07.jpg",
+      "title": "How could we use leaderboards to entice potential connection?",
+      "notes": "Show players their own score next to people they have actually played with, and make the friend request the obvious next move."
+    },
+    {
+      "id": "no-friends-yet",
+      "src": "assets/slides/08.jpg",
+      "thumb": "assets/thumbs/08.jpg",
+      "title": "What if I don't have friends yet?",
+      "notes": "Rank against all players or smaller cohorts, and let players share their position off platform to challenge friends and give them a reason to join."
+    },
+    {
+      "id": "anatomy",
+      "src": "assets/slides/09.jpg",
+      "thumb": "assets/thumbs/09.jpg",
+      "title": "Anatomy of a leaderboard",
+      "notes": "Top title, boxshot, name, identity callouts, ranking, recurrence, stat used, footer context, board CTA — the parts a game dev configures."
+    },
+    {
+      "id": "three-types",
+      "src": "assets/slides/10.jpg",
+      "thumb": "assets/thumbs/10.jpg",
+      "title": "Three types of friend leaderboards that we will build",
+      "notes": "Data we have: existing per-title gameplay stats plus platform-level stats. Data we need: additional stats picked with the developer for retention and recurring play."
+    }
+  ],
+  "rev": 1787787053
+}

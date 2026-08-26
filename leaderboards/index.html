@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Friends Leaderboards — Slides</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>%F0%9F%8F%86</text></svg>" />
+  <link rel="stylesheet" href="slides.css" />
+</head>
+<body>
+  <div id="deck" data-mode="present" data-chrome="on">
+
+    <!-- ============================== Top chrome ============================== -->
+    <header class="deck-bar deck-bar--top" data-prototype-region="deck-header">
+      <div class="deck-id">
+        <span class="deck-id__title" id="deckTitle">Friends Leaderboards</span>
+        <span class="deck-id__sep" aria-hidden="true">/</span>
+        <span class="deck-id__section" id="deckSection">Crit Share 8</span>
+      </div>
+
+      <div class="deck-tools">
+        <button type="button" class="tool-btn" id="btnOverview" aria-label="Slide overview" title="Overview (G)" aria-pressed="false">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.9"/>
+            <rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.45"/>
+            <rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.45"/>
+            <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.45"/>
+          </svg>
+        </button>
+        <button type="button" class="tool-btn" id="btnNotes" aria-label="Speaker notes" title="Notes (S)" aria-pressed="false">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <rect x="2" y="1.5" width="11" height="12" rx="1.6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            <path d="M4.75 5h5.5M4.75 7.5h5.5M4.75 10h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" class="tool-btn" id="btnFull" aria-label="Fullscreen" title="Fullscreen (F)" aria-pressed="false">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M1.5 5V1.5H5M10 1.5h3.5V5M13.5 10v3.5H10M5 13.5H1.5V10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="tool-btn" id="btnHelp" aria-label="Keyboard shortcuts" title="Shortcuts (?)">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            <path d="M5.9 5.8a1.7 1.7 0 113 1.05c-.5.5-.9.8-.9 1.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+            <circle cx="7.5" cy="11" r="0.8" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================================ Stage ================================ -->
+    <main class="stage" id="stage" aria-live="polite">
+      <!-- Click-to-advance zones sit under the frame so overlay UI stays clickable. -->
+      <button type="button" class="stage-zone stage-zone--prev" id="zonePrev" aria-label="Previous slide" tabindex="-1"></button>
+      <button type="button" class="stage-zone stage-zone--next" id="zoneNext" aria-label="Next slide" tabindex="-1"></button>
+
+      <!-- The frame is locked to the deck's aspect ratio; everything interactive
+           for a given slide is positioned inside it in percentage units so it
+           tracks the artwork at any window size. -->
+      <div class="frame" id="frame">
+        <img class="frame__img" id="frameImg" alt="" draggable="false" />
+        <div class="frame__overlay" id="frameOverlay" data-prototype-region="slide-overlay"></div>
+      </div>
+
+      <!-- Shown until slides land in assets/slides/ -->
+      <div class="empty" id="empty" hidden>
+        <div class="empty__mark" aria-hidden="true">
+          <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+            <rect x="3" y="7" width="40" height="26" rx="3" stroke="currentColor" stroke-width="1.6" fill="none" opacity="0.55"/>
+            <path d="M3 26.5l9.5-8 7.5 6.5 8-7L43 28" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+            <circle cx="16" cy="15.5" r="2.6" fill="currentColor" opacity="0.55"/>
+            <path d="M23 38v4M17.5 42h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.3"/>
+          </svg>
+        </div>
+        <p class="empty__lead">No slides loaded yet.</p>
+        <p class="empty__hint">
+          Re-export the deck, then run <code>./sync-slides.sh</code> to rebuild
+          <code>assets/</code> and <code>slides.json</code>.
+        </p>
+      </div>
+    </main>
+
+    <!-- ============================ Bottom chrome ============================ -->
+    <footer class="deck-bar deck-bar--bottom" data-prototype-region="deck-footer">
+      <div class="deck-nav">
+        <button type="button" class="nav-btn" id="btnPrev" aria-label="Previous slide">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M9.5 2.5L4.5 7.5l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="nav-btn" id="btnNext" aria-label="Next slide">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M5.5 2.5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="deck-caption">
+        <span class="deck-caption__title" id="slideTitle"></span>
+      </div>
+
+      <div class="deck-count">
+        <span id="slideIndex">0</span><span class="deck-count__sep">/</span><span id="slideTotal">0</span>
+      </div>
+    </footer>
+
+    <div class="deck-progress" aria-hidden="true"><span class="deck-progress__fill" id="progressFill"></span></div>
+
+    <!-- ============================ Speaker notes ============================ -->
+    <aside class="notes" id="notes" aria-label="Speaker notes" hidden>
+      <p class="notes__body" id="notesBody"></p>
+    </aside>
+
+    <!-- ============================== Overview =============================== -->
+    <section class="overview" id="overview" aria-label="All slides" hidden>
+      <div class="overview__grid" id="overviewGrid"></div>
+    </section>
+
+    <!-- =============================== Shortcuts ============================= -->
+    <div class="sheet" id="helpSheet" role="dialog" aria-label="Keyboard shortcuts" hidden>
+      <div class="sheet__panel">
+        <h2 class="sheet__title">Shortcuts</h2>
+        <dl class="sheet__keys">
+          <div><dt><kbd>→</kbd> <kbd>Space</kbd></dt><dd>Next slide</dd></div>
+          <div><dt><kbd>←</kbd></dt><dd>Previous slide</dd></div>
+          <div><dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>First / last slide</dd></div>
+          <div><dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Jump to slide</dd></div>
+          <div><dt><kbd>G</kbd></dt><dd>Overview grid</dd></div>
+          <div><dt><kbd>S</kbd></dt><dd>Speaker notes</dd></div>
+          <div><dt><kbd>F</kbd></dt><dd>Fullscreen</dd></div>
+          <div><dt><kbd>C</kbd></dt><dd>Hide chrome</dd></div>
+          <div><dt><kbd>Esc</kbd></dt><dd>Close / back to deck</dd></div>
+        </dl>
+        <button type="button" class="sheet__close" id="btnHelpClose">Close</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="slides.js"></script>
+  <script src="slide-overlays.js"></script>
+</body>
+</html>
