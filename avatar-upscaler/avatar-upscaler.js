@@ -24,12 +24,12 @@
   var state = {
     file: null,
     surface: 'both',
-    flip: false, shadow: true, glow: false, pixel: false,
+    flip: false, shadow: false, glow: false, pixel: false,
     stats: true, online: true,
     handle: 'Zoeooo049',
     game: 'Kpop Demon Hunters Karaoke',
     prog: 65, ach: 44,
-    blur: 24, scrim: 12,
+    scrim: 12,
     placement: {
       tvHero:    { scale: 100, x: 0, y: 0 },
       phoneHero: { scale: 100, x: 0, y: 0 }
@@ -69,12 +69,11 @@
 
   function applyPlacement(slotId) {
     var p = state.placement[slotId];
-    var t = 'translate(' + p.x + '%, ' + p.y + '%) scale(' + (p.scale / 100) + ')';
-    // tvHero has a blurred twin inside the card's band; it must match exactly.
-    [slotId, slotId === 'tvHero' ? 'tvHeroBlur' : null].forEach(function (id) {
-      var el = id && $(id);
-      if (el) el.style.transform = t;
-    });
+    var el = $(slotId);
+    if (el) {
+      el.style.transform =
+        'translate(' + p.x + '%, ' + p.y + '%) scale(' + (p.scale / 100) + ')';
+    }
   }
 
   function syncSliders() {
@@ -89,7 +88,7 @@
     state.file = entry.file;
 
     var src = LIB + encodeURIComponent(entry.file);
-    ['tvHero', 'tvHeroBlur', 'tvChip', 'phoneHero', 'phoneChip'].forEach(function (id) {
+    ['tvHero', 'tvChip', 'phoneHero', 'phoneChip'].forEach(function (id) {
       var img = $(id) && $(id).querySelector('.slot__img');
       if (img) { img.src = src; img.alt = entry.title; }
     });
@@ -269,12 +268,6 @@
       });
 
     // --- scrim ---
-    $('rngBlur').addEventListener('input', function () {
-      state.blur = parseInt(this.value, 10);
-      $('outBlur').textContent = state.blur;
-      applyScrim();
-      save();
-    });
     $('rngScrim').addEventListener('input', function () {
       state.scrim = parseInt(this.value, 10);
       $('outScrim').textContent = (state.scrim / 100).toFixed(2);
@@ -294,14 +287,9 @@
       });
   }
 
-  // The card layer lives inside a `scale(--s)` box, so a blur authored in
-  // reference pixels already renders at the right size — no conversion needed.
-  // Set on #tvScreen so both the scaled .card-layer and the unscaled
-  // .card-blur (which sits outside it) read the same values.
+  // Set on #tvScreen so the scaled .card-layer and .card-scrim agree.
   function applyScrim() {
-    var screen = $('tvScreen');
-    screen.style.setProperty('--card-blur', state.blur + 'px');
-    screen.style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
+    $('tvScreen').style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
   }
 
   // Keep --s locked to the rendered screen width so every measured pixel in
@@ -341,8 +329,6 @@
     $('csAchFill').style.width = state.ach + '%';
     $('csAchVal').textContent = state.ach;
 
-    $('rngBlur').value = state.blur;
-    $('outBlur').textContent = state.blur;
     $('rngScrim').value = state.scrim;
     $('outScrim').textContent = (state.scrim / 100).toFixed(2);
     applyScrim();

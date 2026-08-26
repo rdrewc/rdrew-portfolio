@@ -503,14 +503,18 @@ html, body {
   width: 100%;
   height: auto;
   object-fit: fill;                   /* no box to fit to — aspect drives height */
-  /* These cut-outs are head-heavy, so at a size where the face clears the blur
-     band the body stops short of the card bottom. Dissolve the last stretch so
-     it fades into the card instead of ending on a hard cut. .card-clip still
-     guarantees nothing escapes the card when scaled up. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 98%);
-  mask-image: linear-gradient(to bottom, #000 68%, transparent 98%);
 }
-.slot--chip { left: 3.6%; top: 4.2%; width: 3.4%; height: 4.7%; }
+
+/* Only the cropped image is drawn — no mask, no second copy, nothing that
+   extends past this box. Anything beyond the card is cut by .card-clip. */
+
+/* Source-resolution chip over the top-left nav avatar. */
+.slot--chip {
+  left: 3.6%;
+  top: 4.2%;
+  width: 3.4%;
+  height: 4.7%;
+}
 .slot--chip .slot__img { border-radius: 4px; }
 
 .slot--hero-phone { width: 100%; height: 100%; }
@@ -560,12 +564,10 @@ html, body {
 }
 
 #app[data-stats="off"] .card-layer,
-#app[data-stats="off"] .blur-band,
 #app[data-stats="off"] .card-scrim { display: none; }
 
 /* The card's lower band, in screen percentages:
    card x 127→819 of 2560, blur onset y=340 within the card → 685 of 1440. */
-.blur-band,
 .card-scrim {
   position: absolute;
   left: 4.961%;                       /* 127 / 2560 */
@@ -575,28 +577,6 @@ html, body {
   pointer-events: none;
   border-bottom-left-radius: calc(24px * var(--s, 0.39));
   border-bottom-right-radius: calc(24px * var(--s, 0.39));
-}
-
-.blur-band {
-  overflow: hidden;
-  /* soften the band's top edge so the blur doesn't start on a hard seam */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(44px * var(--s, 0.39)));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(44px * var(--s, 0.39)));
-}
-
-/* Sized and offset to the full screen box, so .slot--hero's percentages inside
-   resolve against the same rectangle they do outside the band. */
-.blur-band__inner {
-  position: absolute;
-  left: calc(-127px * var(--s, 0.39));
-  top: calc(-685px * var(--s, 0.39));
-  width: calc(2560px * var(--s, 0.39));
-  height: calc(1440px * var(--s, 0.39));
-}
-
-.blur-band .slot--hero {
-  filter: blur(calc(var(--card-blur, 24px) * var(--s, 0.39)));
-  cursor: default;
 }
 
 /* Tint only — the measurement shows the reference darkens the card by ~0, so
@@ -608,35 +588,6 @@ html, body {
     rgba(18, 8, 40, calc(var(--scrim, 0.12) * 0.6)) 38%,
     rgba(18, 8, 40, var(--scrim, 0.12))
   );
-}
-
-/* Blur band — card-relative y=340→741, expressed in screen percentages because
-   backdrop-filter cannot live inside the scaled .card-layer (Chrome samples an
-   empty backdrop through a transform). Measured onset: sharpness in the
-   character column collapses between y=325 and y=350, hence y=340
-   → (345+340)/1440 = 47.57%. The reference shows no darkening of the card
-   background (ref − shell ≈ 0 down the left margin), so this is a blur with
-   only as much tint as --scrim asks for. Lengths scale via --s. */
-.card-blur {
-  position: absolute;
-  left: 4.961%;                       /* 127 / 2560 */
-  top: 47.569%;                       /* 685 / 1440 */
-  width: 27.031%;                     /* 692 / 2560 */
-  height: 27.847%;                    /* 401 / 1440 */
-  border-bottom-left-radius: calc(24px * var(--s, 0.39));
-  border-bottom-right-radius: calc(24px * var(--s, 0.39));
-  pointer-events: none;
-  backdrop-filter: blur(calc(var(--card-blur, 24px) * var(--s, 0.39)));
-  -webkit-backdrop-filter: blur(calc(var(--card-blur, 24px) * var(--s, 0.39)));
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 8, 40, 0),
-    rgba(18, 8, 40, calc(var(--scrim, 0.12) * 0.6)) 38%,
-    rgba(18, 8, 40, var(--scrim, 0.12))
-  );
-  /* soften the top edge of the blur band so it isn't a hard seam */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(44px * var(--s, 0.39)));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(44px * var(--s, 0.39)));
 }
 
 .card-stats {

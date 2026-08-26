@@ -98,7 +98,7 @@
             <input type="checkbox" id="chkFlip" /><span>Flip horizontally</span>
           </label>
           <label class="switch-row" for="chkShadow">
-            <input type="checkbox" id="chkShadow" checked /><span>Drop shadow</span>
+            <input type="checkbox" id="chkShadow" /><span>Drop shadow</span>
           </label>
           <label class="switch-row" for="chkGlow">
             <input type="checkbox" id="chkGlow" /><span>Backlight glow</span>
@@ -135,17 +135,12 @@
 
         <div class="control-block">
           <div class="control-block__view-label">Scrim</div>
-          <label class="range-row" for="rngBlur">
-            <span class="range-row__label">Blur</span>
-            <input type="range" id="rngBlur" class="control-range" min="0" max="60" step="1" value="24" />
-            <output class="range-row__val" id="outBlur">24</output>
-          </label>
           <label class="range-row" for="rngScrim">
             <span class="range-row__label">Tint</span>
             <input type="range" id="rngScrim" class="control-range" min="0" max="70" step="1" value="12" />
             <output class="range-row__val" id="outScrim">0.12</output>
           </label>
-          <p class="control-block__hint">Measured from the reference: blur 24px at 2560px wide, no card tint. Blur scales with the TV.</p>
+          <p class="control-block__hint">Tint only. The avatar renders as the cropped image alone — no layer extends past its box.</p>
         </div>
 
         <div class="control-block">
@@ -182,19 +177,6 @@
             <!-- Profile card overlay. Authored in the reference image's own
                  pixel space (card = 692×741 at 2560×1440) and scaled by --s,
                  so every measured value maps 1:1. -->
-            <!-- Blurred copy of the hero, clipped to the card's lower band.
-                 The reference blurs only the character — the card's own line
-                 texture stays sharp there — so this duplicates and blurs the
-                 avatar rather than using backdrop-filter. __inner is offset so
-                 the slot's screen percentages still resolve correctly. -->
-            <div class="blur-band" id="blurBand">
-              <div class="blur-band__inner">
-                <div class="slot slot--hero" id="tvHeroBlur">
-                  <img class="slot__img" alt="" decoding="async" />
-                </div>
-              </div>
-            </div>
-
             <div class="card-scrim" id="cardScrim"></div>
 
             <div class="card-layer" id="cardLayer">
