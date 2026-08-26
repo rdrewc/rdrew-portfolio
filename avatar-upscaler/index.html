@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Avatar Upscaler</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>%F0%9F%96%BC</text></svg>" />
+  <link rel="stylesheet" href="avatar-upscaler.css" />
+</head>
+<body>
+  <div id="app" data-sidebar-pos="left" data-surface="both">
+
+    <!-- ============================= Control sidebar ============================= -->
+    <aside class="control-sidebar" data-prototype-region="control-panel" aria-label="Avatar upscaler controls">
+      <div class="sidebar-dock-header" aria-label="Panel position">
+        <button type="button" class="sidebar-dock-btn" id="sidebarBtnMini" aria-label="Minimize panel" title="Minimize" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" class="sidebar-dock-btn" id="sidebarBtnLeft" aria-label="Dock to left" title="Dock left" aria-pressed="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="4" height="12" rx="1" fill="currentColor" opacity="0.9"/>
+            <rect x="6.5" y="1" width="6.5" height="12" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          </svg>
+        </button>
+        <button type="button" class="sidebar-dock-btn" id="sidebarBtnBottom" aria-label="Dock to bottom" title="Dock bottom" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="12" height="8.5" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            <rect x="1" y="10.5" width="12" height="2.5" rx="1" fill="currentColor" opacity="0.9"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sidebar-main-content">
+
+        <!-- Selected avatar readout -->
+        <div class="you-picker" aria-label="Selected avatar">
+          <div class="you-picker__trigger" id="selectedReadout">
+            <div class="control-sidebar__you-avatar-wrap">
+              <img id="selectedAvatar" class="control-sidebar__you-avatar" src="" width="40" height="40" alt="" decoding="async" />
+            </div>
+            <div class="control-sidebar__you-text">
+              <span class="control-sidebar__you-label">Selected</span>
+              <span class="control-sidebar__you-handle" id="selectedTitle">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label" id="lblSurface">Surface</div>
+          <div class="seg" role="group" aria-labelledby="lblSurface">
+            <button type="button" class="seg__opt" data-surface="tv">TV</button>
+            <button type="button" class="seg__opt" data-surface="phone">Phone</button>
+            <button type="button" class="seg__opt is-active" data-surface="both">Both</button>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label" id="lblShow">Show</div>
+          <select id="selShow" class="control-select" aria-labelledby="lblShow"></select>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label" id="lblSearch">Avatar</div>
+          <input type="search" id="avatarSearch" class="control-input" placeholder="Search 56 avatars…" aria-labelledby="lblSearch" />
+          <div class="avatar-grid" id="avatarGrid" role="listbox" aria-label="Avatar library"></div>
+          <p class="control-block__hint" id="gridCount"></p>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label">Placement</div>
+
+          <label class="range-row" for="rngScale">
+            <span class="range-row__label">Scale</span>
+            <input type="range" id="rngScale" class="control-range" min="20" max="220" step="1" value="100" />
+            <output class="range-row__val" id="outScale">100%</output>
+          </label>
+
+          <label class="range-row" for="rngX">
+            <span class="range-row__label">X</span>
+            <input type="range" id="rngX" class="control-range" min="-50" max="50" step="0.5" value="0" />
+            <output class="range-row__val" id="outX">0</output>
+          </label>
+
+          <label class="range-row" for="rngY">
+            <span class="range-row__label">Y</span>
+            <input type="range" id="rngY" class="control-range" min="-50" max="50" step="0.5" value="0" />
+            <output class="range-row__val" id="outY">0</output>
+          </label>
+
+          <p class="control-block__hint">Drag the avatar on either surface to reposition it.</p>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label">Render</div>
+          <label class="switch-row" for="chkFlip">
+            <input type="checkbox" id="chkFlip" /><span>Flip horizontally</span>
+          </label>
+          <label class="switch-row" for="chkShadow">
+            <input type="checkbox" id="chkShadow" checked /><span>Drop shadow</span>
+          </label>
+          <label class="switch-row" for="chkGlow">
+            <input type="checkbox" id="chkGlow" /><span>Backlight glow</span>
+          </label>
+          <label class="switch-row" for="chkPixel">
+            <input type="checkbox" id="chkPixel" /><span>Show source resolution</span>
+          </label>
+          <p class="control-block__hint" id="resHint"></p>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label">Profile card</div>
+          <label class="switch-row" for="chkStats">
+            <input type="checkbox" id="chkStats" checked /><span>Show stats layer</span>
+          </label>
+          <label class="switch-row" for="chkOnline">
+            <input type="checkbox" id="chkOnline" checked /><span>Online</span>
+          </label>
+
+          <input type="text" id="inpHandle" class="control-input" value="Zoeooo049" aria-label="Handle" />
+          <input type="text" id="inpGame" class="control-input" value="Kpop Demon Hunters Karaoke" aria-label="Currently playing" style="margin-top:0.4rem" />
+
+          <label class="range-row" for="rngProg" style="margin-top:0.6rem">
+            <span class="range-row__label">Prog</span>
+            <input type="range" id="rngProg" class="control-range" min="0" max="100" step="1" value="65" />
+            <output class="range-row__val" id="outProg">65%</output>
+          </label>
+          <label class="range-row" for="rngAch">
+            <span class="range-row__label">Ach</span>
+            <input type="range" id="rngAch" class="control-range" min="0" max="100" step="1" value="44" />
+            <output class="range-row__val" id="outAch">44</output>
+          </label>
+        </div>
+
+        <div class="control-block">
+          <div class="control-block__view-label">Scrim</div>
+          <label class="range-row" for="rngBlur">
+            <span class="range-row__label">Blur</span>
+            <input type="range" id="rngBlur" class="control-range" min="0" max="60" step="1" value="24" />
+            <output class="range-row__val" id="outBlur">24</output>
+          </label>
+          <label class="range-row" for="rngScrim">
+            <span class="range-row__label">Tint</span>
+            <input type="range" id="rngScrim" class="control-range" min="0" max="70" step="1" value="12" />
+            <output class="range-row__val" id="outScrim">0.12</output>
+          </label>
+          <p class="control-block__hint">Measured from the reference: blur 24px at 2560px wide, no card tint. Blur scales with the TV.</p>
+        </div>
+
+        <div class="control-block">
+          <button type="button" class="control-action-btn" id="btnReset">Reset placement</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================================= Stage ================================== -->
+    <main class="stage" id="stage">
+
+      <!-- ---------- TV ---------- -->
+      <section class="surface surface--tv" id="surfaceTv" aria-label="TV preview">
+        <div class="tv-frame">
+          <div class="tv-screen" id="tvScreen">
+            <img class="tv-screen__bg" id="tvBg" src="assets/tv-screen.png" alt="" decoding="async" />
+            <div class="tv-screen__missing" id="tvMissing" hidden>
+              <p class="tv-screen__missing-title">Drop the TV screen in</p>
+              <code>avatar-upscaler/assets/tv-screen.png</code>
+              <p class="tv-screen__missing-sub">16:9. The hero and chip slots sit on top of it.</p>
+            </div>
+
+            <!-- Upscaled hero render, clipped to the card so it can never
+                 bleed past the card's edges however far it is scaled. __inner
+                 is offset so the slot's screen percentages still resolve. -->
+            <div class="card-clip">
+              <div class="card-clip__inner">
+                <div class="slot slot--hero" id="tvHero" data-slot="tvHero">
+                  <img class="slot__img" alt="" decoding="async" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile card overlay. Authored in the reference image's own
+                 pixel space (card = 692×741 at 2560×1440) and scaled by --s,
+                 so every measured value maps 1:1. -->
+            <!-- Blurred copy of the hero, clipped to the card's lower band.
+                 The reference blurs only the character — the card's own line
+                 texture stays sharp there — so this duplicates and blurs the
+                 avatar rather than using backdrop-filter. __inner is offset so
+                 the slot's screen percentages still resolve correctly. -->
+            <div class="blur-band" id="blurBand">
+              <div class="blur-band__inner">
+                <div class="slot slot--hero" id="tvHeroBlur">
+                  <img class="slot__img" alt="" decoding="async" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card-scrim" id="cardScrim"></div>
+
+            <div class="card-layer" id="cardLayer">
+              <div class="card-stats" id="cardStats">
+                <div class="cs-status">
+                  <span class="cs-dot" id="csDot"></span>
+                  <span class="cs-status-text" id="csStatus">Online</span>
+                </div>
+
+                <div class="cs-handle" id="csHandle">Zoeooo049</div>
+
+                <div class="cs-divider"></div>
+
+                <div class="cs-label">Currently Playing</div>
+                <div class="cs-title" id="csTitle">Kpop Demon Hunters Karaoke</div>
+
+                <div class="cs-game">
+                  <img class="cs-thumb" id="csThumb" src="assets/game-thumb.png" alt="" decoding="async" />
+                  <div class="cs-meters">
+                    <div class="cs-meter-head">Game Progress</div>
+                    <div class="cs-meter-row">
+                      <div class="cs-track"><div class="cs-fill" id="csProgFill"></div></div>
+                      <div class="cs-val"><b id="csProgVal">65</b>%</div>
+                    </div>
+                    <div class="cs-meter-head">Achievements</div>
+                    <div class="cs-meter-row">
+                      <div class="cs-track"><div class="cs-fill" id="csAchFill"></div></div>
+                      <div class="cs-val"><b id="csAchVal">44</b><span class="cs-val-dim">/100</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- source-resolution chip, top-left nav -->
+            <div class="slot slot--chip" id="tvChip">
+              <img class="slot__img" alt="" decoding="async" />
+            </div>
+          </div>
+        </div>
+        <p class="surface__caption">TV — 16:9</p>
+      </section>
+
+      <!-- ---------- Phone ---------- -->
+      <section class="surface surface--phone" id="surfacePhone" aria-label="Phone preview">
+        <div class="phone-frame">
+          <div class="phone-screen" id="phoneScreen">
+            <div class="phone-shell">
+              <div class="phone-shell__status">
+                <span>9:41</span>
+                <span class="phone-shell__status-right"></span>
+              </div>
+
+              <div class="phone-shell__hero">
+                <div class="slot slot--hero-phone" id="phoneHero" data-slot="phoneHero">
+                  <img class="slot__img" alt="" decoding="async" />
+                </div>
+              </div>
+
+              <div class="phone-shell__meta">
+                <div class="slot slot--chip-phone" id="phoneChip">
+                  <img class="slot__img" alt="" decoding="async" />
+                </div>
+                <div class="phone-shell__meta-text">
+                  <span class="phone-shell__handle" id="phoneHandle">—</span>
+                  <span class="phone-shell__sub" id="phoneSub">Games profile</span>
+                </div>
+              </div>
+
+              <div class="phone-shell__placeholders" aria-hidden="true">
+                <div class="ph-row ph-row--title"></div>
+                <div class="ph-cards">
+                  <div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div>
+                </div>
+                <div class="ph-row ph-row--title"></div>
+                <div class="ph-list">
+                  <div class="ph-item"></div><div class="ph-item"></div><div class="ph-item"></div>
+                </div>
+              </div>
+
+              <div class="phone-shell__home" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <p class="surface__caption">Phone — 393 × 852</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="avatar-upscaler.js"></script>
+</body>
+</html>
