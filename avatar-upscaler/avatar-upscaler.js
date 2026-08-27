@@ -21,6 +21,7 @@
   // The reference screen's native size; the card overlay is authored in these
   // pixels and scaled by --s.
   var REF_W = 2560;
+  var REF_PH_W = 750;   // the phone mockup's own width
 
   var state = {
     file: null,
@@ -72,7 +73,8 @@
     var p = state.placement[slotId];
     var t = 'translate(' + p.x + '%, ' + p.y + '%) scale(' + (p.scale / 100) + ')';
     // the blur rectangle holds a copy of tvHero; it must move with it
-    [slotId, slotId === 'tvHero' ? 'tvHeroBlur' : null].forEach(function (id) {
+    var twin = { tvHero: 'tvHeroBlur', phoneHero: 'phoneHeroBlur' }[slotId] || null;
+    [slotId, twin].forEach(function (id) {
       var el = id && $(id);
       if (el) el.style.transform = t;
     });
@@ -94,6 +96,7 @@
     var src = LIB + encodeURIComponent(entry.file);
     var full = LIB_FULL + encodeURIComponent(entry.file);
     [['tvHero', src], ['tvHeroBlur', src], ['phoneHero', src],
+     ['phoneHeroBlur', src],
      ['tvChip', full], ['phoneChip', full]].forEach(function (pair) {
       var img = $(pair[0]) && $(pair[0]).querySelector('.slot__img');
       if (img) { img.src = pair[1]; img.alt = entry.title; }
@@ -101,8 +104,6 @@
 
     $('selectedAvatar').src = src;
     $('selectedTitle').textContent = entry.title;
-    $('phoneHandle').textContent = entry.title;
-    $('phoneSub').textContent = entry.show;
 
     var s = entry.source_size, o = entry.output_size;
     resHint.textContent =
@@ -308,19 +309,28 @@
     screen.style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
     screen.style.setProperty('--card-blur', state.blur + 'px');
     screen.style.setProperty('--band-y', state.band + 'px');
+    var ph = $('phoneScreen');
+    if (ph) {
+      ph.style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
+      ph.style.setProperty('--card-blur', state.blur + 'px');
+    }
   }
 
   // Keep --s locked to the rendered screen width so every measured pixel in
   // the card overlay maps 1:1 onto the TV image at any size.
   function trackScale() {
-    var screen = $('tvScreen');
-    function update() {
-      var w = screen.getBoundingClientRect().width;
-      if (w) screen.style.setProperty('--s', w / REF_W);
-    }
-    update();
-    if (window.ResizeObserver) new ResizeObserver(update).observe(screen);
-    else window.addEventListener('resize', update);
+    [[$('tvScreen'), '--s', REF_W], [$('phoneScreen'), '--ps', REF_PH_W]]
+      .forEach(function (cfg) {
+        var el = cfg[0];
+        if (!el) return;
+        function update() {
+          var w = el.getBoundingClientRect().width;
+          if (w) el.style.setProperty(cfg[1], w / cfg[2]);
+        }
+        update();
+        if (window.ResizeObserver) new ResizeObserver(update).observe(el);
+        else window.addEventListener('resize', update);
+      });
   }
 
   function applyStateToDom() {

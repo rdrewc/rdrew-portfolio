@@ -1,3 +1,26 @@
+/* Hero slot, measured off the filled mockup by diffing it against the empty
+   one: the avatar lands at x 181..647 (467 wide), top 439, and dissolves by
+   y 863 rather than meeting the card bottom the way the TV card does. The card
+   here is much taller than the figure, so a bottom-flush crop would blow the
+   head up to fill it. Width-driven with a bottom fade instead. */
+.slot--hero-phone {
+  left: 24.133%;                       /* 181 / 750 */
+  top: 27.032%;                        /* 439 / 1624 */
+  width: 62.267%;                      /* 467 / 750 */
+  height: auto;
+  place-items: start center;
+  transform-origin: top center;
+}
+.slot--hero-phone .slot__img {
+  width: 100%;
+  height: auto;
+  object-fit: fill;
+  /* Dissolve so the figure is gone by y~870, where the reference ends and the
+     handle begins — otherwise the face washes out "Zoeooo049". */
+  -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
+  mask-image: linear-gradient(to bottom, #000 48%, transparent 86%);
+}
+
 /* ==========================================================================
    Avatar Upscaler
    Control-sidebar tokens and styling are carried over from
@@ -406,9 +429,7 @@ html, body {
   overflow: hidden;
 }
 .tv-screen__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.tv-screen__bg[hidden] { display: none; }
 
-/* `display: flex` below would otherwise beat the `hidden` attribute. */
 .tv-screen__missing[hidden] { display: none; }
 
 .tv-screen__missing {
@@ -729,99 +750,118 @@ html, body {
 .cs-val b { font-weight: 700; }
 .cs-val-dim { color: rgba(255, 255, 255, 0.62); }
 
-/* ----- Phone ----- */
+/* ==========================================================================
+   Phone
+   The mockup (assets/phone-screen.png, 750x1624) is the screen, exactly as the
+   TV works. Slots measured off it: the circular chip at (32,143) 96x96, and the
+   hero running x 16..733, y 393..1095. --ps = renderedWidth / 750.
+   ========================================================================== */
 .phone-frame {
-  width: 393px;
-  height: 852px;
-  border-radius: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  background: #04060a;
+  width: 375px;
+  height: 812px;
+  border-radius: 44px;
   overflow: hidden;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
+  background: #000;
 }
-/* In split view the phone is scaled down; the negative margin collapses the
-   untransformed box so the caption still sits directly beneath it. */
 #app[data-surface="both"] .surface--phone { --phone-scale: 0.62; }
 #app[data-surface="both"] .phone-frame {
   transform: scale(var(--phone-scale));
   transform-origin: top center;
-  margin-bottom: calc(852px * (var(--phone-scale) - 1));
-  margin-inline: calc(393px * (var(--phone-scale) - 1) / 2);
+  margin-bottom: calc(812px * (var(--phone-scale) - 1));
+  margin-inline: calc(375px * (var(--phone-scale) - 1) / 2);
 }
-#app[data-surface="both"] .tv-frame { width: min(980px, 50vw); }
 
-.phone-screen { width: 100%; height: 100%; overflow: hidden; }
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.phone-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 
-.phone-shell {
-  position: relative;
+/* Hero slot — bottom flush with the card, cropped per avatar, as on the TV. */
+.slot--hero-phone {
+  left: 2.133%;                        /* 16 / 750 */
+  top: 24.199%;                        /* 393 / 1624 */
+  width: 95.600%;                      /* 717 / 750 */
+  height: 43.227%;                     /* 702 / 1624 -> bottom at 1095 */
+  place-items: stretch;
+  transform-origin: top center;
+}
+.slot--hero-phone .slot__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #241633 0%, #1b1730 42%, #0c0d16 100%);
+  object-fit: cover;
+  object-position: top center;
 }
 
-.phone-shell__status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 26px 4px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-}
-.phone-shell__status-right {
-  width: 62px;
-  height: 12px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.phone-shell__hero {
-  position: relative;
-  height: 300px;
-  margin: 8px 16px 0;
-  border-radius: 18px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.09);
+/* Clips the hero to the card so it can't bleed past it. */
+.ph-clip {
+  position: absolute;
+  left: 2.133%;
+  top: 24.199%;
+  width: 95.600%;
+  height: 43.227%;
   overflow: hidden;
 }
-
-.phone-shell__meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px 4px;
+.ph-clip__inner,
+.ph-blur__inner {
+  position: absolute;
+  left: calc(-16px * var(--ps, 0.5));
+  width: calc(750px * var(--ps, 0.5));
+  height: calc(1624px * var(--ps, 0.5));
 }
-.phone-shell__meta-text { display: flex; flex-direction: column; min-width: 0; }
-.phone-shell__handle {
-  font-size: 17px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
+.ph-clip__inner { top: calc(-393px * var(--ps, 0.5)); }
+
+/* Blur rectangle between the avatar and the type, clipped so it can't spill. */
+.ph-blur {
+  position: absolute;
+  left: 2.133%;
+  top: calc(var(--ph-band, 820px) * var(--ps, 0.5));
+  width: 95.600%;
+  height: calc((1095px - var(--ph-band, 820px)) * var(--ps, 0.5));
   overflow: hidden;
-  text-overflow: ellipsis;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(60px * var(--ps, 0.5)));
+  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(60px * var(--ps, 0.5)));
 }
-.phone-shell__sub { font-size: 12px; color: rgba(255, 255, 255, 0.55); }
+.ph-blur__inner { top: calc(-1 * var(--ph-band, 820px) * var(--ps, 0.5)); }
+.ph-blur .slot--hero-phone {
+  filter: blur(calc(var(--card-blur, 24px) * var(--ps, 0.5)));
+  cursor: default;
+}
+#app[data-shadow="on"] .ph-blur .slot__img,
+#app[data-glow="on"] .ph-blur .slot__img { filter: none; }
 
-/* Deliberately inert placeholder furniture — this is a shell, not a screen. */
-.phone-shell__placeholders { padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px; }
-.ph-row { height: 12px; border-radius: 4px; background: rgba(255, 255, 255, 0.13); }
-.ph-row--title { width: 42%; }
-.ph-cards { display: flex; gap: 10px; }
-.ph-card { flex: 1; height: 78px; border-radius: 10px; background: rgba(255, 255, 255, 0.08); }
-.ph-list { display: flex; flex-direction: column; gap: 8px; }
-.ph-item { height: 40px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); }
+/* Legibility scrim behind Online / handle / the two stat columns. */
+.ph-scrim {
+  position: absolute;
+  left: 2.133%;
+  top: 49.261%;                        /* 800 / 1624 */
+  width: 95.600%;
+  height: 18.165%;                     /* to 1095 */
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(16, 7, 34, 0),
+    rgba(16, 7, 34, calc(var(--scrim, 0.34) * 0.55)) 16%,
+    rgba(16, 7, 34, calc(var(--scrim, 0.34) * 0.9)) 42%,
+    rgba(16, 7, 34, var(--scrim, 0.34))
+  );
+}
 
-.phone-shell__home {
-  margin-top: auto;
-  margin-bottom: 9px;
-  align-self: center;
-  width: 140px;
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.6);
+/* Circular chip, top-left. Carries the original uncropped art. */
+.slot--chip-phone {
+  position: absolute;
+  left: 4.267%;                        /* 32 / 750 */
+  top: 8.805%;                         /* 143 / 1624 */
+  width: 12.800%;                      /* 96 / 750 */
+  height: 5.911%;                      /* 96 / 1624 */
+}
+.slot--chip-phone .slot__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 @media (max-width: 1100px) {

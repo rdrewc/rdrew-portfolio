@@ -247,44 +247,35 @@
       <section class="surface surface--phone" id="surfacePhone" aria-label="Phone preview">
         <div class="phone-frame">
           <div class="phone-screen" id="phoneScreen">
-            <div class="phone-shell">
-              <div class="phone-shell__status">
-                <span>9:41</span>
-                <span class="phone-shell__status-right"></span>
-              </div>
+            <!-- Same construction as the TV: the mockup is the screen, and the
+                 avatar drops into slots measured off it (750x1624). -->
+            <img class="phone-bg" id="phoneBg" src="assets/phone-screen.png" alt="" decoding="async" />
 
-              <div class="phone-shell__hero">
+            <div class="ph-clip">
+              <div class="ph-clip__inner">
                 <div class="slot slot--hero-phone" id="phoneHero" data-slot="phoneHero">
                   <img class="slot__img" alt="" decoding="async" />
                 </div>
               </div>
+            </div>
 
-              <div class="phone-shell__meta">
-                <div class="slot slot--chip-phone" id="phoneChip">
+            <div class="ph-blur" id="phBlur">
+              <div class="ph-blur__inner">
+                <div class="slot slot--hero-phone" id="phoneHeroBlur">
                   <img class="slot__img" alt="" decoding="async" />
                 </div>
-                <div class="phone-shell__meta-text">
-                  <span class="phone-shell__handle" id="phoneHandle">—</span>
-                  <span class="phone-shell__sub" id="phoneSub">Games profile</span>
-                </div>
               </div>
+            </div>
 
-              <div class="phone-shell__placeholders" aria-hidden="true">
-                <div class="ph-row ph-row--title"></div>
-                <div class="ph-cards">
-                  <div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div>
-                </div>
-                <div class="ph-row ph-row--title"></div>
-                <div class="ph-list">
-                  <div class="ph-item"></div><div class="ph-item"></div><div class="ph-item"></div>
-                </div>
-              </div>
+            <div class="ph-scrim"></div>
 
-              <div class="phone-shell__home" aria-hidden="true"></div>
+            <!-- circular chip, top-left -->
+            <div class="slot slot--chip-phone" id="phoneChip">
+              <img class="slot__img" alt="" decoding="async" />
             </div>
           </div>
         </div>
-        <p class="surface__caption">Phone — 393 × 852</p>
+        <p class="surface__caption">Phone — 375 × 812</p>
       </section>
     </main>
   </div>
