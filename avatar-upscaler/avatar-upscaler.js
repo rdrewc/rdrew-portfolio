@@ -29,7 +29,7 @@
     handle: 'Zoeooo049',
     game: 'Kpop Demon Hunters Karaoke',
     prog: 65, ach: 44,
-    scrim: 12,
+    blur: 24, band: 685, scrim: 12,
     placement: {
       tvHero:    { scale: 100, x: 0, y: 0 },
       phoneHero: { scale: 100, x: 0, y: 0 }
@@ -69,11 +69,12 @@
 
   function applyPlacement(slotId) {
     var p = state.placement[slotId];
-    var el = $(slotId);
-    if (el) {
-      el.style.transform =
-        'translate(' + p.x + '%, ' + p.y + '%) scale(' + (p.scale / 100) + ')';
-    }
+    var t = 'translate(' + p.x + '%, ' + p.y + '%) scale(' + (p.scale / 100) + ')';
+    // the blur rectangle holds a copy of tvHero; it must move with it
+    [slotId, slotId === 'tvHero' ? 'tvHeroBlur' : null].forEach(function (id) {
+      var el = id && $(id);
+      if (el) el.style.transform = t;
+    });
   }
 
   function syncSliders() {
@@ -88,7 +89,7 @@
     state.file = entry.file;
 
     var src = LIB + encodeURIComponent(entry.file);
-    ['tvHero', 'tvChip', 'phoneHero', 'phoneChip'].forEach(function (id) {
+    ['tvHero', 'tvHeroBlur', 'tvChip', 'phoneHero', 'phoneChip'].forEach(function (id) {
       var img = $(id) && $(id).querySelector('.slot__img');
       if (img) { img.src = src; img.alt = entry.title; }
     });
@@ -268,6 +269,15 @@
       });
 
     // --- scrim ---
+    [['rngBlur', 'blur', 'outBlur'], ['rngBand', 'band', 'outBand']].forEach(function (c) {
+      $(c[0]).addEventListener('input', function () {
+        state[c[1]] = parseInt(this.value, 10);
+        $(c[2]).textContent = state[c[1]];
+        applyScrim();
+        save();
+      });
+    });
+
     $('rngScrim').addEventListener('input', function () {
       state.scrim = parseInt(this.value, 10);
       $('outScrim').textContent = (state.scrim / 100).toFixed(2);
@@ -289,7 +299,10 @@
 
   // Set on #tvScreen so the scaled .card-layer and .card-scrim agree.
   function applyScrim() {
-    $('tvScreen').style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
+    var screen = $('tvScreen');
+    screen.style.setProperty('--scrim', (state.scrim / 100).toFixed(3));
+    screen.style.setProperty('--card-blur', state.blur + 'px');
+    screen.style.setProperty('--band-y', state.band + 'px');
   }
 
   // Keep --s locked to the rendered screen width so every measured pixel in
@@ -329,6 +342,10 @@
     $('csAchFill').style.width = state.ach + '%';
     $('csAchVal').textContent = state.ach;
 
+    $('rngBlur').value = state.blur;
+    $('outBlur').textContent = state.blur;
+    $('rngBand').value = state.band;
+    $('outBand').textContent = state.band;
     $('rngScrim').value = state.scrim;
     $('outScrim').textContent = (state.scrim / 100).toFixed(2);
     applyScrim();

@@ -135,12 +135,22 @@
 
         <div class="control-block">
           <div class="control-block__view-label">Scrim</div>
+          <label class="range-row" for="rngBlur">
+            <span class="range-row__label">Blur</span>
+            <input type="range" id="rngBlur" class="control-range" min="0" max="60" step="1" value="24" />
+            <output class="range-row__val" id="outBlur">24</output>
+          </label>
+          <label class="range-row" for="rngBand">
+            <span class="range-row__label">Band</span>
+            <input type="range" id="rngBand" class="control-range" min="500" max="1000" step="5" value="685" />
+            <output class="range-row__val" id="outBand">685</output>
+          </label>
           <label class="range-row" for="rngScrim">
             <span class="range-row__label">Tint</span>
             <input type="range" id="rngScrim" class="control-range" min="0" max="70" step="1" value="12" />
             <output class="range-row__val" id="outScrim">0.12</output>
           </label>
-          <p class="control-block__hint">Tint only. The avatar renders as the cropped image alone — no layer extends past its box.</p>
+          <p class="control-block__hint">Band = where the blur starts, in reference px (measured 685). The blurred copy is clipped to that rectangle, so nothing spills.</p>
         </div>
 
         <div class="control-block">
@@ -177,6 +187,19 @@
             <!-- Profile card overlay. Authored in the reference image's own
                  pixel space (card = 692×741 at 2560×1440) and scaled by --s,
                  so every measured value maps 1:1. -->
+            <!-- Blur rectangle. Sits above the avatar and below the stats.
+                 It clips a blurred copy of the hero to its own bounds, so the
+                 blur cannot spill outside the rectangle the way a free-standing
+                 blurred layer did. __inner is offset so the hero's screen
+                 percentages resolve identically to the sharp copy. -->
+            <div class="blur-rect" id="blurRect">
+              <div class="blur-rect__inner">
+                <div class="slot slot--hero" id="tvHeroBlur">
+                  <img class="slot__img" alt="" decoding="async" />
+                </div>
+              </div>
+            </div>
+
             <div class="card-scrim" id="cardScrim"></div>
 
             <div class="card-layer" id="cardLayer">

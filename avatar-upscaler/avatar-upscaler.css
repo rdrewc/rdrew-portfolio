@@ -489,21 +489,70 @@ html, body {
    running off behind the stats. A fixed-height box instead left short avatars
    floating with dead card beneath them. */
 .slot--hero {
-  left: 10.898%;                      /* 279 / 2560 — 152px in from the card's
-                                         left edge vs 120px on the right, which
+  left: 6.680%;                       /* 171 / 2560 — 44px in from the card's
+                                         left edge vs 28px on the right, which
                                          is the rightward nudge */
-  top: 26.042%;                       /* 375 / 1440 — 30px below the card top */
-  width: 16.406%;                     /* 420 / 2560 — head clears the blur band */
-  height: auto;
-  place-items: start center;
+  top: 23.958%;                       /* 345 / 1440 — the card's top edge */
+  width: 24.219%;                     /* 620 / 2560 */
+  height: 51.458%;                    /* 741 / 1440 — down to the card bottom */
+  place-items: stretch;
   transform-origin: top center;       /* scaling keeps the head put */
 }
 
+/* `cover` + `object-position: top` makes the image fill this box and crop
+   whatever overflows at the bottom. Because each cut-out is trimmed tight to
+   its silhouette, the figure's lowest pixel then lands exactly on the box's
+   bottom edge — i.e. precisely on the card bottom — for every avatar,
+   whatever its aspect ratio. The crop differs per avatar, by design. */
 .slot--hero .slot__img {
+  /* Absolute, not a grid item: as a grid item `height:100%` fell back to the
+     image's own aspect ratio, leaving the figure hanging past the card bottom. */
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  object-fit: fill;                   /* no box to fit to — aspect drives height */
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
 }
+
+/* ----- Blur rectangle -----
+   Card-width, running from --band-y down to the card bottom. It holds a
+   blurred copy of the hero and clips it with overflow:hidden, so the blur can
+   never spill outside this rectangle — that spill was the grey halo. Its side
+   and bottom edges coincide with the card's, and the top edge is feathered,
+   so no edge of the rectangle itself is visible. */
+.blur-rect {
+  position: absolute;
+  left: calc(127px * var(--s, 0.39));
+  top: calc(var(--band-y, 685px) * var(--s, 0.39));
+  width: calc(692px * var(--s, 0.39));
+  height: calc((1086px - var(--band-y, 685px)) * var(--s, 0.39));
+  overflow: hidden;
+  pointer-events: none;
+  border-bottom-left-radius: calc(24px * var(--s, 0.39));
+  border-bottom-right-radius: calc(24px * var(--s, 0.39));
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(56px * var(--s, 0.39)));
+  mask-image: linear-gradient(to bottom, transparent 0, #000 calc(56px * var(--s, 0.39)));
+}
+
+/* Full-screen box, offset so .slot--hero inside resolves to the same rectangle
+   it does outside — the blurred copy lands exactly on the sharp one. */
+.blur-rect__inner {
+  position: absolute;
+  left: calc(-127px * var(--s, 0.39));
+  top: calc(-1 * var(--band-y, 685px) * var(--s, 0.39));
+  width: calc(2560px * var(--s, 0.39));
+  height: calc(1440px * var(--s, 0.39));
+}
+
+.blur-rect .slot--hero {
+  filter: blur(calc(var(--card-blur, 24px) * var(--s, 0.39)));
+  cursor: default;
+}
+#app[data-shadow="on"] .blur-rect .slot__img,
+#app[data-glow="on"] .blur-rect .slot__img { filter: none; }
+
+#app[data-stats="off"] .blur-rect { display: none; }
 
 /* Only the cropped image is drawn — no mask, no second copy, nothing that
    extends past this box. Anything beyond the card is cut by .card-clip. */
