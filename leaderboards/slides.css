@@ -314,6 +314,35 @@ html, body {
   white-space: nowrap;
 }
 
+/* ------------------------------------------------------------------------
+   Slide 3 — The Player Journey (all-white state)
+   Position and width per block are measured off the export's own text
+   blocks; font sizes and line pitch are measured off Play Again's, which
+   the export already renders at full white.
+   ------------------------------------------------------------------------ */
+.pj-phase {
+  position: absolute;
+}
+.pj-phase__heading {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.51cqh;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+.pj-phase__body {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 1.054cqh;
+  line-height: 1.78;
+  margin-top: 0.7cqh;
+}
+
+.pj-peruse   { left: 62.34cqw; top: 10.6cqh;  width: 16.1cqw; }
+.pj-postgame { left: 19.22cqw; top: 52.3cqh;  width: 15.47cqw; }
+.pj-prep     { left: 67.19cqw; top: 58.95cqh; width: 16.09cqw; }
+.pj-play     { left: 42.97cqw; top: 74.8cqh;  width: 15cqw; }
+
 /* ============================== Empty state ============================== */
 
 .empty {

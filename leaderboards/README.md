@@ -55,12 +55,23 @@ box, so a piece stays registered to the image at any window size.
 
 ### Live edits on top of the export
 
-`slide-overlays.js` currently carries two changes to slide 5 that are **not**
-in the Figma source yet:
+`slide-overlays.js` currently carries changes that are **not** in the Figma
+source yet:
 
-- a **Leaderboards** row under More Info, in the selected (white) state
-- the leaderboard module's **Close** button reading **See all**
+- **Slide 5 (Cross Platform)** — a Leaderboards row under More Info, in the
+  selected (white) state, and the leaderboard module's Close button reading
+  See all.
+- **Slide 3 (The Player Journey)** — Peruse, Post Game, Prep and Play recolored
+  to full white, matching Play Again's own treatment. The export's dim copy
+  for those four blocks was painted out (median-filtered from the surrounding
+  gradient, so the patch is seamless) and fresh white text laid on top,
+  measured against Play Again's own heading/body scale and wrap width. Slide 4
+  is the untouched original — same artwork, Play Again white and the rest
+  dimmed — so paging from 3 to 4 reads as the deck narrowing from "every phase
+  matters" down to where retention actually lives.
 
 Positions and type sizes were measured off the export itself, so they line up
-with the rows already in the artwork. Fold these back into Figma when the deck
-is next revised, then delete them from `slide-overlays.js`.
+with what's already in the artwork. Fold these back into Figma when the deck
+is next revised, then delete the corresponding block from `slide-overlays.js`
+(and, for slide 3, drop the now-redundant slide 4 in favor of the original
+Figma export).
