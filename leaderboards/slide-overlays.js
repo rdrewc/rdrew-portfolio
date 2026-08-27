@@ -43,28 +43,49 @@
   }
 
   /* ------------------------------------------------------------------
-     Slide 3 — The Player Journey (all-white state)
-     The export's background under Peruse, Post Game, Prep and Play has been
-     cleaned (their dim copy painted out, median-filtered from the same
-     gradient) so a fresh heading + paragraph can sit on top at full white —
-     matching what Play Again, baked into the export, already looks like.
-     Position/size are measured off Play Again's own text: same heading and
-     body scale, same left-aligned flow, same wrap width per block.
+     Slides 3 & 4 — The Player Journey
+     Both slides share one cleaned background (the ring, title and footer
+     only — all five phase call-outs painted out of the export, median-
+     filtered from their own surrounding gradient) and rebuild every block —
+     bar, heading, body — through this one template. Bar width, the gap
+     between bar and text, and letter-spacing were all measured off the
+     pristine 3840px export and held consistent across every block, so one
+     component fits all five rather than approximating each separately.
+
+     "active" is full white with the accent bar at full color; "dim" is the
+     same markup at reduced opacity, matching the ~35% dim treatment already
+     used throughout the original export. Slide 3 renders every phase
+     active; slide 4 narrows to just Play Again, exactly as the original
+     artwork did.
      ------------------------------------------------------------------ */
   var PHASES = [
-    { cls: 'pj-peruse',   heading: 'PERUSE',    body: 'This initial phase is all about discovery and first impressions. Players are seeking information and a reason to invest their time.' },
-    { cls: 'pj-postgame', heading: 'POST GAME', body: 'After a game session, players often reflect on their experience and may be looking for ways to extend their engagement or prepare for the next session.' },
-    { cls: 'pj-prep',     heading: 'PREP',      body: 'Once a player has decided to play, the \u201cPrep\u201d phase is about getting ready for the actual game session. This can involve solo preparation or social coordination.' },
-    { cls: 'pj-play',     heading: 'PLAY',      body: 'This is the core of the experience, where players are actively engaged with the game itself.' }
+    { id: 'play-again', cls: 'pj-play-again', heading: 'PLAY AGAIN', body: 'This phase focuses on retention and encourages players to return for future sessions.' },
+    { id: 'peruse',     cls: 'pj-peruse',     heading: 'PERUSE',     body: 'This initial phase is all about discovery and first impressions. Players are seeking information and a reason to invest their time.' },
+    { id: 'postgame',   cls: 'pj-postgame',   heading: 'POST GAME',  body: 'After a game session, players often reflect on their experience and may be looking for ways to extend their engagement or prepare for the next session.' },
+    { id: 'prep',       cls: 'pj-prep',       heading: 'PREP',       body: 'Once a player has decided to play, the “Prep” phase is about getting ready for the actual game session. This can involve solo preparation or social coordination.' },
+    { id: 'play',       cls: 'pj-play',       heading: 'PLAY',       body: 'This is the core of the experience, where players are actively engaged with the game itself.' }
   ];
 
-  Deck.registerOverlay('player-journey', function (layer) {
+  function renderPhases(layer, activeIds) {
     PHASES.forEach(function (p) {
-      var block = el('div', 'pj-phase ' + p.cls);
-      block.appendChild(el('div', 'pj-phase__heading', p.heading));
-      block.appendChild(el('div', 'pj-phase__body', p.body));
+      var active = activeIds.indexOf(p.id) >= 0;
+      var block = el('div', 'pj-block ' + p.cls);
+      if (!active) block.setAttribute('data-state', 'dim');
+      block.appendChild(el('div', 'pj-block__bar'));
+      var text = el('div', 'pj-block__text');
+      text.appendChild(el('div', 'pj-block__heading', p.heading));
+      text.appendChild(el('div', 'pj-block__body', p.body));
+      block.appendChild(text);
       layer.appendChild(block);
     });
+  }
+
+  Deck.registerOverlay('player-journey', function (layer) {
+    renderPhases(layer, ['play-again', 'peruse', 'postgame', 'prep', 'play']);
+  });
+
+  Deck.registerOverlay('player-journey-highlight', function (layer) {
+    renderPhases(layer, ['play-again']);
   });
 
   /* ------------------------------------------------------------------

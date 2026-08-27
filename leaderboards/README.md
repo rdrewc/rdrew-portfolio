@@ -23,6 +23,17 @@ The script also bumps a `rev` stamp in `slides.json`, which the viewer appends
 to every image URL — so a re-export shows up straight away instead of behind a
 cached copy.
 
+`index.html` carries the same kind of stamp on `slides.css`, `slides.js` and
+`slide-overlays.js` (a `?v=` on each tag). Unlike the image rev, this one
+isn't automatic — run this after editing any of those three files:
+
+    ./bump-asset-version.sh
+
+Without it, a browser that already loaded the deck once can keep running old
+JS/CSS after a plain reload — the static server here sends no cache-control
+headers, so it's purely up to the browser's own heuristics, and those aren't
+reliable.
+
 ## Shortcuts
 
 `→` `Space` next · `←` previous · `Home`/`End` first/last · `1`–`9` jump ·
@@ -61,17 +72,33 @@ source yet:
 - **Slide 5 (Cross Platform)** — a Leaderboards row under More Info, in the
   selected (white) state, and the leaderboard module's Close button reading
   See all.
-- **Slide 3 (The Player Journey)** — Peruse, Post Game, Prep and Play recolored
-  to full white, matching Play Again's own treatment. The export's dim copy
-  for those four blocks was painted out (median-filtered from the surrounding
-  gradient, so the patch is seamless) and fresh white text laid on top,
-  measured against Play Again's own heading/body scale and wrap width. Slide 4
-  is the untouched original — same artwork, Play Again white and the rest
-  dimmed — so paging from 3 to 4 reads as the deck narrowing from "every phase
-  matters" down to where retention actually lives.
+- **Slides 3 & 4 (The Player Journey)** — both slides share one background
+  asset (`assets/slides/03.jpg` and `04.jpg` are byte-identical): the ring,
+  title and footer only, with all five phase call-outs — including Play
+  Again — painted out of the export (median-filtered from their own
+  surrounding gradient, so the patch is seamless). Every call-out is rebuilt
+  as one shared template (`.pj-block`: a bar, a heading, a body) rendered
+  twice with different active/dim state:
+  - Slide 3 (`player-journey`) renders all five active — full white, full
+    color bar.
+  - Slide 4 (`player-journey-highlight`) renders only Play Again active; the
+    rest carry `data-state="dim"`, which drops the block to ~40% opacity —
+    matching the ~35% dim treatment measured across every inactive block in
+    the original export.
+
+  Bar width, the 1.145cqw gap between bar and text, and letter-spacing
+  (0.15em heading / 0.14em body — much wider than a first pass assumed) were
+  all measured off the pristine 3840px export rather than the compressed web
+  JPEG, and held consistent within 0.01 across all five blocks, which is why
+  one template covers all of them rather than five hand-tuned approximations.
+  Font weight is Bold (700); Netflix Sans itself was re-vendored from the
+  real desktop family (Thin through Black) rather than the web-mirror subset
+  used originally — the two are different cuts of "Netflix Sans" with
+  different letterforms, which is what made the first pass read as an off
+  font even though the family name matched and the fonts were loading fine.
 
 Positions and type sizes were measured off the export itself, so they line up
 with what's already in the artwork. Fold these back into Figma when the deck
 is next revised, then delete the corresponding block from `slide-overlays.js`
-(and, for slide 3, drop the now-redundant slide 4 in favor of the original
-Figma export).
+(and, for the Player Journey, drop slide 4 in favor of the original Figma
+export, or vice versa depending on which state Figma ends up authoring).

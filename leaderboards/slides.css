@@ -322,33 +322,71 @@ html, body {
 }
 
 /* ------------------------------------------------------------------------
-   Slide 3 — The Player Journey (all-white state)
-   Position and width per block are measured off the export's own text
-   blocks; font sizes and line pitch are measured off Play Again's, which
-   the export already renders at full white.
+   Slide 3 & 4 — The Player Journey
+   All five phase call-outs (bar + heading + body) are rebuilt as one shared
+   template so every block — including Play Again — renders through the same
+   code path. Both slides share one cleaned background (the ring, title and
+   footer only, no baked phase text) and differ only in which blocks carry
+   [data-state="dim"].
+
+   Every value below was measured off the pristine 3840px export, not the
+   dimmed web JPEG: bar width, the 1.145cqw bar-to-text gap, and 0.15em/
+   0.14em tracking on heading/body all held within 0.01 of each other across
+   all five blocks, so one template fits all of them.
    ------------------------------------------------------------------------ */
-.pj-phase {
+.pj-block {
   position: absolute;
+  display: flex;
+  align-items: stretch;
+  gap: 1.145cqw;
+  transition: opacity 0.2s var(--ease);
 }
-.pj-phase__heading {
+.pj-block[data-state="dim"] {
+  /* Matches the ~35% dim opacity measured across every inactive block in
+     the original export. */
+  opacity: 0.4;
+}
+
+.pj-block__bar {
+  flex: none;
+  width: 0.08cqw;
+  min-width: 1.5px;
+  border-radius: 2px;
+  /* Peak color sampled from Play Again's own bar in the pristine export. */
+  background: #c52632;
+}
+
+.pj-block__text {
+  display: flex;
+  flex-direction: column;
+}
+.pj-block__heading {
   color: #ffffff;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 1.464cqh;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.15em;
   line-height: 1.3;
+  white-space: nowrap;
 }
-.pj-phase__body {
+.pj-block__body {
   color: #ffffff;
   font-weight: 400;
-  font-size: 1.054cqh;
+  font-size: 1.055cqh;
+  letter-spacing: 0.14em;
   line-height: 1.78;
   margin-top: 0.7cqh;
 }
 
-.pj-peruse   { left: 62.34cqw; top: 10.6cqh;  width: 16.1cqw; }
-.pj-postgame { left: 19.22cqw; top: 52.3cqh;  width: 15.47cqw; }
-.pj-prep     { left: 67.19cqw; top: 58.95cqh; width: 16.09cqw; }
-.pj-play     { left: 42.97cqw; top: 74.8cqh;  width: 15cqw; }
+.pj-play-again { left: 26.9cqw;  top: 13.7cqh;  }
+.pj-play-again .pj-block__text { width: 13.2cqw; }
+.pj-peruse      { left: 62.2cqw;  top: 11.85cqh; }
+.pj-peruse .pj-block__text     { width: 15.1cqw; }
+.pj-postgame    { left: 19.1cqw;  top: 53.6cqh;  }
+.pj-postgame .pj-block__text   { width: 14.4cqw; }
+.pj-prep        { left: 67.0cqw;  top: 60.2cqh;  }
+.pj-prep .pj-block__text       { width: 15.1cqw; }
+.pj-play        { left: 42.8cqw;  top: 75.9cqh;  }
+.pj-play .pj-block__text       { width: 14.0cqw; }
 
 /* ============================== Empty state ============================== */
 
