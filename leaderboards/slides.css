@@ -51,6 +51,13 @@
   font-display: swap;
   src: url("../gamesprofiles/assets/fonts/netflix-sans/NetflixSans_W_Bd.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Netflix Sans";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("../gamesprofiles/assets/fonts/netflix-sans/NetflixSans_W_Blk.woff2") format("woff2");
+}
 
 * { box-sizing: border-box; }
 
@@ -325,8 +332,8 @@ html, body {
 }
 .pj-phase__heading {
   color: #ffffff;
-  font-weight: 700;
-  font-size: 1.51cqh;
+  font-weight: 900;
+  font-size: 1.464cqh;
   letter-spacing: 0.04em;
   line-height: 1.3;
 }
