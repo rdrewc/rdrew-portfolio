@@ -104,6 +104,22 @@ source yet:
   different letterforms, which is what made the first pass read as an off
   font even though the family name matched and the fonts were loading fine.
 
+- **Slide 7 (What about the future of tv DP?)** — the static Details mock is
+  now a real Details / Updates / Leaderboards tab flow. `assets/tv-dp/` holds
+  one screenshot per state; all three mount at once (stacked, opacity-swapped)
+  so switching is instant with no fetch-on-click flash, and only the visible
+  image accepts pointer events so a click never lands on the wrong state. The
+  panel box (`.dp-panel`) sits exactly where the old static mock did — a true
+  16:9 sub-frame of a 16:9 deck, which is why its `cqw`/`cqh` values are
+  numerically equal. Tab hit zones (`.dp-tab-hit`) reuse one set of x-ranges
+  across all three images, since the tab bar's horizontal layout is identical
+  in every state — only its height moves (bottom of the hero art in Details,
+  top of a dimmed backdrop in Updates/Leaderboards), so the hit zones just
+  relocate to `--bottom` or `--top` on state change rather than needing
+  three separate coordinate sets. How to Play and Previews & Extras are
+  visible but inert — only Updates and Leaderboards are wired up, since
+  those are the only other states there are screenshots for.
+
 Positions and type sizes were measured off the export itself, so they line up
 with what's already in the artwork. Fold these back into Figma when the deck
 is next revised, then delete the corresponding block from `slide-overlays.js`

@@ -373,6 +373,59 @@ html, body {
 .pj-play        { left: 42.8cqw;  top: 75.9cqh;  }
 .pj-play .pj-block__text       { width: 14.0cqw; }
 
+/* ------------------------------------------------------------------------
+   Slide 7 — What about the future of tv DP?
+   Replaces the static Details mock with three real states (Details, Updates,
+   Leaderboards) swapped by clicking the tab bar baked into each image — all
+   three share one tab layout, so one set of hit zones (in the sub-image's
+   own percentage space) covers all three, just at two different heights
+   (Details keeps its tab row at the bottom of the hero; Updates and
+   Leaderboards carry it at the top instead). Box position/size is measured
+   off the original static mock, which happened to be a true 16:9 sub-frame,
+   so a numerically equal cqw/cqh pair reproduces it exactly.
+   ------------------------------------------------------------------------ */
+.dp-panel {
+  position: absolute;
+  left: 27.5cqw;
+  top: 7cqh;
+  width: 66.8cqw;
+  height: 66.8cqh;
+  overflow: hidden;
+  border-radius: 0.6cqh;
+}
+.dp-panel__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease);
+}
+.dp-panel__img[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hit zones sit in a layer of their own, sized to the panel, so they don't
+   need to move when the visible image swaps underneath them. */
+.dp-tab-hit {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+/* x-ranges are identical between the bottom (Details) and top (Updates /
+   Leaderboards) tab rows — only the row's own height differs per state. */
+.dp-tab-hit--details      { left: 6.5%;  width: 7.5%; }
+.dp-tab-hit--updates      { left: 14%;   width: 8%; }
+.dp-tab-hit--leaderboards { left: 45.5%; width: 11.5%; }
+
+.dp-tab-hit--bottom { top: 88%; height: 10%; }
+.dp-tab-hit--top    { top: 4%;  height: 10%; }
+
 /* ============================== Empty state ============================== */
 
 .empty {

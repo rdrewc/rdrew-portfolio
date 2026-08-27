@@ -104,4 +104,64 @@
     layer.appendChild(row);
     layer.appendChild(cta);
   });
+
+  /* ------------------------------------------------------------------
+     Slide 7 — What about the future of tv DP?
+     Replaces the static Details mock with a real Details / Updates /
+     Leaderboards tab flow, using the actual tv screenshots for each state.
+     All three images are mounted upfront (so switching is instant, no
+     fetch-on-click flash) and swapped by toggling opacity; only the visible
+     one accepts pointer events, so clicks always land on the state that's
+     actually showing.
+
+     The tab bar's x-positions are identical across all three screenshots —
+     only its height differs (bottom of the hero art in Details, top of a
+     dimmed backdrop in Updates/Leaderboards) — so one set of hit zones is
+     reused for all three, just relocated to whichever row is live.
+     ------------------------------------------------------------------ */
+  var DP_STATES = ['details', 'updates', 'leaderboards'];
+  var DP_SRC = {
+    details: 'assets/tv-dp/details.jpg',
+    updates: 'assets/tv-dp/updates.jpg',
+    leaderboards: 'assets/tv-dp/leaderboards.jpg'
+  };
+
+  Deck.registerOverlay('tv-dp', function (layer) {
+    var panel = el('div', 'dp-panel');
+    var imgs = {};
+    DP_STATES.forEach(function (state) {
+      var img = document.createElement('img');
+      img.className = 'dp-panel__img';
+      img.src = DP_SRC[state];
+      img.alt = state === 'details' ? 'Minigolf details page' : 'Minigolf ' + state + ' tab';
+      img.draggable = false;
+      imgs[state] = img;
+      panel.appendChild(img);
+    });
+
+    var hits = {};
+    DP_STATES.forEach(function (state) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dp-tab-hit dp-tab-hit--' + state;
+      btn.setAttribute('aria-label', state.charAt(0).toUpperCase() + state.slice(1) + ' tab');
+      btn.addEventListener('click', function () { setState(state); });
+      hits[state] = btn;
+      panel.appendChild(btn);
+    });
+
+    function setState(state) {
+      DP_STATES.forEach(function (s) {
+        imgs[s].setAttribute('data-active', s === state ? 'true' : 'false');
+      });
+      var row = state === 'details' ? 'dp-tab-hit--bottom' : 'dp-tab-hit--top';
+      DP_STATES.forEach(function (s) {
+        hits[s].classList.remove('dp-tab-hit--bottom', 'dp-tab-hit--top');
+        hits[s].classList.add(row);
+      });
+    }
+
+    setState('details');
+    layer.appendChild(panel);
+  });
 })();
