@@ -5,3 +5,5 @@ wrangler.jsonc
 README.md
 .claude
 *.sh
+.gitignore
+*-reference.png
