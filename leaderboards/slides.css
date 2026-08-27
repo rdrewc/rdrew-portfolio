@@ -417,11 +417,20 @@ html, body {
   background: transparent;
   cursor: pointer;
 }
-/* x-ranges are identical between the bottom (Details) and top (Updates /
-   Leaderboards) tab rows — only the row's own height differs per state. */
-.dp-tab-hit--details      { left: 6.5%;  width: 7.5%; }
-.dp-tab-hit--updates      { left: 14%;   width: 8%; }
-.dp-tab-hit--leaderboards { left: 45.5%; width: 11.5%; }
+/* Updates and Leaderboards are cropped 7.5% off their right edge (to remove
+   an empty placeholder carousel card baked into the Updates export) and
+   rescaled back to the same output size — Details is untouched, since it
+   has real content right at its edge. That crop stretches the remaining
+   content horizontally by about 8%, so the top row's tab-label x-positions
+   no longer line up with the bottom row's; each row gets its own measured
+   x-ranges rather than sharing one set. */
+.dp-tab-hit--bottom.dp-tab-hit--details      { left: 6.5%;  width: 7.5%; }
+.dp-tab-hit--bottom.dp-tab-hit--updates      { left: 14%;   width: 8%; }
+.dp-tab-hit--bottom.dp-tab-hit--leaderboards { left: 45.5%; width: 11.5%; }
+
+.dp-tab-hit--top.dp-tab-hit--details      { left: 7.5%;  width: 7%; }
+.dp-tab-hit--top.dp-tab-hit--updates      { left: 15.5%; width: 7.5%; }
+.dp-tab-hit--top.dp-tab-hit--leaderboards { left: 49.5%; width: 12%; }
 
 .dp-tab-hit--bottom { top: 88%; height: 10%; }
 .dp-tab-hit--top    { top: 4%;  height: 10%; }

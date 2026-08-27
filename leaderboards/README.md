@@ -111,14 +111,23 @@ source yet:
   image accepts pointer events so a click never lands on the wrong state. The
   panel box (`.dp-panel`) sits exactly where the old static mock did — a true
   16:9 sub-frame of a 16:9 deck, which is why its `cqw`/`cqh` values are
-  numerically equal. Tab hit zones (`.dp-tab-hit`) reuse one set of x-ranges
-  across all three images, since the tab bar's horizontal layout is identical
-  in every state — only its height moves (bottom of the hero art in Details,
-  top of a dimmed backdrop in Updates/Leaderboards), so the hit zones just
-  relocate to `--bottom` or `--top` on state change rather than needing
-  three separate coordinate sets. How to Play and Previews & Extras are
-  visible but inert — only Updates and Leaderboards are wired up, since
-  those are the only other states there are screenshots for.
+  numerically equal. How to Play and Previews & Extras are visible but inert
+  — only Updates and Leaderboards are wired up, since those are the only
+  other states there are screenshots for.
+
+  Updates and Leaderboards are each cropped 7.5% off their right edge and
+  rescaled back to the original 1600×900 (a mild horizontal stretch, no
+  letterboxing) to remove an empty placeholder carousel card baked into the
+  Updates export at that edge — Details is untouched, since it has real
+  content (the "Use Your Phone as the Controller" chip) right at its own
+  edge that an indiscriminate crop clipped the first time around. Because
+  only two of the three images carry that crop, their tab bar's x-positions
+  shift by the same ~8% relative to Details', so `.dp-tab-hit` needs two
+  full coordinate sets rather than one shared across all three — see the
+  `--bottom` (Details, unshifted) vs `--top` (Updates/Leaderboards, shifted)
+  rules in `slides.css`. Regenerate both crops together if either export is
+  ever re-swapped, since the tab hit zones assume they're framed identically
+  to each other.
 
 Positions and type sizes were measured off the export itself, so they line up
 with what's already in the artwork. Fold these back into Figma when the deck
