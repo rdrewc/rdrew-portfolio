@@ -109,11 +109,18 @@ source yet:
   one screenshot per state; all three mount at once (stacked, opacity-swapped)
   so switching is instant with no fetch-on-click flash, and only the visible
   image accepts pointer events so a click never lands on the wrong state. The
-  panel box (`.dp-panel`) sits exactly where the old static mock did — a true
-  16:9 sub-frame of a 16:9 deck, which is why its `cqw`/`cqh` values are
-  numerically equal. How to Play and Previews & Extras are visible but inert
-  — only Updates and Leaderboards are wired up, since those are the only
-  other states there are screenshots for.
+  panel box (`.dp-panel`) sits where the old static mock did — close to a
+  true 16:9 sub-frame of a 16:9 deck (hence `cqw`/`cqh` values that are
+  nearly numerically equal), widened slightly past that on the right
+  (67.8cqw instead of 66.8) after the old mock's own true right edge turned
+  out to be 0.47 points further out than first measured, leaving a sliver of
+  its bright sky visible beside the new panel rather than safely under it.
+  The panel also carries a dark fallback background and the image inside is
+  sized a bit past 100% (see `slides.css`) as cheap, harmless insurance
+  against the same class of edge gap, even though the width fix was the one
+  that actually mattered. How to Play and Previews & Extras are visible but
+  inert — only Updates and Leaderboards are wired up, since those are the
+  only other states there are screenshots for.
 
   Updates and Leaderboards are each cropped 7.5% off their right edge and
   rescaled back to the original 1600×900 (a mild horizontal stretch, no

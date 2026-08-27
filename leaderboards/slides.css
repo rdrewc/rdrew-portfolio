@@ -388,16 +388,30 @@ html, body {
   position: absolute;
   left: 27.5cqw;
   top: 7cqh;
-  width: 66.8cqw;
+  /* Right edge measured (again, precisely, off the pristine export) at
+     94.766cqw — this box's original 94.3cqw fell 0.47 points short, leaving
+     a sliver of the old baked mock's own bright sky visible beside the new
+     panel rather than under it. 67.8cqw clears that with margin to spare. */
+  width: 67.8cqw;
   height: 66.8cqh;
   overflow: hidden;
   border-radius: 0.6cqh;
+  /* Belt-and-suspenders against the fractional cqw/cqh box's clip boundary
+     rounding to a sub-pixel that leaves a hairline gap: a dark fill close to
+     the tv screenshots' own edge tone, so if anything ever peeks through
+     that hairline, it reads as more image rather than the slide's own
+     bright artwork underneath. */
+  background: #0b0a10;
 }
 .dp-panel__img {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  /* Sized a hair past 100% and centered past every edge, so the source
+     image itself always fully covers the panel with margin to spare —
+     object-fit:cover already crops the source to fit, so the extra size
+     costs nothing visible. */
+  inset: -1.5%;
+  width: 103%;
+  height: 103%;
   object-fit: cover;
   opacity: 0;
   pointer-events: none;
