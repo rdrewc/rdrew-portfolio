@@ -32,8 +32,6 @@
   var btnFull = document.getElementById('btnFull');
   var btnHelp = document.getElementById('btnHelp');
   var btnHelpClose = document.getElementById('btnHelpClose');
-  var zonePrev = document.getElementById('zonePrev');
-  var zoneNext = document.getElementById('zoneNext');
 
   var slides = [];
   var rev = '';
@@ -227,8 +225,6 @@
   function bindEvents() {
     btnPrev.addEventListener('click', function () { show(current - 1); });
     btnNext.addEventListener('click', function () { show(current + 1); });
-    zonePrev.addEventListener('click', function () { show(current - 1); });
-    zoneNext.addEventListener('click', function () { show(current + 1); });
 
     btnOverview.addEventListener('click', function () { setOverview(overview.hidden); });
     btnNotes.addEventListener('click', function () { setNotes(!showNotes); });

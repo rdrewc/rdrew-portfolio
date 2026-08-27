@@ -244,21 +244,6 @@ html, body {
 }
 .frame__overlay > * { pointer-events: auto; }
 
-/* Click-to-advance halves, sitting behind the frame. */
-.stage-zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  z-index: 0;
-}
-.stage-zone--prev { left: 0; cursor: w-resize; }
-.stage-zone--next { right: 0; cursor: e-resize; }
-
 /* ============================ Slide overlays =============================
    Drawn on top of the exported artwork. Positions are percentages of the
    frame, measured off the image, so the pieces stay registered at any size.

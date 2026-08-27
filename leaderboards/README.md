@@ -60,9 +60,16 @@ Deck.registerOverlay('anatomy', function (layer, slide) {
 ```
 
 The layer is cleared and re-mounted on every slide change, and it ignores
-pointer events itself so click-to-advance keeps working around whatever you
-add. Sizes and positions use `cqw` / `cqh`, which resolve against the artwork
-box, so a piece stays registered to the image at any window size.
+pointer events itself (only its children opt back in) so nothing you add ever
+has to fight the frame underneath for clicks. Sizes and positions use `cqw` /
+`cqh`, which resolve against the artwork box, so a piece stays registered to
+the image at any window size.
+
+The stage has no click-to-advance zones — clicking a slide does nothing
+unless something you registered there handles it. Advancing is `→`/`←`/
+`Space`, the footer's prev/next buttons, or a touch swipe; that's deliberate,
+so a slide's own clickable content (like the tv DP hotspots on "What about
+the future of tv DP?") never double-fires as a navigation click too.
 
 ### Live edits on top of the export
 
