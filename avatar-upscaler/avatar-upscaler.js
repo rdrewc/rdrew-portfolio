@@ -8,7 +8,8 @@
   'use strict';
 
   var STORE_KEY = 'avatar-upscaler:v1';
-  var LIB = 'assets/avatars/';
+  var LIB = 'assets/avatars/';        // silhouette crops — the big placement
+  var LIB_FULL = 'assets/avatars-full/';  // original square art — the small chips
 
   var app = document.getElementById('app');
   var grid = document.getElementById('avatarGrid');
@@ -29,7 +30,7 @@
     handle: 'Zoeooo049',
     game: 'Kpop Demon Hunters Karaoke',
     prog: 65, ach: 44,
-    blur: 24, band: 685, scrim: 12,
+    blur: 24, band: 685, scrim: 34,
     placement: {
       tvHero:    { scale: 100, x: 0, y: 0 },
       phoneHero: { scale: 100, x: 0, y: 0 }
@@ -88,10 +89,14 @@
     current = entry;
     state.file = entry.file;
 
+    // The hero placements use the silhouette crop; the small chips show the
+    // avatar as Netflix ships it, uncropped, inside their rounded rectangle.
     var src = LIB + encodeURIComponent(entry.file);
-    ['tvHero', 'tvHeroBlur', 'tvChip', 'phoneHero', 'phoneChip'].forEach(function (id) {
-      var img = $(id) && $(id).querySelector('.slot__img');
-      if (img) { img.src = src; img.alt = entry.title; }
+    var full = LIB_FULL + encodeURIComponent(entry.file);
+    [['tvHero', src], ['tvHeroBlur', src], ['phoneHero', src],
+     ['tvChip', full], ['phoneChip', full]].forEach(function (pair) {
+      var img = $(pair[0]) && $(pair[0]).querySelector('.slot__img');
+      if (img) { img.src = pair[1]; img.alt = entry.title; }
     });
 
     $('selectedAvatar').src = src;
