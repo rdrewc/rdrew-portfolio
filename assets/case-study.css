@@ -64,9 +64,12 @@ h1{
 .case-grid{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);
-  gap:6vw;
+  gap:clamp(40px, 6vw, 96px);
   align-items:start;
 }
+/* The work column is a size container: phones and other fixed-size media scale to it (cqi),
+   so nothing ever spills across the gap into Details. */
+.right{container:work / inline-size;}
 
 /* Description stays put while the work scrolls past on the right,
    but only on screens tall enough to show all of it. */
@@ -207,6 +210,18 @@ h1{
   text-align:right;
 }
 .dot-row .values > *{white-space:nowrap;}
+/* Narrow panel: site.js adds .is-stacked when the longest row no longer fits on one line,
+   and every row then puts its value under its name. */
+.is-stacked .dot-row{
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+  padding:7px 0;
+}
+.is-stacked .dot-row .dots{display:none;}
+.is-stacked .dot-row .date,
+.is-stacked .dot-row .values > *{white-space:normal;}
+.is-stacked .dot-row .values{align-items:flex-start;text-align:left;}
 .dot-row .values a{color:var(--muted);text-decoration:none;transition:color 0.15s ease;}
 .dot-row .values a:hover{color:var(--accent);}
 a.date{
@@ -298,13 +313,17 @@ figcaption{
 
 /* Minimal phone: dark body, even bezel, rounded screen. Sizes scale off --pw. */
 .phones{
+  --gap:40px;
   display:flex;
   flex-wrap:wrap;
   justify-content:center;
-  gap:40px;
+  gap:var(--gap);
 }
+/* A pair always stays side by side, shrinking to share the column. */
+.phones.is-pair{flex-wrap:nowrap;}
+.phones.is-pair .phone{--pw:min(280px, (100cqi - var(--gap)) / 2);}
 .phone{
-  --pw:280px;
+  --pw:min(280px, 100cqi);
   position:relative;
   width:var(--pw);
   aspect-ratio:280 / 584;
@@ -332,13 +351,19 @@ figcaption{
 
 /* Several phones in a row, each with a caption. */
 .phone-row{
+  --gap:24px;
   display:flex;
   justify-content:center;
-  gap:24px;
+  gap:var(--gap);
 }
 .phone-row figure{margin:0;}
-.phone-row.is-trio .phone{--pw:220px;}
-.phone-row.is-quad .phone{--pw:168px;}
+.phone-row.is-trio .phone{--pw:min(220px, (100cqi - 2 * var(--gap)) / 3);}
+.phone-row.is-quad .phone{--pw:min(168px, (100cqi - 3 * var(--gap)) / 4);}
+/* Four across gets too small in a narrow column; go two by two. */
+@container work (max-width:560px){
+  .phone-row.is-quad{flex-wrap:wrap;}
+  .phone-row.is-quad .phone{--pw:calc((100cqi - var(--gap)) / 2);}
+}
 .phone-row figcaption, .formats figcaption{text-align:center;}
 
 /* Ad formats side by side, captioned. */
@@ -409,7 +434,7 @@ figcaption{
   justify-content:center;
   gap:24px;
 }
-.device-pair .phone{--pw:180px;flex:none;}
+.device-pair .phone{--pw:min(180px, 100cqi * 0.26);flex:none;}
 .device-pair .tablet{flex:1;max-width:560px;}
 
 /* Directions table: five columns on desktop, stacked cards on small screens. */
@@ -488,22 +513,21 @@ a:focus-visible, button:focus-visible{
   .left{position:static;}
   .story > section + section{margin-top:72px;}
   .phone{--pw:min(280px, 72vw);}
+  .phones.is-pair{--gap:16px;}
   .dot-row .values > *{white-space:normal;}
-  /* The two "Why" phones stay side by side, as in the Figma layout. */
-  .phones.is-pair{flex-wrap:nowrap;gap:16px;}
   .screens{gap:10px;}
-  .phone-row{flex-wrap:wrap;gap:16px;}
-  .phone-row.is-trio .phone{--pw:calc((100vw - 56px - 32px) / 3);}
-  .phone-row.is-quad .phone{--pw:calc((100vw - 56px - 16px) / 2);}
+  .phone-row{flex-wrap:wrap;--gap:16px;}
   .formats{gap:10px;}
   .tiles{gap:10px;}
-  .phones.is-pair .phone{--pw:min(280px, calc((100vw - 56px - 16px) / 2));}
   .funnel{grid-template-columns:1fr;gap:10px;}
   .formats.is-pair{grid-template-columns:1fr;}
   .device-pair{gap:12px;}
-  .device-pair .phone{--pw:calc((100vw - 56px) * 0.26);}
   .tablet{padding:6px;border-radius:14px;}
   .tablet .screen{border-radius:9px;}
+}
+
+/* Directions table: stacked cards once its column is too narrow for five columns. */
+@container work (max-width:640px){
   .matrix-head{display:none;}
   .matrix-row{grid-template-columns:1fr;padding:16px 0;}
   .matrix-row > span{padding:4px 18px;}

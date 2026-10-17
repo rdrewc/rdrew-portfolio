@@ -117,7 +117,33 @@ var PROJECTS = [
     });
   });
 
-  // Pinned title: a smaller copy of the h1 at the top of the left panel.
+  // Detail rows read "Name ....... value" on one line while the panel is wide enough for the
+  // longest one; narrower than that, every row stacks its value under its name (.is-stacked).
+  var rows = left.querySelectorAll('.dot-row');
+  var needed = 0;
+  function measureRows(){
+    left.classList.remove('is-stacked');
+    needed = 0;
+    rows.forEach(function(row){
+      var name = row.querySelector('.name');
+      var value = row.querySelector('.date');
+      if(!name || !value) return;
+      // name + value at their natural widths, the leader dots' margins, and a few dots between
+      needed = Math.max(needed, name.getBoundingClientRect().width + value.getBoundingClientRect().width + 12 + 30);
+    });
+    fitRows();
+  }
+  function fitRows(){
+    left.classList.toggle('is-stacked', left.clientWidth < needed);
+  }
+  if(rows.length){
+    measureRows();
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(measureRows);
+    if(window.ResizeObserver) new ResizeObserver(fitRows).observe(left);
+    else window.addEventListener('resize', fitRows);
+  }
+
+  // Pinned title: a copy of the h1 at the top of the left panel.
   var slot = document.createElement('div');
   slot.className = 'pinned-title';
   slot.setAttribute('aria-hidden', 'true');
