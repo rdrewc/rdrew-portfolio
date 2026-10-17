@@ -126,13 +126,13 @@ var PROJECTS = [
   copy.textContent = h1.textContent;
   left.insertBefore(slot, left.firstChild);
 
-  // Animate el from where `from` was to where el now sits (FLIP), scaling between the two type sizes.
-  function fly(el, from, fromSize){
+  // Animate el from where `from` was to where el now sits (FLIP). Both titles share one type size,
+  // so it only slides; the pinned copy may wrap in the narrower panel.
+  function fly(el, from){
     if(reduceMotion.matches || !el.animate) return;
     var to = el.getBoundingClientRect();
-    var scale = fromSize / parseFloat(getComputedStyle(el).fontSize);
     el.animate([
-      { transform: 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px) scale(' + scale + ')' },
+      { transform: 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px)' },
       { transform: 'none' }
     ], { duration: 520, easing: 'cubic-bezier(.2,.75,.25,1)' });
   }
@@ -146,9 +146,8 @@ var PROJECTS = [
     var leaving = pinned ? h1 : copy;
     var arriving = pinned ? copy : h1;
     var from = leaving.getBoundingClientRect();
-    var fromSize = parseFloat(getComputedStyle(leaving).fontSize);
     page.classList.toggle('is-title-pinned', pinned);
-    if(animate) fly(arriving, from, fromSize);
+    if(animate) fly(arriving, from);
   }
 
   function onScroll(){ update(true); }

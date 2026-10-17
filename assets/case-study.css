@@ -59,7 +59,6 @@ h1{
   line-height:1.2;
   color:var(--heading);
   margin:72px 0 44px;
-  transform-origin:0 0;
 }
 
 .case-grid{
@@ -87,11 +86,10 @@ h1{
 .pinned-title-inner{min-height:0;}
 .pinned-title-text{
   font-weight:600;
-  font-size:22px;
+  font-size:clamp(28px,3vw,36px); /* same size as the h1 */
   line-height:1.2;
   color:var(--heading);
   padding-bottom:28px;
-  transform-origin:0 0;
   opacity:0;
   pointer-events:none;
 }
