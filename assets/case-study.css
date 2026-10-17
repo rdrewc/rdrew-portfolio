@@ -1,0 +1,524 @@
+/* Shared styles for project case study pages. Tokens mirror the homepage. */
+:root{
+  --bg:#12131c;
+  --heading:#dfe1ea;
+  --body-text:#b2b7c6;
+  --label:#6f7690;
+  --divider:#262837;
+  --strong:#eef0f6;
+  --muted:#7d8399;
+  --accent:#9b7bff;
+  --glass-bg:rgba(255,255,255,0.08);
+  --glass-border:rgba(255,255,255,0.14);
+  --glass-indicator:rgba(255,255,255,0.16);
+  --glass-shadow:rgba(0,0,0,0.35);
+  --media-bg:rgba(255,255,255,0.04);
+  --phone-body:#1c1d24;
+  --phone-edge:rgba(255,255,255,0.1);
+  --control-bg:rgba(18,19,28,0.62);
+  --float-edge:rgba(255,255,255,0.22);
+}
+:root[data-theme="light"]{
+  --bg:#f6f5fb;
+  --heading:#211f2e;
+  --body-text:#5a5a6e;
+  --label:#8b88a3;
+  --divider:#e2e0ee;
+  --strong:#211f2e;
+  --muted:#87849c;
+  --accent:#7c4dff;
+  --glass-bg:rgba(255,255,255,0.55);
+  --glass-border:rgba(124,77,255,0.18);
+  --glass-indicator:rgba(124,77,255,0.14);
+  --glass-shadow:rgba(124,77,255,0.18);
+  --media-bg:rgba(124,77,255,0.05);
+  --phone-body:#24252d;
+  --phone-edge:rgba(255,255,255,0.08);
+  --control-bg:rgba(18,19,28,0.55);
+  --float-edge:rgba(0,0,0,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--body-text);
+  font-family:'DM Sans',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color 0.35s ease, color 0.35s ease;
+}
+
+.case{
+  max-width:1400px;
+  margin:0 auto;
+  padding:48px 60px 160px;
+}
+
+h1{
+  font-weight:600;
+  font-size:clamp(28px,3vw,36px);
+  line-height:1.2;
+  color:var(--heading);
+  margin:72px 0 44px;
+  transform-origin:0 0;
+}
+
+.case-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);
+  gap:6vw;
+  align-items:start;
+}
+
+/* Description stays put while the work scrolls past on the right,
+   but only on screens tall enough to show all of it. */
+@media (min-height:860px){
+  .left{
+    position:sticky;
+    top:96px;
+  }
+}
+/* Title copy that site.js pins above Details once the h1 scrolls under the header.
+   Collapsed it takes no space; open, it pushes Details down while the title flies in. */
+.pinned-title{
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows 0.52s cubic-bezier(.2,.75,.25,1);
+}
+.pinned-title-inner{min-height:0;}
+.pinned-title-text{
+  font-weight:600;
+  font-size:22px;
+  line-height:1.2;
+  color:var(--heading);
+  padding-bottom:28px;
+  transform-origin:0 0;
+  opacity:0;
+  pointer-events:none;
+}
+.is-title-pinned .pinned-title{grid-template-rows:1fr;}
+.is-title-pinned .pinned-title-text{opacity:1;}
+.is-title-pinned > h1{opacity:0;}
+
+/* Collapsible Details: the label is a button with a caret; open by default. */
+.collapse-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  padding:0;
+  border:none;
+  background:none;
+  text-align:left;
+  cursor:pointer;
+  transition:color 0.15s ease;
+}
+.collapse-toggle:hover{color:var(--accent);}
+.collapse-toggle .caret{
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+.is-collapsed .collapse-toggle .caret{transform:rotate(-90deg);}
+.collapse-body{
+  display:grid;
+  grid-template-rows:1fr;
+  transition:grid-template-rows 0.3s cubic-bezier(.4,0,.2,1);
+}
+.collapse-inner{
+  min-height:0;
+  overflow:hidden;
+  transition:opacity 0.25s ease;
+}
+.is-collapsed .collapse-body{grid-template-rows:0fr;}
+.is-collapsed .collapse-inner{opacity:0;}
+
+@media (prefers-reduced-motion:reduce){
+  .pinned-title, .collapse-body, .collapse-inner, .collapse-toggle .caret{transition:none;}
+}
+
+.left section{margin-bottom:48px;}
+.left section:last-child{margin-bottom:0;}
+
+.section-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--label);
+  margin-bottom:10px;
+}
+.section-rule{
+  border:none;
+  border-top:1px solid var(--divider);
+  margin-bottom:18px;
+}
+
+.bio p{
+  font-size:17px;
+  line-height:1.7;
+  max-width:560px;
+  margin-bottom:24px;
+  color:var(--strong);
+}
+.bio p:last-child{margin-bottom:0;}
+
+.dot-row{
+  display:flex;
+  align-items:baseline;
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  font-size:15px;
+  color:var(--strong);
+  padding:5px 0;
+}
+.dot-row .name{white-space:nowrap;}
+.dot-row .dots{
+  flex:1;
+  overflow:hidden;
+  position:relative;
+  height:1.2em;
+  margin:0 6px;
+}
+.dot-row .dots::after{
+  content:".................................................................................................................";
+  position:absolute;
+  left:0;
+  top:0;
+  white-space:nowrap;
+  color:var(--muted);
+  font-weight:400;
+  letter-spacing:2px;
+}
+.dot-row .date{
+  white-space:nowrap;
+  color:var(--muted);
+  font-weight:400;
+}
+/* A detail with several values (years, status steps, launch links) stacks them on the right. */
+.dot-row .values{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  text-align:right;
+}
+.dot-row .values > *{white-space:nowrap;}
+.dot-row .values a{color:var(--muted);text-decoration:none;transition:color 0.15s ease;}
+.dot-row .values a:hover{color:var(--accent);}
+a.date{
+  text-decoration:none;
+  transition:color 0.15s ease;
+}
+a.date:hover{color:var(--accent);}
+
+/* Work column: a stack of media and notes. Drop an <img> or <video> inside .media to replace the placeholder label. */
+.work > * + *{margin-top:24px;}
+.work > .bio{margin:48px 0;}
+figure{margin:0;}
+.media{
+  position:relative;
+  aspect-ratio:16 / 9;
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--media-bg);
+  border:1px dashed var(--divider);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--label);
+}
+.media:has(img, video){border:none;aspect-ratio:auto;}
+.media img, .media video{
+  width:100%;
+  height:auto;
+  display:block;
+}
+figcaption{
+  margin-top:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Long-form case studies: a stack of sections, each a label, copy, and media. */
+.story > section + section,
+.story > section + .work{margin-top:96px;}
+/* Hero image slot under the Project Overview copy. Until there's an image it shows as a dashed placeholder. */
+.story .hero .media{aspect-ratio:16 / 9;}
+.story .copy p{
+  font-size:17px;
+  line-height:1.7;
+  color:var(--strong);
+  margin-bottom:24px;
+}
+.story .copy p:last-child{margin-bottom:0;}
+.story .copy b{font-weight:600;}
+.story figure{margin-top:18px;}
+.shot img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:12px;
+}
+.shot.is-natural img{
+  width:var(--w);
+  max-width:100%;
+  margin:0 auto;
+  border-radius:0;
+}
+
+/* Floating cut-out (no background of its own): a faint edge and soft shadow so it reads on either theme. */
+.shot.is-floating img{
+  filter:drop-shadow(0 0 1px var(--float-edge)) drop-shadow(0 10px 24px rgba(0,0,0,0.18));
+}
+
+/* Bare phone screens in a row, filling the column. */
+.screens{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:24px;
+}
+.screens img{display:block;width:100%;height:auto;}
+
+/* Screenshot grid, two across. */
+.tiles{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.tiles img{display:block;width:100%;height:auto;border-radius:8px;}
+
+/* Minimal phone: dark body, even bezel, rounded screen. Sizes scale off --pw. */
+.phones{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:40px;
+}
+.phone{
+  --pw:280px;
+  position:relative;
+  width:var(--pw);
+  aspect-ratio:280 / 584;
+  padding:calc(var(--pw) * 9 / 280);
+  border-radius:calc(var(--pw) * 39 / 280);
+  background:var(--phone-body);
+  box-shadow:inset 0 0 0 1px var(--phone-edge);
+}
+.phone .screen{
+  position:relative;
+  width:100%;
+  height:100%;
+  border-radius:calc(var(--pw) * 30 / 280);
+  overflow:hidden;
+  background:#000;
+}
+.phone .screen img, .phone .screen video{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* Older 16:9 phone recordings (e.g. iPhone 8 era) get a shorter body so nothing is cropped. */
+.phone.is-classic{aspect-ratio:280 / 484;}
+
+/* Several phones in a row, each with a caption. */
+.phone-row{
+  display:flex;
+  justify-content:center;
+  gap:24px;
+}
+.phone-row figure{margin:0;}
+.phone-row.is-trio .phone{--pw:220px;}
+.phone-row.is-quad .phone{--pw:168px;}
+.phone-row figcaption, .formats figcaption{text-align:center;}
+
+/* Ad formats side by side, captioned. */
+.formats{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:24px;
+  align-items:center;
+}
+.formats figure{margin:0;}
+.formats img{display:block;width:100%;height:auto;border-radius:8px;}
+
+/* Wider-than-phone footage: show it whole, letterboxed top and bottom. */
+.phone .screen.is-contain video{object-fit:contain;}
+
+/* Three across (TV screenshots), and a pair of captioned videos. */
+.tiles.is-trio{grid-template-columns:repeat(3, minmax(0, 1fr));}
+.formats.is-pair{grid-template-columns:repeat(2, minmax(0, 1fr));align-items:start;}
+.formats.is-flow{align-items:start;}
+.formats .media{border-radius:8px;}
+
+/* Step-by-step funnels, side by side. The step that differs is highlighted. */
+.funnel{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:16px;
+}
+.funnel-col{
+  border:1px dashed var(--divider);
+  border-radius:12px;
+  padding:24px;
+}
+.funnel-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--label);
+  margin-bottom:16px;
+}
+.funnel ol{list-style:none;}
+.funnel li{
+  font-size:16px;
+  line-height:1.5;
+  color:var(--strong);
+}
+.funnel li + li{margin-top:10px;}
+.funnel li + li::before{content:"\2192\00a0\00a0";color:var(--muted);}
+.funnel li.is-new{color:var(--accent);}
+
+/* Minimal tablet, same body as the phone. Paired with a phone at matching height. */
+.tablet{
+  padding:9px;
+  border-radius:22px;
+  background:var(--phone-body);
+  box-shadow:inset 0 0 0 1px var(--phone-edge);
+}
+.tablet .screen{
+  position:relative;
+  border-radius:14px;
+  overflow:hidden;
+  background:#000;
+}
+.tablet video{display:block;width:100%;height:auto;}
+.device-pair{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+}
+.device-pair .phone{--pw:180px;flex:none;}
+.device-pair .tablet{flex:1;max-width:560px;}
+
+/* Directions table: five columns on desktop, stacked cards on small screens. */
+.matrix{
+  border:1px dashed var(--divider);
+  border-radius:12px;
+  overflow:hidden;
+}
+.matrix-row{
+  display:grid;
+  grid-template-columns:1.05fr 1.3fr 1.2fr 1.3fr 1.1fr;
+}
+.matrix-row + .matrix-row{border-top:1px dashed var(--divider);}
+.matrix-row > span{
+  padding:16px 14px;
+  font-size:13px;
+  line-height:1.5;
+  color:var(--body-text);
+}
+.matrix-row > span + span{border-left:1px dashed var(--divider);}
+.matrix-row > span:first-child{color:var(--strong);font-weight:600;}
+.matrix-head > span{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--label);
+  font-weight:500;
+}
+.matrix-head > span:first-child{color:var(--label);font-weight:500;}
+.matrix-row.is-winner > span:last-child{color:var(--accent);}
+
+/* Video controls added by players.js: hidden until hover or focus, shown while paused. */
+[data-player]{position:relative;}
+[data-player] video{cursor:pointer;}
+.player-controls{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  display:flex;
+  gap:6px;
+}
+.player-btn{
+  width:30px;
+  height:30px;
+  border:none;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--control-bg);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  color:#eef0f6;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity 0.2s ease;
+}
+.player-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.player-toggle svg path:only-child{fill:currentColor;}
+[data-player]:hover .player-btn,
+[data-player].is-paused .player-toggle,
+.player-btn:focus-visible,
+.player-sound{opacity:1;}
+.phone .player-controls{right:14px;bottom:18px;}
+
+a:focus-visible, button:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+
+@media (max-width:860px){
+  .case{padding:32px 28px 140px;}
+  h1{margin:48px 0 32px;}
+  .case-grid{grid-template-columns:1fr;gap:56px;}
+  .left{position:static;}
+  .story > section + section{margin-top:72px;}
+  .phone{--pw:min(280px, 72vw);}
+  .dot-row .values > *{white-space:normal;}
+  /* The two "Why" phones stay side by side, as in the Figma layout. */
+  .phones.is-pair{flex-wrap:nowrap;gap:16px;}
+  .screens{gap:10px;}
+  .phone-row{flex-wrap:wrap;gap:16px;}
+  .phone-row.is-trio .phone{--pw:calc((100vw - 56px - 32px) / 3);}
+  .phone-row.is-quad .phone{--pw:calc((100vw - 56px - 16px) / 2);}
+  .formats{gap:10px;}
+  .tiles{gap:10px;}
+  .phones.is-pair .phone{--pw:min(280px, calc((100vw - 56px - 16px) / 2));}
+  .funnel{grid-template-columns:1fr;gap:10px;}
+  .formats.is-pair{grid-template-columns:1fr;}
+  .device-pair{gap:12px;}
+  .device-pair .phone{--pw:calc((100vw - 56px) * 0.26);}
+  .tablet{padding:6px;border-radius:14px;}
+  .tablet .screen{border-radius:9px;}
+  .matrix-head{display:none;}
+  .matrix-row{grid-template-columns:1fr;padding:16px 0;}
+  .matrix-row > span{padding:4px 18px;}
+  .matrix-row > span + span{border-left:none;}
+  .matrix-row > span:first-child{font-size:15px;padding-bottom:8px;}
+  .matrix-row > span + span::before{
+    content:attr(data-label);
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--label);
+    margin:6px 0 2px;
+  }
+}

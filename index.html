@@ -19,6 +19,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=20">
+<script>
+  try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
+</script>
 <style>
   :root{
     --bg:#12131c;
@@ -35,6 +39,7 @@
     --glass-shadow:rgba(0,0,0,0.35);
     --terrain-line:rgba(255,255,255,0.35);
     --scrim:rgba(10,10,16,0.5);
+    --tile-bg:#1a1b25;
   }
   :root[data-theme="light"]{
     --bg:#f6f5fb;
@@ -51,6 +56,7 @@
     --glass-shadow:rgba(124,77,255,0.18);
     --terrain-line:rgba(90,74,140,0.26);
     --scrim:rgba(246,245,251,0.62);
+    --tile-bg:#ecebf6;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
@@ -65,9 +71,15 @@
   }
   body.bg-dragging{
     cursor:grabbing;
+    -webkit-user-select:none;
+    user-select:none;
   }
+  /* While turning the terrain, nothing on the page reacts to the pointer. */
+  body.bg-dragging .page,
+  body.bg-dragging .site-footer,
+  body.bg-dragging .top-bar{pointer-events:none !important;}
   h1, .section-label, .section-rule, .dot-row, .dot-row .name, .dot-row .dots::after,
-  .dot-row .date, .plain-list, .plain-list a, .contact-list a{
+  .dot-row .date, .plain-list, .plain-list a{
     transition:color 0.35s ease, border-color 0.35s ease;
   }
 
@@ -79,7 +91,7 @@
     padding:120px 60px;
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:8vw;
+    gap:96px 8vw;
   }
 
   #terrain-bg{
@@ -96,39 +108,39 @@
     z-index:-1;
     background:var(--scrim);
     pointer-events:none;
-    transition:background-color 0.35s ease;
+    transition:background-color 0.35s ease, opacity 0.5s ease;
   }
-  .geo-coords{
+  /* The terrain brightens while you turn it, so the drag color reads clearly. */
+  body.bg-dragging .terrain-scrim{opacity:0.35;}
+  /* Fixed top bar: opaque, with a rule across the full window. */
+  .top-bar{
     position:fixed;
-    top:28px;
-    right:max(60px, calc(50vw - 640px));
-    z-index:2;
+    top:0;
+    left:0;
+    right:0;
+    z-index:50;
+    height:var(--bar-h);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:0 max(60px, calc(50vw - 640px));
+    background:var(--bg);
+    border-bottom:1px solid var(--divider);
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;
     letter-spacing:0.06em;
     color:var(--muted);
-    text-align:right;
-    white-space:nowrap;
     pointer-events:none;
+    transition:background-color 0.35s ease, border-color 0.35s ease;
   }
+  .geo-coords{text-align:right;white-space:nowrap;}
   .geo-coords .geo-label{
     color:var(--label);
     font-size:10px;
     letter-spacing:0.14em;
   }
-  .weather-info{
-    position:fixed;
-    top:28px;
-    left:max(60px, calc(50vw - 640px));
-    z-index:2;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    letter-spacing:0.06em;
-    color:var(--muted);
-    text-align:left;
-    white-space:nowrap;
-    pointer-events:none;
-  }
+  .weather-info{text-align:left;white-space:nowrap;}
 
   .intro{
     display:flex;
@@ -262,87 +274,69 @@
   }
   .plain-list a:hover{color:var(--accent);}
 
-  .contact-list{
-    list-style:none;
+  /* Projects: full-width grid below the two columns. To add a project, fill in a stub card
+     (name, link, thumbnail) and add it to PROJECTS in assets/site.js in the same order. */
+  .projects{grid-column:1 / -1;}
+  .project-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:40px 24px;
+  }
+  .project-card{
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+  }
+  .project-name{
+    display:block;
+    margin-bottom:12px;
     font-family:'IBM Plex Mono',monospace;
     font-weight:600;
     font-size:15px;
-  }
-  .contact-list li{padding:5px 0;}
-  .contact-list a{
     color:var(--strong);
-    text-decoration:none;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
     transition:color 0.15s ease;
   }
-  .contact-list a:hover{color:var(--accent);}
+  .project-thumb{
+    display:block;
+    margin-top:auto; /* keeps thumbnails aligned when a name wraps */
+    aspect-ratio:16 / 9;
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--tile-bg);
+    transition:background-color 0.35s ease;
+  }
+  .project-thumb img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  a.project-card:hover .project-name{color:var(--accent);}
+  a.project-card:hover .project-thumb img{transform:scale(1.03);}
+  .project-card.is-stub .project-name{color:var(--muted);font-weight:500;}
 
   a:focus-visible, button:focus-visible{
     outline:2px solid var(--accent);
     outline-offset:3px;
   }
 
-  .theme-toggle{
-    position:fixed;
-    bottom:32px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    align-items:center;
-    gap:2px;
-    padding:6px;
-    border-radius:999px;
-    background:var(--glass-bg);
-    backdrop-filter:blur(20px) saturate(180%);
-    -webkit-backdrop-filter:blur(20px) saturate(180%);
-    border:1px solid var(--glass-border);
-    box-shadow:0 8px 32px var(--glass-shadow);
-    z-index:50;
-    transition:background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
-  }
-  .theme-toggle .indicator{
-    position:absolute;
-    top:6px;
-    left:6px;
-    width:36px;
-    height:36px;
-    border-radius:50%;
-    background:var(--glass-indicator);
-    box-shadow:0 2px 8px var(--glass-shadow);
-    transition:transform 0.4s cubic-bezier(.4,0,.2,1), background-color 0.35s ease;
-  }
-  :root[data-theme="light"] .theme-toggle .indicator{
-    transform:translateX(38px);
-  }
-  .theme-toggle button{
-    position:relative;
-    z-index:1;
-    width:36px;
-    height:36px;
-    border:none;
-    background:transparent;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--muted);
-    cursor:pointer;
-    transition:color 0.35s ease;
-  }
-  .theme-toggle button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-  :root:not([data-theme="light"]) .theme-toggle .moon-btn{color:var(--accent);}
-  :root[data-theme="light"] .theme-toggle .sun-btn{color:var(--accent);}
-
   @media (max-width:860px){
     .page{
       grid-template-columns:1fr;
-      padding:64px 28px;
+      padding:64px 28px 150px; /* room for the two-row footer */
       gap:56px;
     }
     .intro{gap:28px;margin-bottom:32px;}
     .right{margin-top:0;}
-    .geo-coords{top:20px;right:28px;font-size:9px;white-space:normal;max-width:44vw;}
+    .project-grid{grid-template-columns:repeat(2, minmax(0, 1fr));gap:28px 16px;}
+    .project-name{font-size:13px;margin-bottom:10px;white-space:normal;}
+    .top-bar{padding:0 28px;font-size:9px;}
+    .geo-coords, .weather-info{white-space:normal;max-width:44vw;}
     .geo-coords .geo-label{font-size:8px;}
-    .weather-info{top:20px;left:28px;font-size:9px;white-space:normal;max-width:44vw;}
   }
 </style>
 </head>
@@ -350,8 +344,10 @@
 
 <canvas id="terrain-bg"></canvas>
 <div class="terrain-scrim"></div>
-<div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
-<div class="weather-info" id="weather-info"><span id="weather-line">&hellip;</span> &middot; <span id="elev-line">&hellip;</span></div>
+<header class="top-bar">
+  <div class="weather-info" id="weather-info"><span id="weather-line">&hellip;</span> &middot; <span id="elev-line">&hellip;</span></div>
+  <div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
+</header>
 
 <div class="page">
   <div class="left">
@@ -369,9 +365,9 @@
     <hr class="section-rule">
     <div class="bio">
       <p>I&rsquo;m a product designer living in the Sierra Nevada. Most recently I&rsquo;ve been working at Netflix building the games social platform and previously was on the commerce team growing subscribers.</p>
-      <p>Before that I worked at Discord helping people express themselves and grow the Nitro subscription product. During my time at Meta I designed ad formats, creator products, and all types of video formats across Instagram and the Facebook App.</p>
+      <p>Before that I worked at Discord helping people express themselves and grow the Nitro subscription product. During my time at Meta, I designed ad formats, creator products, and all types of video formats across Instagram and the Facebook App.</p>
       <p>I get excited by prototyping, exploring artificial intelligence, and well crafted products. I&rsquo;m always interested in pushing digital mediums to the next levels of immersion.</p>
-      <p>Full work case studies available on request.</p>
+      <p>Available for full-time roles.</p>
     </div>
   </div>
 
@@ -396,377 +392,74 @@
       </ul>
     </section>
 
-    <section>
-      <div class="section-label">Contact</div>
-      <hr class="section-rule">
-      <ul class="contact-list">
-        <li><a href="https://www.linkedin.com/in/ryandrewcasey/" target="_blank" rel="noopener">LinkedIn</a></li>
-        <li><a href="mailto:rdrewcasey@gmail.com">Email</a></li>
-        <li><a href="https://www.instagram.com/ryry" target="_blank" rel="noopener">Instagram</a></li>
-      </ul>
-    </section>
   </div>
+  <section class="projects">
+    <div class="section-label">Projects</div>
+    <hr class="section-rule">
+    <div class="project-grid">
+      <a class="project-card" href="spatial-audio/">
+        <span class="project-name">Netflix Spatial Audio</span>
+        <span class="project-thumb"><img src="assets/thumbs/spatial-audio.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="remix/">
+        <span class="project-name">Discord Remix</span>
+        <span class="project-thumb"><img src="assets/thumbs/remix.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="password-sharing/">
+        <span class="project-name">Password Sharing</span>
+        <span class="project-thumb"><img src="assets/thumbs/password-sharing.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="player-profiles/">
+        <span class="project-name">Player Profiles</span>
+        <span class="project-thumb"><img src="assets/thumbs/player-profiles.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="igtv/">
+        <span class="project-name">IGTV App</span>
+        <span class="project-thumb"><img src="assets/thumbs/igtv.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="stage-channels/">
+        <span class="project-name">Stage Channels</span>
+        <span class="project-thumb"><img src="assets/thumbs/stage-channels.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="facebook-tv/">
+        <span class="project-name">Facebook TV App</span>
+        <span class="project-thumb"><img src="assets/thumbs/facebook-tv.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+      <a class="project-card" href="dynamic-ads/">
+        <span class="project-name">Instagram Dynamic Ads</span>
+        <span class="project-thumb"><img src="assets/thumbs/dynamic-ads.jpg" width="800" height="450" loading="lazy" alt=""></span>
+      </a>
+    </div>
+  </section>
 </div>
 
-<div class="theme-toggle">
-  <div class="indicator"></div>
-  <button class="moon-btn" type="button" aria-label="Dark mode" aria-pressed="true">
-    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-  </button>
-  <button class="sun-btn" type="button" aria-label="Light mode" aria-pressed="false">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
-  </button>
-</div>
+<footer class="site-footer">
+  <ul class="footer-contacts">
+    <li><a href="https://www.linkedin.com/in/ryandrewcasey/" target="_blank" rel="noopener">LinkedIn</a></li>
+    <li><a href="mailto:rdrewcasey@gmail.com">Email</a></li>
+    <li><a href="https://www.instagram.com/ryry" target="_blank" rel="noopener">Instagram</a></li>
+  </ul>
+  <div class="footer-controls">
+  <div class="terrain-picker" role="group" aria-label="Background terrain">
+    <button type="button" data-terrain="tahoe" aria-pressed="true">Tahoe</button>
+    <button type="button" data-terrain="shasta" aria-pressed="false">Shasta</button>
+    <button type="button" data-terrain="whitney" aria-pressed="false">Whitney</button>
+  </div>
+  <div class="theme-toggle" role="group" aria-label="Color theme">
+    <div class="indicator"></div>
+    <button class="moon-btn" type="button" aria-label="Dark mode" aria-pressed="true">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <button class="sun-btn" type="button" aria-label="Light mode" aria-pressed="false">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+    </button>
+  </div>
+  </div>
+</footer>
 
-<script>
-  (function(){
-    var root = document.documentElement;
-    var sunBtn = document.querySelector('.sun-btn');
-    var moonBtn = document.querySelector('.moon-btn');
+<script src="assets/site.js?v=20"></script>
 
-    function applyTheme(theme){
-      if(theme === 'light'){
-        root.setAttribute('data-theme', 'light');
-      } else {
-        root.removeAttribute('data-theme');
-      }
-      sunBtn.setAttribute('aria-pressed', String(theme === 'light'));
-      moonBtn.setAttribute('aria-pressed', String(theme !== 'light'));
-    }
-
-    var saved = localStorage.getItem('theme') || 'dark';
-    applyTheme(saved);
-
-    sunBtn.addEventListener('click', function(){
-      localStorage.setItem('theme', 'light');
-      applyTheme('light');
-    });
-    moonBtn.addEventListener('click', function(){
-      localStorage.setItem('theme', 'dark');
-      applyTheme('dark');
-    });
-  })();
-</script>
-
-<script>
-  (function(){
-    var canvas = document.getElementById('terrain-bg');
-    var ctx = canvas.getContext('2d');
-    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // ---- value noise / fbm ----
-    function hash(x, y){
-      var s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-      return s - Math.floor(s);
-    }
-    function noise2D(x, y){
-      var xi = Math.floor(x), yi = Math.floor(y);
-      var xf = x - xi, yf = y - yi;
-      var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-      var a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
-      return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-    }
-    function ridged(n){
-      return 1 - Math.abs(n * 2 - 1);
-    }
-    function fbm(x, y){
-      var total = 0, amp = 0.55, freq = 1, max = 0;
-      for(var i = 0; i < 5; i++){
-        total += ridged(noise2D(x * freq, y * freq)) * amp;
-        max += amp;
-        amp *= 0.52;
-        freq *= 2.05;
-      }
-      return total / max;
-    }
-
-    // ---- terrain params ----
-    var COLS = 130, ROWS = 110;
-    var WORLD = 1000;
-    var MOUNTAIN_AMP = 210;
-    var CRATER_RADIUS = 150;
-    var CRATER_DEPTH = 165;
-    var RIM_HEIGHT = 40;
-    var NOISE_FREQ = 0.0026;
-
-    // Lake Tahoe's outline: elongated N-S, tapered south tip, Emerald Bay notch on the west side.
-    var LAKE_AXIS_NS = 1.55;
-    var LAKE_AXIS_EW = 0.62;
-    var SOUTH_TAPER = 0.32;
-    var NOTCH_ANGLE = -1.95;
-    var NOTCH_WIDTH = 0.24;
-    var NOTCH_DEPTH = 0.24;
-
-    function angDiff(a, b){
-      var d = Math.abs(a - b) % (Math.PI * 2);
-      return d > Math.PI ? Math.PI * 2 - d : d;
-    }
-
-    function lakeRadius(theta){
-      var a = CRATER_RADIUS * LAKE_AXIS_NS;
-      var b = CRATER_RADIUS * LAKE_AXIS_EW;
-      var r = (a * b) / Math.sqrt(Math.pow(b * Math.cos(theta), 2) + Math.pow(a * Math.sin(theta), 2));
-      var southDist = angDiff(theta, Math.PI);
-      r *= 1 - SOUTH_TAPER * Math.exp(-Math.pow(southDist / 0.9, 2));
-      var notchDist = angDiff(theta, NOTCH_ANGLE);
-      r *= 1 - NOTCH_DEPTH * Math.exp(-Math.pow(notchDist / NOTCH_WIDTH, 2));
-      return r;
-    }
-
-    function heightAt(x, z){
-      var n = fbm(x * NOISE_FREQ, z * NOISE_FREQ);
-      var h = n * MOUNTAIN_AMP;
-      var d = Math.sqrt(x * x + z * z);
-      var theta = Math.atan2(x, z);
-      var r0 = lakeRadius(theta);
-      if(d < r0 * 1.2){
-        var t = Math.min(d / r0, 1);
-        var craterShape = Math.pow(1 - t, 1.7);
-        var rim = Math.exp(-Math.pow((t - 0.92) / 0.16, 2)) * RIM_HEIGHT;
-        h = h * (t * t) - CRATER_DEPTH * craterShape + rim;
-      }
-      return h;
-    }
-
-    // precompute grid once
-    var grid = [];
-    for(var j = 0; j < ROWS; j++){
-      var row = [];
-      for(var i = 0; i < COLS; i++){
-        var x0 = (i / (COLS - 1) - 0.5) * WORLD;
-        var z0 = (j / (ROWS - 1) - 0.5) * WORLD;
-        var dist0 = Math.sqrt(x0 * x0 + z0 * z0);
-        var r0g = lakeRadius(Math.atan2(x0, z0));
-        row.push({ x: x0, z: z0, y: heightAt(x0, z0), inCrater: dist0 < r0g * 1.2 });
-      }
-      grid.push(row);
-    }
-
-    // ---- camera ----
-    var PITCH = -0.97; // radians, tilt looking down
-    var FOCAL = 900;
-    var CAM_DIST = 760;
-    var cosP = Math.cos(PITCH), sinP = Math.sin(PITCH);
-
-    var W = 0, H = 0, DPR = 1;
-    function resize(){
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width = W * DPR;
-      canvas.height = H * DPR;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    var angle = 0.6;
-    var ROT_SPEED = 0.008; // radians per second
-
-    // drag-to-rotate: adds a persistent offset on top of the ever-advancing
-    // auto angle, so dragging nudges the view and it keeps spinning from there.
-    var dragAngleOffset = 0;
-    var isDragging = false;
-    var lastPointerX = 0;
-    var mouseX = -9999, mouseY = -9999;
-    var DRAG_SENSITIVITY = 0.006;
-    var GLOW_RADIUS = 150;
-    var GLOW_COLOR = '110,235,150';
-
-    function onPointerDown(e){
-      isDragging = true;
-      lastPointerX = e.clientX;
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      document.body.classList.add('bg-dragging');
-    }
-    function onPointerMove(e){
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      if(!isDragging) return;
-      var dx = e.clientX - lastPointerX;
-      dragAngleOffset += dx * DRAG_SENSITIVITY;
-      lastPointerX = e.clientX;
-    }
-    function onPointerUp(){
-      isDragging = false;
-      document.body.classList.remove('bg-dragging');
-    }
-    window.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    window.addEventListener('pointercancel', onPointerUp);
-
-    function project(pt, cosA, sinA, scale, cx, cy, yOff){
-      var x1 = pt.x * cosA - pt.z * sinA;
-      var z1 = pt.x * sinA + pt.z * cosA;
-      var y2 = pt.y * cosP - z1 * sinP;
-      var z2 = pt.y * sinP + z1 * cosP;
-      var zc = z2 + CAM_DIST;
-      if(zc < 40) zc = 40;
-      var persp = (FOCAL / zc) * scale;
-      return {
-        sx: cx + x1 * persp,
-        sy: cy + yOff - y2 * persp,
-        z: zc
-      };
-    }
-
-    var lastTime = null;
-    function draw(now){
-      if(lastTime === null) lastTime = now;
-      var dt = (now - lastTime) / 1000;
-      lastTime = now;
-      if(!reduceMotion){
-        angle += ROT_SPEED * dt;
-      }
-
-      var cs = getComputedStyle(document.documentElement);
-      var lineColor = cs.getPropertyValue('--terrain-line').trim() || 'rgba(255,255,255,0.5)';
-      var bgColor = cs.getPropertyValue('--bg').trim() || '#12131c';
-
-      ctx.clearRect(0, 0, W, H);
-
-      var totalAngle = angle + dragAngleOffset;
-      var cosA = Math.cos(totalAngle), sinA = Math.sin(totalAngle);
-      var scale = Math.max(W, 800) / 1400;
-      var cx = W / 2;
-      var cy = H * 0.46;
-      var yOff = H * 0.06;
-
-
-      // project all points, compute per-row avg depth
-      var projRows = [];
-      for(var j = 0; j < ROWS; j++){
-        var prow = [];
-        var depthSum = 0;
-        for(var i = 0; i < COLS; i++){
-          var p = project(grid[j][i], cosA, sinA, scale, cx, cy, yOff);
-          p.inCrater = grid[j][i].inCrater;
-          prow.push(p);
-          depthSum += p.z;
-        }
-        projRows.push({ pts: prow, depth: depthSum / COLS });
-      }
-      projRows.sort(function(a, b){ return b.depth - a.depth; });
-
-      ctx.lineWidth = 1;
-      ctx.lineJoin = 'round';
-      var OCCLUDE_MARGIN = 6;
-      for(var r = 0; r < projRows.length; r++){
-        var pts = projRows[r].pts;
-
-        // Occlusion fill beneath this row before stroking - a bounded ribbon
-        // that follows the row's own contour, not a fill to the canvas edge,
-        // so a foreground ridge doesn't blank out unrelated terrain below it
-        // on screen (which happens once the camera rotates). Skipped across
-        // crater-crossing segments: many rows converge visually near the
-        // crater's apex, and even a small per-row margin compounds there
-        // into a solid block that erases the crater - so that stretch is
-        // left unfilled and shows as clean overlapping wireframe instead,
-        // while normal mountain terrain still gets proper occlusion.
-        var idx = 0;
-        while(idx < pts.length){
-          if(pts[idx].inCrater){ idx++; continue; }
-          var end = idx;
-          while(end < pts.length && !pts[end].inCrater) end++;
-          if(end - idx >= 2){
-            ctx.beginPath();
-            ctx.moveTo(pts[idx].sx, pts[idx].sy);
-            for(var k = idx + 1; k < end; k++){
-              ctx.lineTo(pts[k].sx, pts[k].sy);
-            }
-            for(var b = end - 1; b >= idx; b--){
-              ctx.lineTo(pts[b].sx, pts[b].sy + OCCLUDE_MARGIN);
-            }
-            ctx.closePath();
-            ctx.fillStyle = bgColor;
-            ctx.fill();
-          }
-          idx = end;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(pts[0].sx, pts[0].sy);
-        for(var m = 1; m < pts.length; m++){
-          ctx.lineTo(pts[m].sx, pts[m].sy);
-        }
-        ctx.strokeStyle = lineColor;
-        ctx.stroke();
-      }
-
-      if(isDragging){
-        ctx.lineWidth = 1.4;
-        for(var gr = 0; gr < projRows.length; gr++){
-          var gpts = projRows[gr].pts;
-          for(var gi = 1; gi < gpts.length; gi++){
-            var gp1 = gpts[gi - 1], gp2 = gpts[gi];
-            var gmx = (gp1.sx + gp2.sx) / 2, gmy = (gp1.sy + gp2.sy) / 2;
-            var gdx = gmx - mouseX, gdy = gmy - mouseY;
-            var gdist = Math.sqrt(gdx * gdx + gdy * gdy);
-            if(gdist < GLOW_RADIUS){
-              var gt = 1 - gdist / GLOW_RADIUS;
-              gt = gt * gt;
-              ctx.strokeStyle = 'rgba(' + GLOW_COLOR + ',' + (0.5 * gt).toFixed(3) + ')';
-              ctx.beginPath();
-              ctx.moveTo(gp1.sx, gp1.sy);
-              ctx.lineTo(gp2.sx, gp2.sy);
-              ctx.stroke();
-            }
-          }
-        }
-      }
-
-      requestAnimationFrame(draw);
-    }
-    requestAnimationFrame(draw);
-  })();
-</script>
-
-<script>
-  (function(){
-    var LAT = 39.1657, LON = -120.1400;
-    var weatherLine = document.getElementById('weather-line');
-    var elevLine = document.getElementById('elev-line');
-
-    var WEATHER_CODES = {
-      0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
-      45: 'Fog', 48: 'Fog',
-      51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
-      56: 'Freezing Drizzle', 57: 'Freezing Drizzle',
-      61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
-      66: 'Freezing Rain', 67: 'Freezing Rain',
-      71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains',
-      80: 'Rain Showers', 81: 'Rain Showers', 82: 'Violent Showers',
-      85: 'Snow Showers', 86: 'Snow Showers',
-      95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm'
-    };
-
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LON + '&current_weather=true&temperature_unit=fahrenheit')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var cw = data.current_weather;
-        var desc = WEATHER_CODES[cw.weathercode] || 'Unknown';
-        weatherLine.textContent = Math.round(cw.temperature) + '°F, ' + desc;
-      })
-      .catch(function(){ weatherLine.textContent = ''; });
-
-    fetch('https://api.open-meteo.com/v1/elevation?latitude=' + LAT + '&longitude=' + LON)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var meters = data.elevation && data.elevation[0];
-        if(typeof meters === 'number'){
-          var feet = Math.round(meters * 3.28084);
-          elevLine.textContent = 'ELEV ' + feet.toLocaleString() + ' FT';
-        } else {
-          elevLine.textContent = '';
-        }
-      })
-      .catch(function(){ elevLine.textContent = ''; });
-  })();
-</script>
+<script src="assets/terrain.js?v=11"></script>
 
 </body>
 </html>

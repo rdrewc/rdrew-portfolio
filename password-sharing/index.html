@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Sharing &ndash; Ryan Casey</title>
+<meta name="description" content="Password Sharing: designing Netflix’s household enforcement for kids profiles, a case study by Ryan Casey.">
+<meta property="og:title" content="Password Sharing &ndash; Ryan Casey">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rdrew.com/password-sharing/">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/case-study.css?v=19">
+<link rel="stylesheet" href="../assets/site.css?v=20">
+<script>
+  try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
+</script>
+</head>
+<body>
+
+<nav class="site-header" data-project-nav aria-label="Projects"><a class="nav-home" href="../" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h4.5v-6h4v6h4.5V9"/></svg></a>
+  
+</nav>
+
+<main class="case">
+  <h1>Password Sharing</h1>
+
+  <div class="case-grid">
+    <div class="left">
+      <section>
+        <div class="section-label">Details</div>
+        <hr class="section-rule">
+        <div class="dot-row"><span class="name">Company</span><span class="dots"></span><span class="date">Netflix</span></div>
+        <div class="dot-row"><span class="name">Role</span><span class="dots"></span><span class="date">Lead Product Designer</span></div>
+        <div class="dot-row"><span class="name">Platforms</span><span class="dots"></span><span class="date">TV, Mobile, Tablet</span></div>
+        <div class="dot-row"><span class="name">Launch</span><span class="dots"></span><span class="date">[Link]</span></div>
+      </section>
+    </div>
+
+    <div class="right story">
+      <section>
+        <div class="section-label">Project Overview</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>MHU, or Multi Household Usage, is the internal name for Netflix’s password sharing enforcement initiative. Kids profiles were one of the last loopholes, but designing a commerce experience on kids surfaces required a delicate solution.</p>
+          <p>We can’t know the ages of members on kids profiles, so we aimed for a solution where anyone can hand off to an adult to create an account as needed: honoring the household policy, keeping commerce away from kids environments, letting parents resolve it quickly, and scaling to other commerce needs like payments.</p>
+          <p>I owned the end to end experience, the messaging and dialog system used across kids surfaces, and both hypotheses that went to testing. It launched with a $35m annual revenue win, and the enhanced dialog cell was productized.</p>
+        </div>
+        <figure class="hero"><div class="media"><img src="assets/hero.jpg" width="1600" height="900" alt="The winning Adult help needed dialog on a TV and a phone, on a navy to red gradient"></div></figure>
+      </section>
+
+      <section>
+        <div class="section-label">The Dreaded Enforcement Experience</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>The intervention screen borrowers saw on TV, from the 2023 launch through iteration to its 2024 state.</p>
+        </div>
+        <div class="formats"><figure><img src="assets/enf-1.jpg" width="960" height="540" loading="lazy" alt="2023 launch: This TV isn’t connected to the primary location for this account"><figcaption>2023 launch</figcaption></figure><figure><img src="assets/enf-2.jpg" width="960" height="540" loading="lazy" alt="Iteration: Your TV isn’t part of the Netflix Household for this account"><figcaption>Iteration</figcaption></figure><figure><img src="assets/enf-3.jpg" width="960" height="540" loading="lazy" alt="2024: Your TV isn’t part of the Netflix Household, with Update Netflix Household and I’m Traveling options"><figcaption>2024</figcaption></figure></div>
+      </section>
+
+      <section>
+        <div class="section-label">The Ideal Funnel</div>
+        <hr class="section-rule">
+        <div class="funnel"><div class="funnel-col"><div class="funnel-label">Non-kids user</div><ol><li>Borrower tries to watch Netflix on a kids profile</li><li>Hits blocking experience</li><li>Hits enforcement</li><li>Creates own account</li></ol></div><div class="funnel-col"><div class="funnel-label">Kids user</div><ol><li>Kid tries to watch Netflix on a kids profile</li><li>Hits blocking experience</li><li class="is-new">Hands off to an adult</li><li>Adult hits enforcement</li><li>Creates own account</li></ol></div></div>
+      </section>
+
+      <section>
+        <div class="section-label">MHU Ideation</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>I followed learnings from other commerce projects I led to find the right containers and hierarchy for kids profiles.</p>
+          <p>A solution that scaled to other commerce needs was a goal of the test; a one off was a non-starter. Since this messaging was aimed at kids, I set out to improve on the standard dialog.</p>
+        </div>
+        <figure class="shot"><img src="assets/ideation.jpg" width="2000" height="841" loading="lazy" alt="A wall of MHU ideation: enforcement screens, dialogs, and upsells across TV and mobile"></figure>
+      </section>
+
+      <section>
+        <div class="section-label">Evolving Our Enforcement and Messaging</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>Other iterations I pushed for to evolve our borrower interventions and upsells. On TV, fewer steps and fewer choices helped grow spin off accounts and revenue.</p>
+        </div>
+        <figure class="shot"><img src="assets/evo-tv.jpg" width="1280" height="720" loading="lazy" alt="TV: Enjoy your own Netflix today, with Create an Account and This is My Account"></figure>
+        <div class="phone-row is-trio"><figure><div class="phone"><div class="screen"><img src="assets/evo-phone-1.jpg" width="375" height="812" loading="lazy" alt="Mobile: Enjoy your own Netflix today"></div></div></figure><figure><div class="phone"><div class="screen"><img src="assets/evo-phone-2.jpg" width="600" height="1299" loading="lazy" alt="Mobile: You’ve got a gift, 3 Months of Netflix Premium"></div></div></figure><figure><div class="phone"><div class="screen"><img src="assets/evo-phone-3.jpg" width="600" height="1301" loading="lazy" alt="Mobile: Stranger Things, Try Immersive Mode upsell"></div></div></figure></div>
+      </section>
+
+      <section>
+        <div class="section-label">Design System Evolution</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>I evolved our messaging and dialog system across platforms for use cases beyond MHU, starting with TV. The aim was to make messaging as legible as possible and feel more enriched, and the swappable templates allowed for easy content tests without more design or eng work.</p>
+        </div>
+        <figure class="tiles is-trio"><img src="assets/ds-1.jpg" width="960" height="540" loading="lazy" alt="Share Netflix with a friend or family member dialog over artwork"><img src="assets/ds-2.jpg" width="960" height="540" loading="lazy" alt="Add an extra member for $7.99/month dialog"><img src="assets/ds-3.jpg" width="960" height="540" loading="lazy" alt="Dialog template comparing Standard and Premium plans"><img src="assets/ds-4.jpg" width="960" height="540" loading="lazy" alt="Share Netflix dialog, compact layout"><img src="assets/ds-5.jpg" width="960" height="540" loading="lazy" alt="Share Netflix dialog, centered layout"><img src="assets/ds-6.jpg" width="960" height="540" loading="lazy" alt="Share Netflix dialog, wide layout"></figure>
+      </section>
+
+      <section>
+        <div class="section-label">Initial Approach</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>I worked with my content designer and with as many Netflix kids product experts as possible as we started to iterate.</p>
+          <p>We wanted to share our early approaches for feedback, and also gather learnings from the approaches Netflix had already taken designing on kids surfaces.</p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">Interaction and Layout Iterations</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>We started with a wide range of approaches, at the profile gate and as a blocking dialog, using the Netflix kids profile branding and some character driven IP.</p>
+        </div>
+        <figure class="tiles is-trio"><img src="assets/iter-1.jpg" width="960" height="540" loading="lazy" alt="Profile gate with Kids profile unavailable"><img src="assets/iter-2.jpg" width="960" height="540" loading="lazy" alt="Let’s get some help for this profile, over character artwork"><img src="assets/iter-3.jpg" width="960" height="540" loading="lazy" alt="Let’s get some help for this profile, with a kids avatar"><img src="assets/iter-4.jpg" width="960" height="540" loading="lazy" alt="Uh-oh, something’s not working, with the kids logo"><img src="assets/iter-5.jpg" width="960" height="540" loading="lazy" alt="Uh-oh, something’s not working, with kids characters"><img src="assets/iter-6.jpg" width="960" height="540" loading="lazy" alt="This profile needs a little help"></figure>
+      </section>
+
+      <section>
+        <div class="section-label">Early Learnings</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p><b>Association with characters, Netflix IP, or any content was flagged early as not ideal.</b><br>The breadth of Netflix content helps with acquisition and marketing, but for this blocking experience we wanted to be very direct that it was not associated with content.</p>
+        </div>
+        <figure class="shot"><img src="assets/character.jpg" width="1600" height="900" loading="lazy" alt="Let’s get some help for this profile, over bright kids character artwork"></figure>
+      </section>
+
+      <section>
+        <div class="section-label">Early Learnings</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p><b>We tried voiceover as a way to reach pre-literate age groups.</b><br>Qualitative research showed younger kids had less listening comprehension than visual. The words “grown up” and a caution icon helped more than the audio assisted version.</p>
+        </div>
+        <figure class="shot"><div class="media" data-player data-audio data-label="Let’s ask a grown-up, with voiceover video"><video src="assets/voiceover.mp4" poster="assets/voiceover.jpg" width="1600" height="900" preload="none" loop muted playsinline aria-label="Let’s ask a grown-up, with voiceover"></video></div><figcaption>Has audio</figcaption></figure>
+      </section>
+
+      <section>
+        <div class="section-label">Research Findings</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>Testing with kids and their parents, together and separately, revealed the strength of the simplest language and visuals. Resolving the issue quickly for parents, so their kids could keep watching, was the most important need.</p>
+        </div>
+        <figure class="tiles"><img src="assets/res-1.jpg" width="1280" height="720" loading="lazy" alt="Help needed from an adult dialog"><img src="assets/res-2.jpg" width="1280" height="720" loading="lazy" alt="Profile gate with Kids profile unavailable"><img src="assets/res-3.jpg" width="1280" height="716" loading="lazy" alt="Adult help needed, with a caution icon"><img src="assets/res-4.jpg" width="1280" height="720" loading="lazy" alt="Profile gate with Adult help needed beside the kids profile"></figure>
+      </section>
+
+      <section>
+        <div class="section-label">The Final Test Versions</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>We tested our two biggest hypotheses: blocking on the profile gate, and a dialog right after it. The dialog brought a large revenue win, even though the profile gate was slightly preferred in UX testing. We shipped the cell that created more spin off accounts and revenue.</p>
+        </div>
+        <div class="formats is-pair"><figure><div class="media" data-player data-label="Cell 1, block on profile gate video"><video src="assets/cell-1.mp4" poster="assets/cell-1.jpg" width="1280" height="720" preload="none" loop muted playsinline aria-label="Cell 1, block on profile gate"></video></div><figcaption>Cell 1: block on profile gate</figcaption></figure><figure><div class="media" data-player data-label="Cell 2, block after profile gate video"><video src="assets/cell-2.mp4" poster="assets/cell-2.jpg" width="1280" height="720" preload="none" loop muted playsinline aria-label="Cell 2, block after profile gate"></video></div><figcaption>Cell 2: block after profile gate</figcaption></figure></div>
+      </section>
+
+      <section>
+        <div class="section-label">Full Flow of the Winning Cell</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>The dialog solution clearly articulated the steps needed and performed better in the test. It was productized in early 2026.</p>
+        </div>
+        <div class="formats is-flow"><figure><img src="assets/flow-1.jpg" width="960" height="540" loading="lazy" alt="Profile gate with a kids profile selected"><figcaption>Choose kids profile &rarr;</figcaption></figure><figure><img src="assets/flow-2.jpg" width="960" height="537" loading="lazy" alt="Adult help needed dialog"><figcaption>Back to profiles, choose non-kids &rarr;</figcaption></figure><figure><img src="assets/flow-3.jpg" width="960" height="540" loading="lazy" alt="Enjoy your own Netflix today"><figcaption>Create own account</figcaption></figure></div>
+      </section>
+
+      <section>
+        <div class="section-label">Mobile Considerations</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p>The profile gate had limited space for interventions on mobile and tablet, so the winning cell extended easily to a dialog on every platform.</p>
+        </div>
+        <div class="device-pair"><div class="phone"><div class="screen" data-player data-label="Mobile video"><video src="assets/phone.mp4" poster="assets/phone.jpg" preload="none" loop muted playsinline aria-label="Mobile: Adult Help Needed after choosing a kids profile"></video></div></div><div class="tablet"><div class="screen" data-player data-label="Tablet video"><video src="assets/tablet.mp4" poster="assets/tablet.jpg" width="1200" height="808" preload="none" loop muted playsinline aria-label="Tablet profile gate, choosing a kids profile"></video></div></div></div>
+      </section>
+
+      <section>
+        <div class="section-label">Directions Explored</div>
+        <hr class="section-rule">
+        <div class="matrix" role="table" aria-label="Directions explored"><div class="matrix-row matrix-head" role="row"><span role="columnheader">Direction</span><span role="columnheader">The bet</span><span role="columnheader">How it was tested</span><span role="columnheader">What I learned</span><span role="columnheader">Outcome</span></div><div class="matrix-row" role="row"><span role="cell" data-label="Direction">Character IP Content</span><span role="cell" data-label="The bet">Netflix kids branding and character IP would soften the blocking screen and make it appropriate for younger users</span><span role="cell" data-label="How it was tested">Feedback from design crit and partner teams across Netflix, brought to user research</span><span role="cell" data-label="What I learned">Association with IP can have negative perceptions for the brand and talent</span><span role="cell" data-label="Outcome">Killed early, after feedback from the kids games team and legal</span></div><div class="matrix-row" role="row"><span role="cell" data-label="Direction">Voiceover Assisted Block</span><span role="cell" data-label="The bet">Audio narration with kids appropriate content would help different reading levels understand</span><span role="cell" data-label="How it was tested">An early concept, revisited after user research</span><span role="cell" data-label="What I learned">Some younger kids did comprehend with audio over just words; it landed softer than plain text</span><span role="cell" data-label="Outcome">Killed after research; translation and implementation added scope</span></div><div class="matrix-row" role="row"><span role="cell" data-label="Direction">Block on Profile Gate</span><span role="cell" data-label="The bet">Covering or obscuring the specific profile as the member selects it</span><span role="cell" data-label="How it was tested">Refined from an early idea, brought to user research, refined, then tested in production</span><span role="cell" data-label="What I learned">Very promising reaction in research; partner teams preferred no language on the profile gate</span><span role="cell" data-label="Outcome">Tested as Cell 1; fewer spin off accounts created</span></div><div class="matrix-row" class="is-winner" role="row"><span role="cell" data-label="Direction">Block after Profile Gate</span><span role="cell" data-label="The bet">Let the member choose a kids profile, then block with a modal that shows profile detail along with the message</span><span role="cell" data-label="How it was tested">Refined from an early idea, brought to user research, refined, then tested in production</span><span role="cell" data-label="What I learned">The most straightforward and scalable solution; iconography helped kids understand to get an adult</span><span role="cell" data-label="Outcome">Tested as Cell 2: the winning cell, a $35m revenue win</span></div></div>
+      </section>
+
+      <section>
+        <div class="section-label">What I took forward</div>
+        <hr class="section-rule">
+        <div class="copy">
+          <p><b>Gathering previous learnings saves time</b><br>Sharing rough approaches with domain experts helped us refine faster and find what wouldn’t work.</p>
+          <p><b>Getting buy-in from other orgs</b><br>The profile gate solution was heavily debated since it’s a very high priority surface. We should have gone directly to the surface owners once our best proposal was ready, rather than waiting for review.</p>
+          <p><b>Simplicity wins again</b><br>We returned to the initial simple ideas for this project, and they closely shaped our final test cells.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <ul class="footer-contacts">
+    <li><a href="https://www.linkedin.com/in/ryandrewcasey/" target="_blank" rel="noopener">LinkedIn</a></li>
+    <li><a href="mailto:rdrewcasey@gmail.com">Email</a></li>
+    <li><a href="https://www.instagram.com/ryry" target="_blank" rel="noopener">Instagram</a></li>
+  </ul>
+  <div class="theme-toggle" role="group" aria-label="Color theme">
+    <div class="indicator"></div>
+    <button class="moon-btn" type="button" aria-label="Dark mode" aria-pressed="true">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <button class="sun-btn" type="button" aria-label="Light mode" aria-pressed="false">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+    </button>
+  </div>
+</footer>
+
+<script src="../assets/site.js?v=21"></script>
+<script src="../assets/players.js?v=7"></script>
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+/* Fixed bars: the case study header, the homepage top bar (index.html) and the footer share one
+   height, an opaque page-colored background and a 1px rule across the full window. */
+:root{--bar-h:64px;}
+
+/* Case study header: previous / next project, same type as the homepage top bar. */
+.site-header{
+  position:fixed;
+  left:0;
+  right:0;
+  top:0;
+  z-index:50;
+  height:var(--bar-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 max(60px, calc(50vw - 640px));
+  background:var(--bg);
+  border-bottom:1px solid var(--divider);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.06em;
+  pointer-events:none;
+  transition:background-color 0.35s ease, border-color 0.35s ease;
+}
+.site-header a{
+  pointer-events:auto;
+  color:var(--muted);
+  text-decoration:none;
+  transition:color 0.15s ease;
+}
+.site-header a:hover{color:var(--accent);}
+.site-header{gap:18px;justify-content:flex-start;} /* Home + Previous stay left; Next is pushed right */
+.site-header .nav-next{margin-left:auto;}
+.site-header .nav-home{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  margin-left:-6px; /* optical: line the house up with the page's left edge */
+  border-radius:50%;
+}
+.site-header .nav-home svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.site-header a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+
+/* Fixed footer shared by every page: contacts on the left, theme toggle on the right.
+   Matches the homepage's top bar (weather / coordinates) type and insets. */
+.site-footer{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:var(--bar-h);
+  padding:0 max(60px, calc(50vw - 640px));
+  background:var(--bg);
+  border-top:1px solid var(--divider);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.06em;
+  color:var(--muted);
+  pointer-events:none;
+  transition:background-color 0.35s ease, border-color 0.35s ease;
+}
+.site-footer > *{pointer-events:auto;}
+
+.footer-contacts{
+  display:flex;
+  align-items:center;
+  list-style:none;
+}
+.footer-contacts li + li::before{
+  content:"\00b7";
+  margin:0 8px;
+}
+.footer-contacts a{
+  color:var(--muted);
+  text-decoration:none;
+  transition:color 0.15s ease;
+}
+.footer-contacts a:hover{color:var(--accent);}
+
+.footer-controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* Background terrain picker (homepage only), styled to match the theme toggle. */
+.terrain-picker{
+  display:flex;
+  align-items:center;
+  padding:2px;
+  border-radius:999px;
+  border:1px solid var(--divider);
+  transition:border-color 0.35s ease;
+}
+.terrain-picker button{
+  height:28px;
+  padding:0 11px;
+  border:none;
+  border-radius:999px;
+  background:transparent;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.06em;
+  color:var(--muted);
+  cursor:pointer;
+  transition:color 0.2s ease, background-color 0.2s ease;
+}
+.terrain-picker button:hover{color:var(--strong);}
+.terrain-picker button[aria-pressed="true"]{
+  color:var(--accent);
+  background:var(--glass-indicator);
+}
+.terrain-picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.theme-toggle{
+  position:relative;
+  display:flex;
+  align-items:center;
+  padding:2px;
+  border-radius:999px;
+  border:1px solid var(--divider);
+  transition:border-color 0.35s ease;
+}
+.theme-toggle .indicator{
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:var(--glass-indicator);
+  transition:transform 0.3s cubic-bezier(.4,0,.2,1), background-color 0.35s ease;
+}
+:root[data-theme="light"] .theme-toggle .indicator{transform:translateX(28px);}
+.theme-toggle button{
+  position:relative;
+  z-index:1;
+  width:28px;
+  height:28px;
+  border:none;
+  background:transparent;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  cursor:pointer;
+  transition:color 0.35s ease;
+}
+.theme-toggle button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+:root:not([data-theme="light"]) .theme-toggle .moon-btn{color:var(--accent);}
+:root[data-theme="light"] .theme-toggle .sun-btn{color:var(--accent);}
+
+.site-footer a:focus-visible, .site-footer button:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+
+@media (max-width:860px){
+  :root{--bar-h:56px;}
+  .site-header{padding:0 28px;font-size:10px;}
+  .site-footer{padding:12px 28px;font-size:10px;flex-wrap:wrap-reverse;gap:10px;}
+  .terrain-picker button{padding:0 8px;font-size:10px;}
+}
