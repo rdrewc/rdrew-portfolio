@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ryan Casey &ndash; Password Required</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css?v=20">
+<script>
+  try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
+</script>
+<!-- Served by worker/index.js in place of any project page until the password is entered.
+     Same terrain backdrop as the homepage, with one field in the middle. -->
+<style>
+  :root{
+    --bg:#12131c;
+    --heading:#dfe1ea;
+    --body-text:#b2b7c6;
+    --label:#6f7690;
+    --divider:#262837;
+    --strong:#eef0f6;
+    --muted:#7d8399;
+    --accent:#9b7bff;
+    --glass-bg:rgba(255,255,255,0.08);
+    --glass-border:rgba(255,255,255,0.14);
+    --glass-indicator:rgba(255,255,255,0.16);
+    --terrain-line:rgba(255,255,255,0.35);
+    --scrim:rgba(10,10,16,0.5);
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f5fb;
+    --heading:#211f2e;
+    --body-text:#5a5a6e;
+    --label:#8b88a3;
+    --divider:#e2e0ee;
+    --strong:#211f2e;
+    --muted:#87849c;
+    --accent:#7c4dff;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-border:rgba(124,77,255,0.18);
+    --glass-indicator:rgba(124,77,255,0.14);
+    --terrain-line:rgba(90,74,140,0.26);
+    --scrim:rgba(246,245,251,0.62);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--body-text);
+    font-family:'DM Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color 0.35s ease, color 0.35s ease;
+    cursor:grab;
+  }
+  body.bg-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none;}
+  body.bg-dragging .gate,
+  body.bg-dragging .site-footer{pointer-events:none !important;}
+
+  #terrain-bg{position:fixed;inset:0;width:100%;height:100%;z-index:-2;display:block;}
+  .terrain-scrim{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:var(--scrim);
+    pointer-events:none;
+    transition:background-color 0.35s ease, opacity 0.5s ease;
+  }
+  body.bg-dragging .terrain-scrim{opacity:0.35;}
+
+  .gate{
+    position:fixed;
+    inset:0 0 var(--bar-h);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 16px;
+    pointer-events:none;
+  }
+  .gate form{
+    pointer-events:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    width:min(300px, 100%);
+  }
+  .gate label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--label);
+    cursor:default;
+  }
+  .field{
+    position:relative;
+    width:100%;
+  }
+  .field input{
+    width:100%;
+    height:46px;
+    padding:0 50px 0 20px;
+    border-radius:999px;
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg);
+    -webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    letter-spacing:0.08em;
+    color:var(--strong);
+    outline:none;
+    cursor:text;
+    transition:border-color 0.2s ease, background-color 0.35s ease;
+  }
+  .field input::placeholder{color:var(--muted);letter-spacing:0.06em;}
+  .field input:focus{border-color:var(--accent);}
+  .field button{
+    position:absolute;
+    top:5px;
+    right:5px;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--glass-indicator);
+    color:var(--strong);
+    cursor:pointer;
+    transition:color 0.15s ease, background-color 0.2s ease;
+  }
+  .field button:hover{color:var(--accent);}
+  .field button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .field button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .gate-error{
+    min-height:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:var(--accent);
+  }
+  .is-wrong .field{animation:shake 0.4s cubic-bezier(.36,.07,.19,.97);}
+  @keyframes shake{
+    20%, 60%{transform:translateX(-6px);}
+    40%, 80%{transform:translateX(6px);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .is-wrong .field{animation:none;}
+  }
+
+  .site-footer a{color:var(--muted);text-decoration:none;transition:color 0.15s ease;}
+  .site-footer a:hover{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<canvas id="terrain-bg"></canvas>
+<div class="terrain-scrim"></div>
+
+<main class="gate">
+  <form method="post" action="/__unlock" autocomplete="off">
+    <label for="password">Password required</label>
+    <div class="field">
+      <input id="password" name="password" type="password" placeholder="Password" required autofocus
+        autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="gate-error">
+      <button type="submit" aria-label="Unlock">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+    <input type="hidden" name="next" value="/">
+    <p class="gate-error" id="gate-error" role="alert"></p>
+  </form>
+</main>
+
+<footer class="site-footer">
+  <a href="/">&larr; Home</a>
+  <div class="footer-controls">
+  <div class="terrain-picker" role="group" aria-label="Background terrain">
+    <button type="button" data-terrain="tahoe" aria-pressed="true">Tahoe</button>
+    <button type="button" data-terrain="shasta" aria-pressed="false">Shasta</button>
+    <button type="button" data-terrain="whitney" aria-pressed="false">Whitney</button>
+  </div>
+  <div class="theme-toggle" role="group" aria-label="Color theme">
+    <div class="indicator"></div>
+    <button class="moon-btn" type="button" aria-label="Dark mode" aria-pressed="true">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <button class="sun-btn" type="button" aria-label="Light mode" aria-pressed="false">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+    </button>
+  </div>
+  </div>
+</footer>
+
+<script>
+  // Unlock in place: the Worker sets a session cookie, then the same URL reloads as the real page.
+  // Without JS the form still posts and the Worker redirects back here.
+  (function(){
+    var form = document.querySelector('.gate form');
+    var input = form.querySelector('#password');
+    var error = form.querySelector('.gate-error');
+    var next = location.pathname + location.search;
+    form.querySelector('[name="next"]').value = next;
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      form.classList.remove('is-wrong');
+      fetch('/__unlock', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'fetch' },
+        credentials: 'same-origin'
+      }).then(function(res){
+        if(res.ok){ location.replace(next + location.hash); return; }
+        void form.offsetWidth; // restart the shake on repeat misses
+        form.classList.add('is-wrong');
+        error.textContent = 'Wrong password';
+        input.select();
+      }).catch(function(){
+        error.textContent = 'Couldn’t connect. Try again.';
+      });
+    });
+    input.addEventListener('input', function(){ error.textContent = ''; });
+  })();
+</script>
+<script src="/assets/site.js?v=21"></script>
+<script src="/assets/terrain.js?v=11"></script>
+
+</body>
+</html>

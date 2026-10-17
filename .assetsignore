@@ -7,3 +7,8 @@ README.md
 *.sh
 .gitignore
 *-reference.png
+worker
+CLAUDE.md
+progress
+node_modules
+.wrangler
