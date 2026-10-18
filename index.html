@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20">
+<link rel="stylesheet" href="assets/site.css?v=21">
 <script>
   try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
 </script>
@@ -125,7 +125,9 @@
     justify-content:space-between;
     gap:16px;
     padding:0 max(60px, calc(50vw - 640px));
-    background:var(--bg);
+    background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);
+    backdrop-filter:var(--bar-blur);
     border-bottom:1px solid var(--divider);
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;
@@ -375,7 +377,7 @@
     <section>
       <div class="section-label">Work</div>
       <hr class="section-rule">
-      <div class="dot-row"><a class="name" href="https://www.netflix.com" target="_blank" rel="noopener">Netflix</a><span class="dots"></span><span class="date">2024 &ndash; Present</span></div>
+      <div class="dot-row"><a class="name" href="https://www.netflix.com" target="_blank" rel="noopener">Netflix</a><span class="dots"></span><span class="date">2024 &ndash; 2026</span></div>
       <div class="dot-row"><a class="name" href="https://discord.com" target="_blank" rel="noopener">Discord</a><span class="dots"></span><span class="date">2022 &ndash; 2024</span></div>
       <div class="dot-row"><a class="name" href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><span class="dots"></span><span class="date">2018 &ndash; 2022</span></div>
       <div class="dot-row"><a class="name" href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a><span class="dots"></span><span class="date">2016 &ndash; 2018</span></div>

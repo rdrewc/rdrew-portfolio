@@ -1,6 +1,11 @@
 /* Fixed bars: the case study header, the homepage top bar (index.html) and the footer share one
-   height, an opaque page-colored background and a 1px rule across the full window. */
-:root{--bar-h:64px;}
+   height, a 90% page-colored background with a light blur of what scrolls behind, and a 1px rule
+   across the full window. */
+:root{
+  --bar-h:64px;
+  --bar-bg:color-mix(in srgb, var(--bg) 90%, transparent);
+  --bar-blur:blur(12px);
+}
 
 /* Case study header: previous / next project, same type as the homepage top bar. */
 .site-header{
@@ -14,7 +19,9 @@
   align-items:center;
   justify-content:space-between;
   padding:0 max(60px, calc(50vw - 640px));
-  background:var(--bg);
+  background:var(--bar-bg);
+  -webkit-backdrop-filter:var(--bar-blur);
+  backdrop-filter:var(--bar-blur);
   border-bottom:1px solid var(--divider);
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
@@ -56,7 +63,9 @@
   justify-content:space-between;
   min-height:var(--bar-h);
   padding:0 max(60px, calc(50vw - 640px));
-  background:var(--bg);
+  background:var(--bar-bg);
+  -webkit-backdrop-filter:var(--bar-blur);
+  backdrop-filter:var(--bar-blur);
   border-top:1px solid var(--divider);
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
