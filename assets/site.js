@@ -6,7 +6,7 @@ var PROJECTS = [
   { slug: 'spatial-audio', title: 'Netflix Spatial Audio' },
   { slug: 'dynamic-ads', title: 'Instagram Dynamic Ads' },
   { slug: 'igtv', title: 'IGTV App' },
-  { slug: 'stage-channels', title: 'Stage Channels' },
+  { slug: 'stage-channels', title: 'Video Stage Channels' },
   { slug: 'facebook-tv', title: 'Facebook TV App' }
 ];
 

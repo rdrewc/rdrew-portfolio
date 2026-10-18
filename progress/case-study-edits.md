@@ -11,6 +11,7 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Project order (homepage grid and previous / next): Password Sharing, Remix, Player Profiles, Spatial Audio, Dynamic Ads, IGTV, Stage Channels, Facebook TV.
 - Header, homepage top bar and footer: 90% page color with a 12px backdrop blur (--bar-bg, --bar-blur in site.css).
 - Homepage: Netflix 2024 – 2026.
+- Stage Channels renamed Video Stage Channels (page, homepage card, previous / next); Links goes to discord.com/stages.
 
 ## Local preview
 `python3 .claude/serve.py 4175` from this worktree. Preview config name: `portfolio-case-study-edits`.
