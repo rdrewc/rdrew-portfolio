@@ -7,7 +7,8 @@ var PROJECTS = [
   { slug: 'dynamic-ads', title: 'Instagram Dynamic Ads' },
   { slug: 'igtv', title: 'IGTV App' },
   { slug: 'stage-channels', title: 'Video Stage Channels' },
-  { slug: 'facebook-tv', title: 'Facebook TV App' }
+  { slug: 'facebook-tv', title: 'Facebook TV App' },
+  { slug: 'confetti', title: 'Confetti Live Trivia' }
 ];
 
 // Header on case study pages: Home on every project, "Previous Project" on all but the first,

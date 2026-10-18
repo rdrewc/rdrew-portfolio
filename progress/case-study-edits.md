@@ -12,6 +12,11 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Header, homepage top bar and footer: 90% page color with a 12px backdrop blur (--bar-bg, --bar-blur in site.css).
 - Homepage: Netflix 2024 – 2026.
 - Stage Channels renamed Video Stage Channels (page, homepage card, previous / next); Links goes to discord.com/stages.
+- Confetti Live Trivia: new case study at /confetti/ from Figma file MHL7Xlp3lnMkCdbfZBa9Xz slides 33 to 44 (group 40000008:116844, top row). Last in the order, after Facebook TV. Phone screens cropped from the original design boards; page copy drafted from the slides and the board notes.
+
+## Open
+- Confetti: Links row is still [Link]. Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Learnings said "three North American countries" but the overview lists USA, Mexico, Indonesia, so the page says "between countries".
+- Facebook Social Player: not in the linked group; waiting on its Figma link.
 
 ## Local preview
 `python3 .claude/serve.py 4175` from this worktree. Preview config name: `portfolio-case-study-edits`.

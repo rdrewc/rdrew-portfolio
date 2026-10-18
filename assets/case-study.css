@@ -544,3 +544,17 @@ a:focus-visible, button:focus-visible{
     margin:6px 0 2px;
   }
 }
+
+/* A desktop page beside its mobile version, at one shared height: each figure grows by its
+   image's aspect ratio (--ratio, width / height). */
+.page-pair{
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+}
+.page-pair figure{
+  flex:var(--ratio) 1 0;
+  min-width:0;
+  margin:0;
+}
+.page-pair img{display:block;width:100%;height:auto;border-radius:8px;}
