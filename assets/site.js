@@ -1,13 +1,13 @@
 // Case study order for the previous / next header. Add new projects here, in the same order as the homepage list.
 var PROJECTS = [
-  { slug: 'spatial-audio', title: 'Netflix Spatial Audio' },
-  { slug: 'remix', title: 'Discord Remix' },
   { slug: 'password-sharing', title: 'Password Sharing' },
+  { slug: 'remix', title: 'Discord Remix' },
   { slug: 'player-profiles', title: 'Player Profiles' },
+  { slug: 'spatial-audio', title: 'Netflix Spatial Audio' },
+  { slug: 'dynamic-ads', title: 'Instagram Dynamic Ads' },
   { slug: 'igtv', title: 'IGTV App' },
   { slug: 'stage-channels', title: 'Stage Channels' },
-  { slug: 'facebook-tv', title: 'Facebook TV App' },
-  { slug: 'dynamic-ads', title: 'Instagram Dynamic Ads' }
+  { slug: 'facebook-tv', title: 'Facebook TV App' }
 ];
 
 // Header on case study pages: Home on every project, "Previous Project" on all but the first,

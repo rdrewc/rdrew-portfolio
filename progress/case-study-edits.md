@@ -8,6 +8,7 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Remix: only the Discord Blog link.
 - Facebook TV: new Early Explorations section after Project Overview, with the layout grid from the deck (text panel cropped off).
 - Responsive project pages: the gap between columns never closes (40 to 96px). Phones and other fixed-size media scale to the work column (container query), so nothing spills into Details or scrolls the page sideways. Detail rows stack name over value when the panel can't fit the longest row. Checked on all eight projects from 320 to 1600px wide.
+- Project order (homepage grid and previous / next): Password Sharing, Remix, Player Profiles, Spatial Audio, Dynamic Ads, IGTV, Stage Channels, Facebook TV.
 
 ## Local preview
 `python3 .claude/serve.py 4175` from this worktree. Preview config name: `portfolio-case-study-edits`.
