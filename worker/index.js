@@ -1,7 +1,7 @@
 // rdrew.com runs every request through this Worker before the static files (run_worker_first).
-// The homepage and the shared /assets/ folder (styles, scripts, project thumbnails) stay public.
-// Everything else, project pages and their media, needs the site password. Entering it sets a
-// session cookie, so it isn't asked again until the browser is closed.
+// The site is public except the projects listed in PROTECTED_PATHS (their pages and media),
+// which need the site password. Entering it sets a session cookie, so it isn't asked again
+// until the browser is closed. Thumbnails in /assets/ stay public.
 
 // SHA-256 of the password, and of the value the session cookie carries. To change the password:
 //   printf '%s' 'newpassword' | shasum -a 256
@@ -11,13 +11,14 @@ const SESSION_TOKEN = '219f22e2cc1c1344d4ea4ba1cdbc59e4a24982bcc1afc1f7cc7e01dd4
 const COOKIE = 'rdrew_access';
 const UNLOCK_PATH = '/__unlock';
 
-const PUBLIC_PATHS = [/^\/$/, /^\/index\.html$/, /^\/assets\//, /^\/gate(\.html)?$/, /^\/favicon\.ico$/, /^\/robots\.txt$/];
+// Add a project's folder here to put it behind the password.
+const PROTECTED_PATHS = [/^\/spatial-audio(\/|$)/];
 
 export default {
   async fetch(request, env){
     const url = new URL(request.url);
     if(url.pathname === UNLOCK_PATH) return unlock(request);
-    if(PUBLIC_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);
+    if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);
     if(readCookie(request, COOKIE) !== SESSION_TOKEN) return gate(request, env);
 
     // Unlocked: serve the file, but keep it out of shared caches.
