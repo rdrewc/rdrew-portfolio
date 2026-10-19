@@ -18,10 +18,11 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Confetti: A Live Show First is now the Live Trivia video (Figma YICBFWzEkZ78saTTyw9XES node 4023:131; from Ryan Slides local.fig videos/a4c81148...), cropped to the screen and shown in the site's phone frame. Phone stills re-cropped 1 to 5px tighter so no board background shows at the edges.
 - All projects: 40px between copy and the media below it (28px on phones), 32px between stacked media (.story rules in case-study.css).
 - Confetti: full state boards (Selected Works slides 56, 57, 101, 102; same source screenshots as the Ryan Slides local boards) with every title and note removed and the screens repacked into even rows. News Feed's board replaced; Before / During / After each get their board after the close-up phones.
+- Facebook Social Player: new case study at /social-player/, last in the order after Confetti. From Selected Works slides (YICBFWzEkZ78saTTyw9XES node 6123:47057). All four media are the slide videos (Ryan Slides local.fig: shelf 474732d4, vertical 614e8818, sports 8f3b84c5, landscape b7824f95), cropped to the screen; the landscape one is the hero. Thumbnail composed from the three phone posters on Facebook blue.
 
 ## Open
+- Social Player: Links row is [Link]. The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
 - Confetti: Links row is still [Link]. Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Stats follow the launch video: 3 million daily viewers, $1 million in prizes, US / Canada / Mexico.
-- Facebook Social Player: not in the linked group; waiting on its Figma link.
 
 ## Local preview
 `python3 .claude/serve.py 4175` from this worktree. Preview config name: `portfolio-case-study-edits`.

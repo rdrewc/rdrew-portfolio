@@ -8,7 +8,8 @@ var PROJECTS = [
   { slug: 'igtv', title: 'IGTV App' },
   { slug: 'stage-channels', title: 'Video Stage Channels' },
   { slug: 'facebook-tv', title: 'Facebook TV App' },
-  { slug: 'confetti', title: 'Confetti Live Trivia' }
+  { slug: 'confetti', title: 'Confetti Live Trivia' },
+  { slug: 'social-player', title: 'Facebook Social Player' }
 ];
 
 // Header on case study pages: Home on every project, "Previous Project" on all but the first,
