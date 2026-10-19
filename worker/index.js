@@ -11,8 +11,9 @@ const SESSION_TOKEN = '219f22e2cc1c1344d4ea4ba1cdbc59e4a24982bcc1afc1f7cc7e01dd4
 const COOKIE = 'rdrew_access';
 const UNLOCK_PATH = '/__unlock';
 
-// Add a project's folder here to put it behind the password.
-const PROTECTED_PATHS = [/^\/spatial-audio(\/|$)/];
+// Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
+// Empty: the whole site is public.
+const PROTECTED_PATHS = [];
 
 export default {
   async fetch(request, env){
