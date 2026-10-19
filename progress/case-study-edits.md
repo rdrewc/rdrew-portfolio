@@ -21,10 +21,11 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Facebook Social Player: new case study at /social-player/, last in the order after Confetti. From Selected Works slides (YICBFWzEkZ78saTTyw9XES node 6123:47057). All four media are the slide videos (Ryan Slides local.fig: shelf 474732d4, vertical 614e8818, sports 8f3b84c5, landscape b7824f95), cropped to the screen; the landscape one is the hero. Thumbnail composed from the three phone posters on Facebook blue.
 - Password removed from every page (PROTECTED_PATHS is empty in worker/index.js).
 - Spatial Audio and Player Profiles are assets only: the overview paragraph ends with "Launching in Q4 2026. Full case study coming soon." Spatial Audio keeps its three big videos (banner removed) and links to about.netflix.com/en/news/netflix-spatial-audio. Player Profiles shows Current dashboard, Player profile V1 and Full demo from Case Studies slide 401:77, with captions. Full demo is the video from Desktop/Portfolio 2026/Netflix/Player Profiles/trim.mov (H.264 960x564, 30fps), poster from the slide still.
+- Links rows filled: Password Sharing (Netflix News), Player Profiles (Netflix Tudum), Dynamic Ads (Instagram for Business), Confetti (Facebook Newsroom). Not pushed yet.
 
 ## Open
-- Social Player: Links row is [Link]. The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
-- Confetti: Links row is still [Link]. Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Stats follow the launch video: 3 million daily viewers, $1 million in prizes, US / Canada / Mexico.
+- Social Player: Links row is still [Link]. The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
+- Confetti: Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Stats follow the launch video: 3 million daily viewers, $1 million in prizes, US / Canada / Mexico.
 
 ## Local preview
 `python3 .claude/serve.py 4175` from this worktree. Preview config name: `portfolio-case-study-edits`.
