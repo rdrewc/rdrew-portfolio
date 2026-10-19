@@ -24,6 +24,7 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Links rows filled: Password Sharing (Netflix News), Player Profiles (Netflix Tudum), Dynamic Ads (Instagram for Business), Confetti (Facebook Newsroom). Not pushed yet.
 - Social Player phones: modern-height phone frame at 330px (.phones.is-large), videos letterboxed in black (.screen.is-contain). Thumbnail rebuilt with the same proportions.
 - Social Player Links: Facebook Newsroom (about.fb.com/news/2018/12/facebook-watch-what-weve-built-whats-ahead). Every project now has a real link.
+- Homepage: "Currently available for full-time roles." Space above Shipped Projects is 67px on desktop (one bio line less than 96px); mobile unchanged at 56px.
 
 ## Open
 - Social Player: The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
