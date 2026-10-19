@@ -17,6 +17,7 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Confetti hero is now the launch video (Figma Slides 9YmdOTvrakijTRBFpqVezi node 401:162). Pulled from the video embedded in ~/Downloads/Ryan Slides local.fig (videos/be35eb99...), re-encoded to H.264 1600x900 30fps, 7.7MB. The TV still it replaced was removed.
 - Confetti: A Live Show First is now the Live Trivia video (Figma YICBFWzEkZ78saTTyw9XES node 4023:131; from Ryan Slides local.fig videos/a4c81148...), cropped to the screen and shown in the site's phone frame. Phone stills re-cropped 1 to 5px tighter so no board background shows at the edges.
 - All projects: 40px between copy and the media below it (28px on phones), 32px between stacked media (.story rules in case-study.css).
+- Confetti: full state boards (Selected Works slides 56, 57, 101, 102; same source screenshots as the Ryan Slides local boards) with every title and note removed and the screens repacked into even rows. News Feed's board replaced; Before / During / After each get their board after the close-up phones.
 
 ## Open
 - Confetti: Links row is still [Link]. Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Stats follow the launch video: 3 million daily viewers, $1 million in prizes, US / Canada / Mexico.
