@@ -23,9 +23,10 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Spatial Audio and Player Profiles are assets only: the overview paragraph ends, after a blank line, with "*Launching in Q4 2026. Full case study coming soon." Spatial Audio keeps its three big videos (banner removed) and links to about.netflix.com/en/news/netflix-spatial-audio. Player Profiles shows Current dashboard, Player profile V1 and Full demo from Case Studies slide 401:77, with captions. Full demo is the video from Desktop/Portfolio 2026/Netflix/Player Profiles/trim.mov (H.264 960x564, 30fps), poster from the slide still.
 - Links rows filled: Password Sharing (Netflix News), Player Profiles (Netflix Tudum), Dynamic Ads (Instagram for Business), Confetti (Facebook Newsroom). Not pushed yet.
 - Social Player phones: modern-height phone frame at 330px (.phones.is-large), videos letterboxed in black (.screen.is-contain). Thumbnail rebuilt with the same proportions.
+- Social Player Links: Facebook Newsroom (about.fb.com/news/2018/12/facebook-watch-what-weve-built-whats-ahead). Every project now has a real link.
 
 ## Open
-- Social Player: Links row is still [Link]. The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
+- Social Player: The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.
 - Confetti: Copy is a draft for Ryan to review (A Live Show First, Before / During / After Gameplay, Confetti Pages were written from the boards; the slide text under Key Animations and Confetti Pages was a placeholder). Stats follow the launch video: 3 million daily viewers, $1 million in prizes, US / Canada / Mexico.
 
 ## Local preview
