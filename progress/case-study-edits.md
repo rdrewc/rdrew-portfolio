@@ -22,6 +22,7 @@ Branch `case-study-edits` (from `main`), worktree `.claude/worktrees/case-study-
 - Password removed from every page (PROTECTED_PATHS is empty in worker/index.js).
 - Spatial Audio and Player Profiles are assets only: the overview paragraph ends, after a blank line, with "*Launching in Q4 2026. Full case study coming soon." Spatial Audio keeps its three big videos (banner removed) and links to about.netflix.com/en/news/netflix-spatial-audio. Player Profiles shows Current dashboard, Player profile V1 and Full demo from Case Studies slide 401:77, with captions. Full demo is the video from Desktop/Portfolio 2026/Netflix/Player Profiles/trim.mov (H.264 960x564, 30fps), poster from the slide still.
 - Links rows filled: Password Sharing (Netflix News), Player Profiles (Netflix Tudum), Dynamic Ads (Instagram for Business), Confetti (Facebook Newsroom). Not pushed yet.
+- Social Player phones: modern-height phone frame at 330px (.phones.is-large), videos letterboxed in black (.screen.is-contain). Thumbnail rebuilt with the same proportions.
 
 ## Open
 - Social Player: Links row is still [Link]. The slide's Problems text was copied from Facebook TV (mentions TV), so the page keeps only the video-variety part. Slide 55 (Baseline) had no media, so it isn't on the page.

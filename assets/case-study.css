@@ -382,6 +382,8 @@ figcaption{
 
 /* Wider-than-phone footage: show it whole, letterboxed top and bottom. */
 .phone .screen.is-contain video{object-fit:contain;}
+/* A bigger phone for older 16:9 recordings shown whole on a modern-height device, letterboxed in black. */
+.phones.is-large .phone{--pw:min(330px, 100cqi);}
 
 /* Three across (TV screenshots), and a pair of captioned videos. */
 .tiles.is-trio{grid-template-columns:repeat(3, minmax(0, 1fr));}
