@@ -276,7 +276,11 @@ figcaption{
 }
 .story .copy p:last-child{margin-bottom:0;}
 .story .copy b{font-weight:600;}
-.story figure{margin-top:18px;}
+/* Breathing room inside a section: media sits well clear of the copy above it, and of other
+   media. Figures inside rows and grids add no margin of their own. */
+.story figure{margin-top:0;}
+.story section > .copy + *{margin-top:clamp(28px, 3vw, 40px);}
+.story section > :not(.section-label, .section-rule, .copy) + :not(.copy){margin-top:32px;}
 .shot img{
   display:block;
   width:100%;
