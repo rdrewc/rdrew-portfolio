@@ -2,12 +2,12 @@
 var PROJECTS = [
   { slug: 'password-sharing', title: 'Password Sharing' },
   { slug: 'remix', title: 'Discord Remix' },
+  { slug: 'stage-channels', title: 'Video Stage Channels' },
   { slug: 'dynamic-ads', title: 'Instagram Dynamic Ads' },
   { slug: 'igtv', title: 'IGTV App' },
-  { slug: 'stage-channels', title: 'Video Stage Channels' },
-  { slug: 'facebook-tv', title: 'Facebook TV App' },
   { slug: 'confetti', title: 'Confetti Live Trivia' },
   { slug: 'social-player', title: 'Facebook Social Player' },
+  { slug: 'facebook-tv', title: 'Facebook TV App' },
   { slug: 'player-profiles', title: 'Player Profiles' },
   { slug: 'spatial-audio', title: 'Netflix Spatial Audio' }
 ];
