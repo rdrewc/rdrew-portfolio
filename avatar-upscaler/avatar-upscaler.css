@@ -44,6 +44,8 @@
   --warning: #e6b35c;
 
   --sidebar-w: 280px;
+  --bar-h: 336px;        /* bottom-docked control bar height */
+  --tile: 74px;          /* avatar thumbnail size */
 }
 
 /* Netflix Sans — shared with the gamesprofiles prototype rather than duplicated. */
@@ -158,26 +160,94 @@ html, body {
 #app[data-sidebar-pos="mini"] .sidebar-main-content { display: none; }
 #app[data-sidebar-pos="mini"] .sidebar-dock-header { flex-direction: column; gap: 6px; }
 
-#app[data-sidebar-pos="bottom"] { padding-left: 0; padding-bottom: 232px; }
+#app[data-sidebar-pos="bottom"] { padding-left: 0; padding-bottom: var(--bar-h); }
 #app[data-sidebar-pos="bottom"] .control-sidebar {
   width: 100%;
-  height: auto;
-  max-height: 232px;
+  height: var(--bar-h);
+  max-height: var(--bar-h);
   top: auto;
   bottom: 0;
+  padding: 1rem 1.25rem 1.1rem 0.85rem;
   border-right: none;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 11, 15, 0.82);
+  box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.45);
   flex-direction: row;
-  align-items: flex-start;
-  gap: 1.5rem;
+  align-items: stretch;
+  gap: 1rem;
+  overflow: hidden;
+}
+#app[data-sidebar-pos="bottom"] .sidebar-dock-header {
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 0.6rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
 #app[data-sidebar-pos="bottom"] .sidebar-main-content {
   flex-direction: row;
-  flex-wrap: wrap;
-  gap: 1.25rem;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 1.1rem;
   flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-#app[data-sidebar-pos="bottom"] .control-block { min-width: 200px; }
+#app[data-sidebar-pos="bottom"] .sidebar-main-content::-webkit-scrollbar { display: none; }
+
+/* Each group is a column; a thin divider separates them. */
+#app[data-sidebar-pos="bottom"] .ctrl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-right: 1.1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  min-width: 0;
+}
+#app[data-sidebar-pos="bottom"] .ctrl-group:last-child { border-right: none; padding-right: 0; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--pick   { flex: 0 0 222px; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--library{ flex: 1 1 560px; min-width: 400px; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--place  { flex: 0 0 222px; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--card   { flex: 0 0 216px; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--scrim  { flex: 0 0 196px; }
+#app[data-sidebar-pos="bottom"] .ctrl-group--scrim .control-block__hint,
+#app[data-sidebar-pos="bottom"] .ctrl-group--place .control-block__hint { display: none; }
+
+/* The library fills the column height; the grid scrolls inside it. */
+#app[data-sidebar-pos="bottom"] .control-block--library {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+#app[data-sidebar-pos="bottom"] .control-block--library .avatar-grid {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 0;
+}
+
+/* Stage shrinks to the space above the bar, so nothing scrolls. */
+#app[data-sidebar-pos="bottom"] .stage {
+  min-height: calc(100dvh - var(--bar-h));
+  padding: 1.25rem 2rem;
+}
+#app[data-sidebar-pos="bottom"] .tv-frame {
+  width: min(1480px, 62vw, calc((100dvh - var(--bar-h) - 5.5rem) * 16 / 9));
+}
+#app[data-sidebar-pos="bottom"][data-surface="tv"] .tv-frame {
+  width: min(1400px, 88vw, calc((100dvh - var(--bar-h) - 5.5rem) * 16 / 9));
+}
+#app[data-sidebar-pos="bottom"][data-surface="both"] .surface--phone {
+  --phone-scale: 0.56;
+}
+#app[data-sidebar-pos="bottom"][data-surface="phone"] .phone-frame {
+  transform: scale(var(--phone-scale, 0.62));
+  transform-origin: top center;
+  margin-bottom: calc(812px * (var(--phone-scale, 0.62) - 1));
+}
+
+/* Left dock: groups stack with the same rhythm as before. */
+#app[data-sidebar-pos="left"] .ctrl-group { display: flex; flex-direction: column; gap: 1.25rem; }
 
 /* ----- Selected-avatar readout ----- */
 .you-picker { position: relative; }
@@ -219,6 +289,15 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.control-sidebar__you-sub {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.control-sidebar__you-avatar-wrap { width: 48px; height: 48px; border-radius: 10px; }
 
 /* ----- Control blocks ----- */
 .control-block label,
@@ -319,8 +398,9 @@ html, body {
   grid-template-columns: 2.6rem 1fr 2.8rem;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.4rem;
 }
+.control-action-btn { margin-top: 0.3rem; }
 .range-row__label {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -354,35 +434,93 @@ html, body {
   cursor: pointer;
 }
 .switch-row input { accent-color: var(--accent); cursor: pointer; }
+.switch-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0.6rem;
+  row-gap: 0;
+  margin-bottom: 0.5rem;
+}
+.switch-grid .switch-row { margin-bottom: 0.3rem; white-space: nowrap; }
 
-/* ----- Avatar grid ----- */
+.library-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.library-count { margin: 0 0 0.5rem; font-variant-numeric: tabular-nums; }
+
+/* ----- Avatar grid -----
+   Fixed-size square tiles that auto-fill the available width, so the column
+   count follows the panel and tiles never stretch. */
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(var(--tile), 1fr));
+  grid-auto-rows: max-content;   /* auto rows collapse inside the flex column */
+  gap: 8px;
   margin-top: 0.6rem;
   max-height: 268px;
   overflow-y: auto;
-  padding-right: 2px;
+  padding: 2px 4px 2px 2px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
 }
 .avatar-grid__item {
   position: relative;
-  aspect-ratio: 1;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-elevated);
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(255, 255, 255, 0.05), transparent 60%),
+    var(--bg-elevated);
   cursor: pointer;
-  padding: 2px;
+  padding: 0;
+  margin: 0;
   overflow: hidden;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
-.avatar-grid__item img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.avatar-grid__item:hover { border-color: #3a3f4d; }
+/* Square via padding-top: resolves against width, so it holds in any grid. */
+.avatar-grid__item::before { content: ""; display: block; padding-top: 100%; }
+.avatar-grid__item img {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  object-fit: contain;
+  object-position: center bottom;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
+}
+.avatar-grid__item:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+.avatar-grid__item:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring-focus);
+}
 .avatar-grid__item[aria-selected="true"] {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent-ring);
+  box-shadow: 0 0 0 2px var(--accent-ring), 0 8px 18px rgba(0, 0, 0, 0.4);
   background: var(--accent-surface);
+}
+.avatar-grid__item[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
 }
 
 /* ==========================================================================

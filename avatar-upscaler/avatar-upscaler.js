@@ -26,6 +26,7 @@
   var state = {
     file: null,
     surface: 'both',
+    sidebarPos: 'bottom',
     flip: false, shadow: false, glow: false, pixel: false,
     stats: true, online: true,
     handle: 'Zoeooo049',
@@ -111,7 +112,9 @@
       ' (' + entry.upscale + '× Lanczos)';
 
     grid.querySelectorAll('.avatar-grid__item').forEach(function (b) {
-      b.setAttribute('aria-selected', String(b.dataset.file === entry.file));
+      var on = b.dataset.file === entry.file;
+      b.setAttribute('aria-selected', String(on));
+      if (on && b.scrollIntoView) b.scrollIntoView({ block: 'nearest' });
     });
 
     save();
@@ -295,12 +298,20 @@
     [['sidebarBtnMini', 'mini'], ['sidebarBtnLeft', 'left'], ['sidebarBtnBottom', 'bottom']]
       .forEach(function (cfg) {
         $(cfg[0]).addEventListener('click', function () {
-          app.dataset.sidebarPos = cfg[1];
-          ['sidebarBtnMini', 'sidebarBtnLeft', 'sidebarBtnBottom'].forEach(function (id) {
-            $(id).setAttribute('aria-pressed', String(id === cfg[0]));
-          });
+          state.sidebarPos = cfg[1];
+          applySidebarPos();
+          save();
         });
       });
+  }
+
+  function applySidebarPos() {
+    var pos = state.sidebarPos || 'bottom';
+    app.dataset.sidebarPos = pos;
+    var map = { mini: 'sidebarBtnMini', left: 'sidebarBtnLeft', bottom: 'sidebarBtnBottom' };
+    Object.keys(map).forEach(function (k) {
+      $(map[k]).setAttribute('aria-pressed', String(k === pos));
+    });
   }
 
   // Set on #tvScreen so the scaled .card-layer and .card-scrim agree.
@@ -334,6 +345,7 @@
   }
 
   function applyStateToDom() {
+    applySidebarPos();
     app.dataset.surface = state.surface;
     app.dataset.stats = state.stats ? 'on' : 'off';
     app.dataset.online = state.online ? 'on' : 'off';

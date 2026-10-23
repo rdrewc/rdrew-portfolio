@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="avatar-upscaler.css" />
 </head>
 <body>
-  <div id="app" data-sidebar-pos="left" data-surface="both">
+  <div id="app" data-sidebar-pos="bottom" data-surface="both">
 
     <!-- ============================= Control sidebar ============================= -->
     <aside class="control-sidebar" data-prototype-region="control-panel" aria-label="Avatar upscaler controls">
@@ -18,13 +18,13 @@
             <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
         </button>
-        <button type="button" class="sidebar-dock-btn" id="sidebarBtnLeft" aria-label="Dock to left" title="Dock left" aria-pressed="true">
+        <button type="button" class="sidebar-dock-btn" id="sidebarBtnLeft" aria-label="Dock to left" title="Dock left" aria-pressed="false">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <rect x="1" y="1" width="4" height="12" rx="1" fill="currentColor" opacity="0.9"/>
             <rect x="6.5" y="1" width="6.5" height="12" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
           </svg>
         </button>
-        <button type="button" class="sidebar-dock-btn" id="sidebarBtnBottom" aria-label="Dock to bottom" title="Dock bottom" aria-pressed="false">
+        <button type="button" class="sidebar-dock-btn" id="sidebarBtnBottom" aria-label="Dock to bottom" title="Dock bottom" aria-pressed="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <rect x="1" y="1" width="12" height="8.5" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
             <rect x="1" y="10.5" width="12" height="2.5" rx="1" fill="currentColor" opacity="0.9"/>
@@ -34,127 +34,144 @@
 
       <div class="sidebar-main-content">
 
-        <!-- Selected avatar readout -->
-        <div class="you-picker" aria-label="Selected avatar">
-          <div class="you-picker__trigger" id="selectedReadout">
-            <div class="control-sidebar__you-avatar-wrap">
-              <img id="selectedAvatar" class="control-sidebar__you-avatar" src="" width="40" height="40" alt="" decoding="async" />
+        <!-- Group 1: what & where -->
+        <div class="ctrl-group ctrl-group--pick">
+          <div class="you-picker" aria-label="Selected avatar">
+            <div class="you-picker__trigger" id="selectedReadout">
+              <div class="control-sidebar__you-avatar-wrap">
+                <img id="selectedAvatar" class="control-sidebar__you-avatar" src="" width="40" height="40" alt="" decoding="async" />
+              </div>
+              <div class="control-sidebar__you-text">
+                <span class="control-sidebar__you-label">Selected</span>
+                <span class="control-sidebar__you-handle" id="selectedTitle">—</span>
+                <span class="control-sidebar__you-sub" id="resHint"></span>
+              </div>
             </div>
-            <div class="control-sidebar__you-text">
-              <span class="control-sidebar__you-label">Selected</span>
-              <span class="control-sidebar__you-handle" id="selectedTitle">—</span>
+          </div>
+
+          <div class="control-block">
+            <div class="control-block__view-label" id="lblSurface">Surface</div>
+            <div class="seg" role="group" aria-labelledby="lblSurface">
+              <button type="button" class="seg__opt" data-surface="tv">TV</button>
+              <button type="button" class="seg__opt" data-surface="phone">Phone</button>
+              <button type="button" class="seg__opt is-active" data-surface="both">Both</button>
+            </div>
+          </div>
+
+          <div class="control-block">
+            <div class="control-block__view-label" id="lblShow">Show</div>
+            <select id="selShow" class="control-select" aria-labelledby="lblShow"></select>
+          </div>
+        </div>
+
+        <!-- Group 2: avatar library -->
+        <div class="ctrl-group ctrl-group--library">
+          <div class="control-block control-block--library">
+            <div class="library-head">
+              <div class="control-block__view-label" id="lblSearch">Avatar</div>
+              <span class="control-block__hint library-count" id="gridCount"></span>
+            </div>
+            <input type="search" id="avatarSearch" class="control-input" placeholder="Search 56 avatars…" aria-labelledby="lblSearch" autocomplete="off" />
+            <div class="avatar-grid" id="avatarGrid" role="listbox" aria-label="Avatar library"></div>
+          </div>
+        </div>
+
+        <!-- Group 3: placement -->
+        <div class="ctrl-group ctrl-group--place">
+          <div class="control-block">
+            <div class="control-block__view-label">Placement</div>
+
+            <label class="range-row" for="rngScale">
+              <span class="range-row__label">Scale</span>
+              <input type="range" id="rngScale" class="control-range" min="20" max="220" step="1" value="100" />
+              <output class="range-row__val" id="outScale">100%</output>
+            </label>
+
+            <label class="range-row" for="rngX">
+              <span class="range-row__label">X</span>
+              <input type="range" id="rngX" class="control-range" min="-50" max="50" step="0.5" value="0" />
+              <output class="range-row__val" id="outX">0</output>
+            </label>
+
+            <label class="range-row" for="rngY">
+              <span class="range-row__label">Y</span>
+              <input type="range" id="rngY" class="control-range" min="-50" max="50" step="0.5" value="0" />
+              <output class="range-row__val" id="outY">0</output>
+            </label>
+
+            <button type="button" class="control-action-btn" id="btnReset">Reset placement</button>
+            <p class="control-block__hint">Drag the avatar on either surface to reposition it.</p>
+          </div>
+
+          <div class="control-block">
+            <div class="control-block__view-label">Render</div>
+            <div class="switch-grid">
+              <label class="switch-row" for="chkFlip">
+                <input type="checkbox" id="chkFlip" /><span>Flip</span>
+              </label>
+              <label class="switch-row" for="chkShadow">
+                <input type="checkbox" id="chkShadow" /><span>Shadow</span>
+              </label>
+              <label class="switch-row" for="chkGlow">
+                <input type="checkbox" id="chkGlow" /><span>Glow</span>
+              </label>
+              <label class="switch-row" for="chkPixel">
+                <input type="checkbox" id="chkPixel" /><span>Source px</span>
+              </label>
             </div>
           </div>
         </div>
 
-        <div class="control-block">
-          <div class="control-block__view-label" id="lblSurface">Surface</div>
-          <div class="seg" role="group" aria-labelledby="lblSurface">
-            <button type="button" class="seg__opt" data-surface="tv">TV</button>
-            <button type="button" class="seg__opt" data-surface="phone">Phone</button>
-            <button type="button" class="seg__opt is-active" data-surface="both">Both</button>
+        <!-- Group 4: profile card -->
+        <div class="ctrl-group ctrl-group--card">
+          <div class="control-block">
+            <div class="control-block__view-label">Profile card</div>
+            <div class="switch-grid">
+              <label class="switch-row" for="chkStats">
+                <input type="checkbox" id="chkStats" checked /><span>Stats layer</span>
+              </label>
+              <label class="switch-row" for="chkOnline">
+                <input type="checkbox" id="chkOnline" checked /><span>Online</span>
+              </label>
+            </div>
+
+            <input type="text" id="inpHandle" class="control-input" value="Zoeooo049" aria-label="Handle" />
+            <input type="text" id="inpGame" class="control-input" value="Kpop Demon Hunters Karaoke" aria-label="Currently playing" style="margin-top:0.4rem" />
+
+            <label class="range-row" for="rngProg" style="margin-top:0.6rem">
+              <span class="range-row__label">Prog</span>
+              <input type="range" id="rngProg" class="control-range" min="0" max="100" step="1" value="65" />
+              <output class="range-row__val" id="outProg">65%</output>
+            </label>
+            <label class="range-row" for="rngAch">
+              <span class="range-row__label">Ach</span>
+              <input type="range" id="rngAch" class="control-range" min="0" max="100" step="1" value="44" />
+              <output class="range-row__val" id="outAch">44</output>
+            </label>
           </div>
         </div>
 
-        <div class="control-block">
-          <div class="control-block__view-label" id="lblShow">Show</div>
-          <select id="selShow" class="control-select" aria-labelledby="lblShow"></select>
-        </div>
-
-        <div class="control-block">
-          <div class="control-block__view-label" id="lblSearch">Avatar</div>
-          <input type="search" id="avatarSearch" class="control-input" placeholder="Search 56 avatars…" aria-labelledby="lblSearch" />
-          <div class="avatar-grid" id="avatarGrid" role="listbox" aria-label="Avatar library"></div>
-          <p class="control-block__hint" id="gridCount"></p>
-        </div>
-
-        <div class="control-block">
-          <div class="control-block__view-label">Placement</div>
-
-          <label class="range-row" for="rngScale">
-            <span class="range-row__label">Scale</span>
-            <input type="range" id="rngScale" class="control-range" min="20" max="220" step="1" value="100" />
-            <output class="range-row__val" id="outScale">100%</output>
-          </label>
-
-          <label class="range-row" for="rngX">
-            <span class="range-row__label">X</span>
-            <input type="range" id="rngX" class="control-range" min="-50" max="50" step="0.5" value="0" />
-            <output class="range-row__val" id="outX">0</output>
-          </label>
-
-          <label class="range-row" for="rngY">
-            <span class="range-row__label">Y</span>
-            <input type="range" id="rngY" class="control-range" min="-50" max="50" step="0.5" value="0" />
-            <output class="range-row__val" id="outY">0</output>
-          </label>
-
-          <p class="control-block__hint">Drag the avatar on either surface to reposition it.</p>
-        </div>
-
-        <div class="control-block">
-          <div class="control-block__view-label">Render</div>
-          <label class="switch-row" for="chkFlip">
-            <input type="checkbox" id="chkFlip" /><span>Flip horizontally</span>
-          </label>
-          <label class="switch-row" for="chkShadow">
-            <input type="checkbox" id="chkShadow" /><span>Drop shadow</span>
-          </label>
-          <label class="switch-row" for="chkGlow">
-            <input type="checkbox" id="chkGlow" /><span>Backlight glow</span>
-          </label>
-          <label class="switch-row" for="chkPixel">
-            <input type="checkbox" id="chkPixel" /><span>Show source resolution</span>
-          </label>
-          <p class="control-block__hint" id="resHint"></p>
-        </div>
-
-        <div class="control-block">
-          <div class="control-block__view-label">Profile card</div>
-          <label class="switch-row" for="chkStats">
-            <input type="checkbox" id="chkStats" checked /><span>Show stats layer</span>
-          </label>
-          <label class="switch-row" for="chkOnline">
-            <input type="checkbox" id="chkOnline" checked /><span>Online</span>
-          </label>
-
-          <input type="text" id="inpHandle" class="control-input" value="Zoeooo049" aria-label="Handle" />
-          <input type="text" id="inpGame" class="control-input" value="Kpop Demon Hunters Karaoke" aria-label="Currently playing" style="margin-top:0.4rem" />
-
-          <label class="range-row" for="rngProg" style="margin-top:0.6rem">
-            <span class="range-row__label">Prog</span>
-            <input type="range" id="rngProg" class="control-range" min="0" max="100" step="1" value="65" />
-            <output class="range-row__val" id="outProg">65%</output>
-          </label>
-          <label class="range-row" for="rngAch">
-            <span class="range-row__label">Ach</span>
-            <input type="range" id="rngAch" class="control-range" min="0" max="100" step="1" value="44" />
-            <output class="range-row__val" id="outAch">44</output>
-          </label>
-        </div>
-
-        <div class="control-block">
-          <div class="control-block__view-label">Scrim</div>
-          <label class="range-row" for="rngBlur">
-            <span class="range-row__label">Blur</span>
-            <input type="range" id="rngBlur" class="control-range" min="0" max="60" step="1" value="24" />
-            <output class="range-row__val" id="outBlur">24</output>
-          </label>
-          <label class="range-row" for="rngBand">
-            <span class="range-row__label">Band</span>
-            <input type="range" id="rngBand" class="control-range" min="500" max="1000" step="5" value="685" />
-            <output class="range-row__val" id="outBand">685</output>
-          </label>
-          <label class="range-row" for="rngScrim">
-            <span class="range-row__label">Tint</span>
-            <input type="range" id="rngScrim" class="control-range" min="0" max="70" step="1" value="34" />
-            <output class="range-row__val" id="outScrim">0.34</output>
-          </label>
-          <p class="control-block__hint">Band = where the blur starts, in reference px (measured 685). The blurred copy is clipped to that rectangle, so nothing spills.</p>
-        </div>
-
-        <div class="control-block">
-          <button type="button" class="control-action-btn" id="btnReset">Reset placement</button>
+        <!-- Group 5: scrim -->
+        <div class="ctrl-group ctrl-group--scrim">
+          <div class="control-block">
+            <div class="control-block__view-label">Scrim</div>
+            <label class="range-row" for="rngBlur">
+              <span class="range-row__label">Blur</span>
+              <input type="range" id="rngBlur" class="control-range" min="0" max="60" step="1" value="24" />
+              <output class="range-row__val" id="outBlur">24</output>
+            </label>
+            <label class="range-row" for="rngBand">
+              <span class="range-row__label">Band</span>
+              <input type="range" id="rngBand" class="control-range" min="500" max="1000" step="5" value="685" />
+              <output class="range-row__val" id="outBand">685</output>
+            </label>
+            <label class="range-row" for="rngScrim">
+              <span class="range-row__label">Tint</span>
+              <input type="range" id="rngScrim" class="control-range" min="0" max="70" step="1" value="34" />
+              <output class="range-row__val" id="outScrim">0.34</output>
+            </label>
+            <p class="control-block__hint">Band = where the blur starts, in reference px (measured 685).</p>
+          </div>
         </div>
       </div>
     </aside>
