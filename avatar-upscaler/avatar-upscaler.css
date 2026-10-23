@@ -665,12 +665,15 @@ html, body {
    whatever its aspect ratio. The crop differs per avatar, by design. */
 .slot--hero .slot__img {
   /* Absolute, not a grid item: as a grid item `height:100%` fell back to the
-     image's own aspect ratio, leaving the figure hanging past the card bottom. */
+     image's own aspect ratio, leaving the figure hanging past the card bottom.
+     `contain` + top-center fits every avatar inside the card untouched: wide
+     ones fill the width, tall ones fill the height and sit centred. Nothing
+     is ever cropped at 100% scale; the Scale slider still acts on top. */
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: top center;
 }
 
@@ -928,7 +931,7 @@ html, body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;          /* same fit rule as the TV: never cropped, centred */
   object-position: top center;
 }
 

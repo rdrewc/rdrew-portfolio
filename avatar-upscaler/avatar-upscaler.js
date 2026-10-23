@@ -335,7 +335,10 @@
         var el = cfg[0];
         if (!el) return;
         function update() {
-          var w = el.getBoundingClientRect().width;
+          // offsetWidth, not getBoundingClientRect: the phone frame is shrunk
+          // with a CSS transform in "Both" mode, and the rect would carry that
+          // transform into --ps, mis-sizing every slot inside the screen.
+          var w = el.offsetWidth;
           if (w) el.style.setProperty(cfg[1], w / cfg[2]);
         }
         update();
