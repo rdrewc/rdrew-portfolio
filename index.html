@@ -39,7 +39,7 @@
     --glass-indicator:rgba(255,255,255,0.16);
     --glass-shadow:rgba(0,0,0,0.35);
     --terrain-line:rgba(255,255,255,0.35);
-    --scrim:rgba(10,10,16,0.5);
+    --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
   }
   :root[data-theme="light"]{
@@ -101,9 +101,106 @@
     pointer-events:none;
     transition:background-color 0.35s ease, opacity 0.5s ease;
   }
-  .page{transition:opacity 0.4s ease, visibility 0s linear 0s;}
-  body.is-tracking .page{opacity:0;visibility:hidden;transition:opacity 0.4s ease, visibility 0s linear 0.4s;}
+  /* Opening the tracker slides the page up and out of view; closing it slides it back down. */
+  .page{transition:transform 0.7s cubic-bezier(.65,0,.35,1), visibility 0s linear 0s;}
+  body.is-tracking .page{
+    transform:translateY(-100%);
+    visibility:hidden;
+    transition:transform 0.7s cubic-bezier(.65,0,.35,1), visibility 0s linear 0.7s;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .page, body.is-tracking .page{transition:none;}
+  }
   body.is-tracking #storm-map{pointer-events:auto;}
+
+  /* Home, centered in the top bar while tracking: closes the tracker. */
+  .tracker-home{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:28px;
+    height:28px;
+    transform:translate(-50%, -50%);
+    border:none;
+    border-radius:50%;
+    background:transparent;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    pointer-events:auto;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.3s ease, color 0.15s ease, visibility 0s linear 0.3s;
+  }
+  body.is-tracking .tracker-home{opacity:1;visibility:visible;transition:opacity 0.3s ease 0.3s, color 0.15s ease;}
+  .tracker-home:hover{color:var(--accent);}
+  .tracker-home svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* Snowflake in the footer that opens the tracker, styled like the theme toggle. */
+  .tracker-toggle{
+    display:flex;
+    align-items:center;
+    padding:2px;
+    border-radius:999px;
+    border:1px solid var(--divider);
+    transition:border-color 0.35s ease;
+  }
+  .tracker-toggle button{
+    width:28px;
+    height:28px;
+    border:none;
+    border-radius:50%;
+    background:transparent;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:color 0.2s ease, background-color 0.2s ease;
+  }
+  .tracker-toggle button:hover{color:var(--strong);}
+  .tracker-toggle button[aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
+  .tracker-toggle svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* Forecast totals for each zone, shown in Tracker mode. Clicking a card flies there. */
+  .site-stats{
+    position:fixed;
+    top:calc(var(--bar-h) + 16px);
+    left:max(60px, calc(50vw - 640px));
+    z-index:40;
+    display:none;
+    flex-direction:column;
+    gap:10px;
+    width:236px;
+  }
+  body.is-tracking .site-stats{display:flex;}
+  .stat-card{
+    display:block;
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);
+    backdrop-filter:var(--bar-blur);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    color:var(--muted);
+    text-align:left;
+    cursor:pointer;
+    transition:border-color 0.2s ease;
+  }
+  .stat-card:hover, .stat-card.is-current{border-color:var(--accent);}
+  .stat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .stat-name{font-size:13px;font-weight:600;color:var(--strong);}
+  .stat-elev{font-size:10px;color:var(--label);}
+  .stat-grid{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;}
+  .stat-col{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);text-align:right;}
+  .stat-val{text-align:right;color:var(--strong);font-variant-numeric:tabular-nums;}
+  .stat-note{padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
   body.is-tracking .terrain-scrim{opacity:0;}
 
   /* Radar timeline, shown in Tracker mode just above the footer. */
@@ -149,18 +246,6 @@
   .radar-panel input[type="range"]{flex:1;min-width:80px;accent-color:var(--accent);}
   .radar-panel .radar-time{white-space:nowrap;color:var(--strong);}
   .radar-panel .radar-run{color:var(--muted);}
-  .radar-credit{
-    position:fixed;
-    right:max(60px, calc(50vw - 640px));
-    top:calc(var(--bar-h) + 10px);
-    z-index:40;
-    display:none;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:9px;
-    letter-spacing:0.06em;
-    color:var(--label);
-  }
-  body.is-tracking .radar-credit{display:block;}
   /* Fixed top bar: opaque, with a rule across the full window. */
   .top-bar{
     position:fixed;
@@ -386,12 +471,22 @@
     .project-grid{grid-template-columns:repeat(2, minmax(0, 1fr));gap:28px 16px;}
     .project-name{font-size:13px;margin-bottom:10px;white-space:normal;}
     .top-bar{padding:0 28px;font-size:9px;}
-    .geo-coords, .weather-info{white-space:normal;max-width:44vw;}
+    .geo-coords, .weather-info{white-space:normal;max-width:calc(50vw - 52px);} /* clear of the centered home button */
     .geo-coords .geo-label{font-size:8px;}
     .site-footer .footer-controls{flex-wrap:wrap;justify-content:flex-end;}
     .radar-panel{bottom:calc(var(--bar-h) + 64px);font-size:10px;}
     .radar-panel .radar-run{display:none;}
-    .radar-credit{left:16px;right:16px;text-align:right;}
+    .site-stats{
+      top:calc(var(--bar-h) + 12px);
+      left:0;
+      right:0;
+      width:auto;
+      flex-direction:row;
+      overflow-x:auto;
+      padding:0 16px;
+      scrollbar-width:none;
+    }
+    .site-stats .stat-card{flex:0 0 210px;}
   }
 </style>
 </head>
@@ -407,9 +502,12 @@
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
   <span class="radar-time" id="radar-time">Loading radar&hellip;</span>
 </div>
-<div class="radar-credit">Radar: NOAA HRRR via Iowa Environmental Mesonet &middot; Terrain: AWS Terrain Tiles &middot; Outlines: Natural Earth</div>
+<div class="site-stats" id="site-stats" aria-label="Forecast totals"></div>
 <header class="top-bar">
   <div class="weather-info" id="weather-info"><span id="weather-line">&hellip;</span> &middot; <span id="elev-line">&hellip;</span></div>
+  <button type="button" class="tracker-home" data-tracker-home aria-label="Back to the homepage">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h4.5v-6h4v6h4.5V9"/></svg>
+  </button>
   <div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
 </header>
 
@@ -525,8 +623,10 @@
     <button type="button" data-view="shasta" aria-pressed="false">Shasta</button>
     <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
   </div>
-  <div class="terrain-picker">
-    <button type="button" data-tracker aria-pressed="false">Tracker</button>
+  <div class="tracker-toggle">
+    <button type="button" data-tracker aria-pressed="false" aria-label="Storm tracker">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/></svg>
+    </button>
   </div>
   <div class="theme-toggle" role="group" aria-label="Color theme">
     <div class="indicator"></div>
@@ -544,7 +644,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=1"></script>
+<script src="assets/storm-map.js?v=2"></script>
 
 </body>
 </html>

@@ -1,8 +1,9 @@
 // Homepage background: a top-down topo map of the West Coast with the HRRR forecast radar on top.
 // Contour lines are drawn in the browser from AWS terrain tiles (maplibre-contour); the coast, lakes
 // and borders come from assets/storm/west-outlines.geojson (Natural Earth, clipped to the West Coast).
-// The footer picker flies to Tahoe / Shasta / Whitney or back out to the whole coast. "Tracker" hides
-// the page so the map can be dragged and zoomed and the radar scrubbed through the next 18 hours.
+// The footer picker flies to Tahoe / Shasta / Whitney or back out to the whole coast. The snowflake
+// opens Tracker mode: the page slides away, the map can be dragged and zoomed, the radar scrubbed
+// through the next 18 hours, and a card per zone shows its forecast snow and precip totals.
 (function(){
   var el = document.getElementById('storm-map');
   if(!el || !window.maplibregl || !window.mlcontour) return;
@@ -15,24 +16,30 @@
   var RADAR_META = 'https://mesonet.agron.iastate.edu/data/gis/images/4326/hrrr/refd_{m}.json';
   var FRAME_STEP = 60;    // minutes between frames
   var FRAME_LAST = 1080;  // HRRR runs out 18 hours
-  var RADAR_OPACITY = { page: 0.6, tracker: 0.85 };
+  var RADAR_OPACITY = { page: 0.45, tracker: 0.85 };
 
   var WEST_BOUNDS = [[-125.6, 31.8], [-114.2, 49.1]];
+  // lat / lon is the spot the top bar reports on. `forecast` is a mid-mountain point for the
+  // totals cards, so snow totals mean something (lake level at Tahoe mostly sees rain).
   var VIEWS = {
     west: { label: 'West Coast' },
     tahoe: {
       label: 'Tahoe', center: [-120.04, 39.09], zoom: 9.7,
-      coords: '39.0968&deg; N, 120.0324&deg; W', lat: 39.1657, lon: -120.1400
+      coords: '39.0968&deg; N, 120.0324&deg; W', lat: 39.1657, lon: -120.1400,
+      forecast: { lat: 39.17, lon: -120.24, ft: 8000 }    // west-shore crest, Ward Peak
     },
     shasta: {
       label: 'Shasta', center: [-122.195, 41.409], zoom: 10.3,
-      coords: '41.4092&deg; N, 122.1949&deg; W', lat: 41.4092, lon: -122.1949
+      coords: '41.4092&deg; N, 122.1949&deg; W', lat: 41.4092, lon: -122.1949,
+      forecast: { lat: 41.354, lon: -122.233, ft: 7000 }  // Bunny Flat
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
-      coords: '36.5785&deg; N, 118.2923&deg; W', lat: 36.5785, lon: -118.2923
+      coords: '36.5785&deg; N, 118.2923&deg; W', lat: 36.5785, lon: -118.2923,
+      forecast: { lat: 36.578, lon: -118.27, ft: 10000 }  // Outpost Camp
     }
   };
+  var ZONES = ['tahoe', 'shasta', 'whitney'];
 
   // ---- map ----
   var demSource = new mlcontour.DemSource({ url: DEM_TILES, encoding: 'terrarium', maxzoom: 12, worker: true });
@@ -122,10 +129,13 @@
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()) showFrame(frame);
-    if(!on) stop();
+    if(on) loadStats();
+    else stop();
   }
   setTracking(false);
   if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking); });
+  var homeBtn = document.querySelector('[data-tracker-home]');
+  if(homeBtn) homeBtn.addEventListener('click', function(){ setTracking(false); });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && tracking) setTracking(false); });
 
   // ---- forecast radar ----
@@ -212,6 +222,69 @@
       .catch(function(){ if(timeLabel) timeLabel.textContent = 'Radar unavailable'; });
   });
 
+  // ---- forecast totals (tracker mode) ----
+  // One Open-Meteo request covers all three zones: hourly snow and liquid precip for the next
+  // 7 days from the current hour, summed into 24 h / 3 day / 7 day totals.
+  var statsEl = document.getElementById('site-stats');
+  var statsState = 'idle'; // idle, loading, done
+  var STAT_WINDOWS = [[24, 'Next 24h'], [72, '3 days'], [168, '7 days']];
+  function sum(list, hours){
+    var t = 0;
+    for(var i = 0; i < hours && i < list.length; i++) t += list[i] || 0;
+    return t;
+  }
+  function formatSnow(inches){
+    if(inches <= 0) return '0"';
+    return inches < 0.5 ? '<1"' : Math.round(inches) + '"';
+  }
+  function formatPrecip(inches){
+    return inches.toFixed(2) + '"';
+  }
+  function loadStats(){
+    if(!statsEl || statsState !== 'idle') return;
+    statsState = 'loading';
+    statsEl.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
+    var pts = ZONES.map(function(k){ return VIEWS[k].forecast; });
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + pts.map(function(p){ return p.lat; }).join(',') +
+      '&longitude=' + pts.map(function(p){ return p.lon; }).join(',') +
+      '&elevation=' + pts.map(function(p){ return Math.round(p.ft / 3.28084); }).join(',') +
+      '&hourly=precipitation,snowfall&forecast_hours=168&precipitation_unit=inch&timezone=America%2FLos_Angeles';
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var list = Array.isArray(data) ? data : [data];
+        statsEl.innerHTML = ZONES.map(function(k, i){
+          var v = VIEWS[k], h = list[i].hourly;
+          var rows = STAT_WINDOWS.map(function(w){
+            return '<span>' + w[1] + '</span>' +
+              '<span class="stat-val">' + formatSnow(sum(h.snowfall, w[0])) + '</span>' +
+              '<span class="stat-val">' + formatPrecip(sum(h.precipitation, w[0])) + '</span>';
+          }).join('');
+          return '<button type="button" class="stat-card" data-stat-view="' + k + '">' +
+            '<span class="stat-head"><span class="stat-name">' + v.label + '</span>' +
+            '<span class="stat-elev">' + v.forecast.ft.toLocaleString() + ' ft</span></span>' +
+            '<span class="stat-grid"><span></span><span class="stat-col">Snow</span><span class="stat-col">Precip</span>' + rows + '</span>' +
+            '</button>';
+        }).join('');
+        statsEl.querySelectorAll('[data-stat-view]').forEach(function(card){
+          card.addEventListener('click', function(){ select(card.getAttribute('data-stat-view'), true); });
+        });
+        markCurrentCard();
+        statsState = 'done';
+      })
+      .catch(function(){
+        statsEl.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
+        statsState = 'idle'; // try again next time the tracker opens
+      });
+  }
+  function markCurrentCard(){
+    if(!statsEl) return;
+    statsEl.querySelectorAll('[data-stat-view]').forEach(function(card){
+      card.classList.toggle('is-current', card.getAttribute('data-stat-view') === currentView);
+    });
+  }
+
   // ---- location readout (top bar) ----
   var WEATHER_CODES = {
     0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
@@ -282,6 +355,7 @@
     }
     updateReadout(v);
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
+    markCurrentCard();
     if(animate){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){

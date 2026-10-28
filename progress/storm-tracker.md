@@ -13,7 +13,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - 3D terrain was tried and dropped. Stray spikes in the elevation tiles (for example on Tahoe's north shore) stood up as needles. Now every view is straight down.
 - `assets/terrain.js` stays because `gate.html` still uses it.
 
+## Step 1 follow-ups (done)
+- The dark-mode scrim went from 0.5 to 0.72 and radar opacity outside Tracker mode from 0.6 to 0.45, so the map is quieter behind the portfolio.
+- The on-screen credit line is gone. Sources are credited in comments in `storm-map.js` only.
+- Opening Tracker mode slides `.page` up out of view (translateY -100%, 0.7 s) instead of fading it; closing slides it back.
+- A home icon (the one from the case study header) sits centered in the top bar while tracking and closes the tracker. The footer's "Tracker" text is now a snowflake button styled like the theme toggle.
+- Totals cards for Tahoe, Shasta and Whitney show snow and liquid precip for the next 24 h, 3 days and 7 days. It's one Open-Meteo request for all three, at mid-mountain points: Ward Peak 8,000 ft, Bunny Flat 7,000 ft, Outpost Camp 10,000 ft. Clicking a card flies there. They sit in a column on desktop and a swipeable row on phones.
+
 ## Not done yet
 - The radar uses IEM's built-in colors; recoloring it to match the site comes later. HRRR only covers the lower 48, so BC is blank.
+- Some of the terrain tiles' sources (Canada's elevation data, for one) ask for credit, which still needs a home, e.g. a Sources link.
 - No forecast past 18 h yet. Open-Meteo days 2–7 come in step 2.
 - The old drag-to-glow effect on the contour lines didn't carry over.
