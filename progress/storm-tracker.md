@@ -136,8 +136,9 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Temp: NOAA NDFD temperature as ArcGIS `export` tiles (`{bbox-epsg-3857}`, `layers=show:0,1,4`), under the contours at 0.55 opacity. NOAA's image has a one-pixel line at its grid's west edge near 130 W, so an ocean strip from 133 to 128.5 W is painted in `--bg` (the coastal data stops near 126 W).
   - Wind: no wind tiles are available (NOAA's map services and nowCOAST don't offer forecast wind), so it's Open-Meteo's current wind on a 14x18 grid over the visible bounds, refetched 250 ms after the map settles, and only while Wind is on. The first version drew arrows; Ryan wanted something more like Apple Weather, so it's now an animated particle flow:
     - The grid becomes a screen-space flow field every 16 px (bilinear; Mercator keeps angles, so east/north map to x/-y).
-    - About one particle per 520 px² rides the field on a canvas inside MapLibre's canvas container (above the map, under the target markers), each living up to 90 frames.
-    - Each frame fades the canvas to 94% (`destination-in`), which leaves short trails. Strokes are batched into 4 speed steps: brighter and slightly thicker as wind picks up.
+    - About one particle per 520 px² rides the field on a canvas inside MapLibre's canvas container (above the map, under the target markers), each living up to 130 frames.
+    - Speed is 0.035 px per frame per mph (slowed from 0.055 at Ryan's request).
+    - Each frame fades the canvas to 95.5% (`destination-in`), which leaves short trails. Strokes are batched into 4 speed steps: brighter and slightly thicker as wind picks up.
     - Strokes use the accent color so they separate from the white contours. Motion scales up gently past zoom 6.
     - The canvas hides while the map moves and resumes on `moveend`. With reduced motion it draws 60 steps once as a still.
   - The radar bar label for Wind is just "Wind now".

@@ -400,10 +400,10 @@
   // small area) the motion is scaled up a little so it still reads.
   var WIND_GRID = [14, 18];   // columns, rows of wind samples over the view
   var FIELD_CELL = 16;        // px between flow-field points on screen
-  var PX_PER_MPH = 0.055;     // particle speed, px per frame per mph
-  var MAX_AGE = 90;           // frames before a particle is respawned
+  var PX_PER_MPH = 0.035;     // particle speed, px per frame per mph
+  var MAX_AGE = 130;          // frames before a particle is respawned (longer, so slow ones still travel)
   var PARTICLE_AREA = 520;    // one particle per this many square px
-  var FADE = 0.94;            // share of each trail kept from frame to frame
+  var FADE = 0.955;           // share of each trail kept from frame to frame (slower motion, longer fade)
   var SPEED_STEPS = [[8, 0.38, 1], [16, 0.58, 1.1], [28, 0.78, 1.3], [Infinity, 0.98, 1.6]]; // mph up to, alpha, width
   var windCanvas = null, windCtx = null, windData = null, windField = null, windKey = null;
   var particles = [], windRAF = null, windTimer = null;
