@@ -92,6 +92,26 @@
     { name: 'Bachelor', lat: 43.979, lon: -121.688, ft: 7000 },
     { name: 'Crater Lake', lat: 42.911, lon: -122.146, ft: 7100 } // Rim Village
   ];
+  // Most-rain callout on the region card: the wettest low-elevation spots from Southeast Alaska to
+  // San Diego. Rain only (Open-Meteo's rain_sum), so a snowy week up high doesn't count here.
+  var RAIN_SITES = [
+    { name: 'Ketchikan', where: 'Alaska', lat: 55.342, lon: -131.646 },
+    { name: 'Juneau', where: 'Alaska', lat: 58.302, lon: -134.420 },
+    { name: 'Prince Rupert', where: 'British Columbia', lat: 54.315, lon: -130.321 },
+    { name: 'Tofino', where: 'British Columbia', lat: 49.153, lon: -125.907 },
+    { name: 'Forks', where: 'Washington', lat: 47.950, lon: -124.385 },
+    { name: 'Seattle', where: 'Washington', lat: 47.606, lon: -122.332 },
+    { name: 'Astoria', where: 'Oregon', lat: 46.188, lon: -123.831 },
+    { name: 'Portland', where: 'Oregon', lat: 45.515, lon: -122.679 },
+    { name: 'Brookings', where: 'Oregon', lat: 42.053, lon: -124.284 },
+    { name: 'Crescent City', where: 'California', lat: 41.756, lon: -124.202 },
+    { name: 'Eureka', where: 'California', lat: 40.802, lon: -124.164 },
+    { name: 'Santa Cruz Mtns', where: 'California', lat: 37.090, lon: -122.090 },
+    { name: 'San Francisco', where: 'California', lat: 37.775, lon: -122.419 },
+    { name: 'Big Sur', where: 'California', lat: 36.270, lon: -121.807 },
+    { name: 'Los Angeles', where: 'California', lat: 34.052, lon: -118.244 },
+    { name: 'San Diego', where: 'California', lat: 32.716, lon: -117.161 }
+  ];
   // El Niño summary. NOAA's ENSO data doesn't allow cross-origin requests, so this is written by hand
   // until the Worker can fetch it. Sources: CPC ENSO discussion (Oct 8, 2026), CPC weekly Niño-3.4
   // (week of Oct 21, 2026), NOAA winter outlook (Oct 15, 2026).
@@ -660,7 +680,7 @@
   }
   // The region card: past 7 days and next 7 averaged over the Cascade and Sierra sites, a plain
   // sentence on how the coming week compares, next week by site, and the El Niño summary.
-  function regionCard(sites, list, storm){
+  function regionCard(sites, list, storm, rainList){
     var d = list.map(function(z){ return z.daily; });
     var snow = average(d.map(function(x){ return x.snowfall_sum; }));
     var precip = average(d.map(function(x){ return x.precipitation_sum; }));
@@ -683,6 +703,18 @@
         '<span class="stat-hero-site"><span class="stat-hero-name">' + top.name + '</span>' +
         formatPrecip(top.precip) + ' precip &middot; ' + top.ft.toLocaleString() + ' ft</span>'
       : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No snow ahead</span>at any of the ' + sites.length + ' sites</span>';
+    // The rainiest spot, Alaska to San Diego. Its own request, so the card still shows if it fails.
+    var rainHero = '';
+    if(rainList){
+      var wet = RAIN_SITES.map(function(s, i){ return { site: s, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
+        .sort(function(a, b){ return b.rain - a.rain; })[0];
+      rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span>Most rain, next 7 days</span>' +
+        '<span class="stat-hero-row">' + (wet.rain >= 0.05
+          ? '<span class="stat-hero-num">' + formatPrecip(wet.rain) + '</span>' +
+            '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span>' + wet.site.where + '</span>'
+          : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No rain ahead</span>Alaska to San Diego</span>') +
+        '</span></span>';
+    }
     var dates = d[0].time;
     var days = dates.map(function(t, i){ return i === TODAY ? 'Today' : dayName(t); });
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
@@ -691,7 +723,7 @@
       '<span class="stat-head">' + stormTitle('Pacific Maritime El Ni&ntilde;o', storm) + '</span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
       '<span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow, next 7 days</span>' +
-      '<span class="stat-hero-row">' + hero + '</span></span>' +
+      '<span class="stat-hero-row">' + hero + '</span></span>' + rainHero +
       '<span class="stat-trend">' + trend + '</span>' +
       '<span class="stat-charts"><span class="stat-charts-inner">' +
       '<span class="stat-chart-head stat-section-head">Past week &middot; next week</span>' +
@@ -871,12 +903,17 @@
       '&elevation=' + sites.map(function(p){ return Math.round(p.ft / 3.28084); }).join(',') +
       '&daily=snowfall_sum,precipitation_sum,temperature_2m_mean&past_days=7&forecast_days=7' +
       '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles';
+    var rainUrl = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + RAIN_SITES.map(function(p){ return p.lat; }).join(',') +
+      '&longitude=' + RAIN_SITES.map(function(p){ return p.lon; }).join(',') +
+      '&daily=rain_sum&forecast_days=7&precipitation_unit=inch&timezone=America%2FLos_Angeles';
     function getJSON(u){ return fetch(u).then(function(r){ return r.json(); }); }
     function optional(promise){ return promise.catch(function(){ return null; }); } // odds can fail alone
     Promise.all([
       getJSON(url), getJSON(regionUrl),
       optional(getJSON(ensembleUrl)),
-      Promise.all(pts.map(function(p){ return optional(getJSON(WPC_URL + p.lon + ',' + p.lat)); }))
+      Promise.all(pts.map(function(p){ return optional(getJSON(WPC_URL + p.lon + ',' + p.lat)); })),
+      optional(getJSON(rainUrl))
     ])
       .then(function(all){
         var list = Array.isArray(all[0]) ? all[0] : [all[0]];
@@ -892,7 +929,7 @@
           return stormLevel(sum(list[i].hourly.snowfall, 24), sum(list[i].hourly.precipitation, 24));
         });
         var worst = storms.reduce(function(a, b){ return STORM_ORDER.indexOf(b) > STORM_ORDER.indexOf(a) ? b : a; }, 'none');
-        statsRail.innerHTML = regionCard(sites, all[1], worst) + ZONES.map(function(k, i){
+        statsRail.innerHTML = regionCard(sites, all[1], worst, Array.isArray(all[4]) ? all[4] : null) + ZONES.map(function(k, i){
           var v = VIEWS[k], t = v.target, h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var snow = d.snowfall_sum.map(Number);

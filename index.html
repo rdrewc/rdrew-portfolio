@@ -438,15 +438,16 @@
   /* Region card (West view): past and next week averaged across the Cascades and Sierra. Past days are
      faded and today is outlined, so the split reads without a legend. The card scrolls inside itself
      if it's taller than the window allows. */
-  .stat-card{max-height:calc(100vh - 2 * var(--bar-h) - 150px);overflow-y:auto;scrollbar-width:none;}
+  .stat-card{max-height:calc(100vh - 2 * var(--bar-h) - 96px);overflow-y:auto;scrollbar-width:none;}
   .stat-trend{display:block;margin-bottom:4px;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);white-space:normal;}
   .stat-bar.is-past > span{opacity:0.4;}
   .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
   .stat-days.stat-days-range span{flex:none;max-width:none;white-space:nowrap;}
   .stat-section-head{margin-top:14px;margin-bottom:-4px;}
 
-  /* Snowiest site callout: the number wears text color; the swatch carries "snow". */
+  /* Snowiest and rainiest site callouts: the number wears text color; the swatch carries snow or rain. */
   .stat-hero{display:block;margin:10px 0 12px;padding:10px 12px;border:1px solid var(--divider);border-radius:8px;}
+  .stat-hero + .stat-hero{margin-top:-4px;}
   .stat-hero-label{display:flex;align-items:center;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
   .stat-hero-row{display:flex;align-items:center;gap:12px;margin-top:6px;}
   .stat-hero-num{font-family:'DM Sans',sans-serif;font-size:36px;font-weight:600;line-height:1;letter-spacing:-0.01em;color:var(--strong);font-variant-numeric:tabular-nums;}
@@ -987,7 +988,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=34"></script>
+<script src="assets/storm-map.js?v=35"></script>
 
 </body>
 </html>

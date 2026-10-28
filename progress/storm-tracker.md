@@ -173,6 +173,10 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - The Overview title takes the worst level across all sites. Screen readers get the level as hidden text.
 - The title stands alone on its line. Elevation moved to the line below (place, elevation, coordinates), with 10 px of space under the title on every card.
 
+## Most rain callout, taller Overview (done)
+- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 16 low-elevation spots from Ketchikan to San Diego (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
+- On desktop the cards can grow 54 px taller (the max-height reserve went from 150 px to 96 px), which puts the Overview card's bottom 16 px above the radar panel.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
