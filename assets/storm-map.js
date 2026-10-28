@@ -68,6 +68,7 @@
     touchPitch: false,
     style: {
       version: 8,
+      transition: { duration: 600, delay: 0 }, // contrast eases up and down with Tracker mode
       sources: {
         contours: {
           type: 'vector',
@@ -88,35 +89,42 @@
         {
           id: 'contour-minor', type: 'line', source: 'contours', 'source-layer': 'contours',
           filter: ['all', ['>', ['get', 'ele'], 0], ['==', ['get', 'level'], 0]],
-          paint: { 'line-width': 0.6, 'line-opacity': 0.45 }
+          paint: { 'line-width': 0.6 }
         },
         {
           id: 'contour-major', type: 'line', source: 'contours', 'source-layer': 'contours',
           filter: ['all', ['>', ['get', 'ele'], 0], ['>', ['get', 'level'], 0]],
-          paint: { 'line-width': 1.1, 'line-opacity': 0.9 }
+          paint: { 'line-width': 1.1 }
         },
         {
           id: 'outline-coast', type: 'line', source: 'outlines',
           filter: ['in', ['get', 'kind'], ['literal', ['coast', 'lake']]],
-          paint: { 'line-width': 1.4 }
+          paint: { 'line-width': 1 }
         },
         {
           id: 'outline-borders', type: 'line', source: 'outlines',
           filter: ['in', ['get', 'kind'], ['literal', ['state', 'country']]],
-          paint: { 'line-width': 0.8, 'line-opacity': 0.55, 'line-dasharray': [3, 3] }
+          paint: { 'line-width': 0.8, 'line-dasharray': [3, 3] }
         }
       ]
     }
   });
 
+  // Every line shares the terrain color; the coast and lake shores are only a touch stronger than the
+  // contours, so they read as defined edges rather than outlines. Tracker mode raises all of it.
+  var LINE_OPACITY = {
+    page:    { 'contour-minor': 0.4, 'contour-major': 0.75, 'outline-coast': 1, 'outline-borders': 0.6 },
+    tracker: { 'contour-minor': 0.7, 'contour-major': 1, 'outline-coast': 1, 'outline-borders': 0.9 }
+  };
   function applyColors(){
-    var line = cssVar('--terrain-line', 'rgba(255,255,255,0.35)');
-    var strong = cssVar('--muted', '#7d8399');
+    var line = cssVar(tracking ? '--terrain-line-strong' : '--terrain-line', 'rgba(255,255,255,0.35)');
+    var opacity = LINE_OPACITY[tracking ? 'tracker' : 'page'];
     map.setPaintProperty('bg', 'background-color', cssVar('--bg', '#12131c'));
-    map.setPaintProperty('contour-minor', 'line-color', line);
-    map.setPaintProperty('contour-major', 'line-color', line);
-    map.setPaintProperty('outline-coast', 'line-color', strong);
-    map.setPaintProperty('outline-borders', 'line-color', strong);
+    Object.keys(opacity).forEach(function(id){
+      map.setPaintProperty(id, 'line-color', line);
+      map.setPaintProperty(id, 'line-opacity', opacity[id]);
+    });
+    map.setPaintProperty('outline-coast', 'line-width', tracking ? 1.2 : 1);
   }
   map.on('load', function(){
     map.resize(); // a page opened in a background tab can start the map at the wrong size
@@ -136,7 +144,7 @@
     document.body.classList.toggle('is-tracking', on);
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
-    if(map.isStyleLoaded()) showFrame(frame);
+    if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     if(on) loadStats();
     else stop();
   }
@@ -231,11 +239,20 @@
   });
 
   // ---- forecast totals (tracker mode) ----
-  // One Open-Meteo request covers all three zones: hourly snow and liquid precip for the next
-  // 7 days from the current hour, summed into 24 h / 3 day / 7 day totals.
-  var statsEl = document.getElementById('site-stats');
+  // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
+  // the current hour (summed into 24 h / 3 day / 7 day totals), plus daily sums for the bar charts.
+  // The cards sit in a carousel, one at a time; its back / next carets step through the zones and
+  // fly the map there.
+  var statsRail = document.getElementById('stats-rail');
+  var statsCount = document.getElementById('stats-count');
+  var statsPrev = document.querySelector('[data-stats-step="-1"]');
+  var statsNext = document.querySelector('[data-stats-step="1"]');
   var statsState = 'idle'; // idle, loading, done
+  var statIndex = ZONES.indexOf(DEFAULT_VIEW);
   var STAT_WINDOWS = [[24, 'Next 24h'], [72, '3 days'], [168, '7 days']];
+  // Bar scales are shared by every card so they compare as you flip through, and never drop
+  // below these, so a dusting stays a short bar.
+  var SNOW_FLOOR = 4, PRECIP_FLOOR = 0.4;
   function sum(list, hours){
     var t = 0;
     for(var i = 0; i < hours && i < list.length; i++) t += list[i] || 0;
@@ -248,22 +265,42 @@
   function formatPrecip(inches){
     return inches.toFixed(2) + '"';
   }
+  function dayName(date){
+    return new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' });
+  }
+  // One bar per day. Each slot is the full chart height so the hover target is bigger than the bar.
+  function barChart(cls, title, values, max, days, fmt){
+    return '<span class="stat-chart ' + cls + '">' +
+      '<span class="stat-chart-head"><span class="stat-swatch"></span>' + title + '<span class="stat-chart-max">' + fmt(max) + '</span></span>' +
+      '<span class="stat-bars">' + values.map(function(v, i){
+        var pct = v > 0 ? Math.max(6, v / max * 100) : 0;
+        return '<span class="stat-bar" data-label="' + days[i] + ' ' + fmt(v) + '"><span style="height:' + pct.toFixed(1) + '%"></span></span>';
+      }).join('') + '</span></span>';
+  }
   function loadStats(){
-    if(!statsEl || statsState !== 'idle') return;
+    if(!statsRail || statsState !== 'idle') return;
     statsState = 'loading';
-    statsEl.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
+    statsRail.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
     var pts = ZONES.map(function(k){ return VIEWS[k].forecast; });
     var url = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=' + pts.map(function(p){ return p.lat; }).join(',') +
       '&longitude=' + pts.map(function(p){ return p.lon; }).join(',') +
       '&elevation=' + pts.map(function(p){ return Math.round(p.ft / 3.28084); }).join(',') +
-      '&hourly=precipitation,snowfall&forecast_hours=168&precipitation_unit=inch&timezone=America%2FLos_Angeles';
+      '&hourly=precipitation,snowfall&forecast_hours=168' +
+      '&daily=snowfall_sum,precipitation_sum&forecast_days=7' +
+      '&precipitation_unit=inch&timezone=America%2FLos_Angeles';
     fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(data){
         var list = Array.isArray(data) ? data : [data];
-        statsEl.innerHTML = ZONES.map(function(k, i){
-          var v = VIEWS[k], h = list[i].hourly;
+        var snowMax = SNOW_FLOOR, precipMax = PRECIP_FLOOR;
+        list.forEach(function(z){
+          snowMax = Math.max.apply(null, [snowMax].concat(z.daily.snowfall_sum.map(Number)));
+          precipMax = Math.max.apply(null, [precipMax].concat(z.daily.precipitation_sum.map(Number)));
+        });
+        statsRail.innerHTML = ZONES.map(function(k, i){
+          var v = VIEWS[k], h = list[i].hourly, d = list[i].daily;
+          var days = d.time.map(dayName);
           var rows = STAT_WINDOWS.map(function(w){
             return '<span>' + w[1] + '</span>' +
               '<span class="stat-val">' + formatSnow(sum(h.snowfall, w[0])) + '</span>' +
@@ -272,26 +309,44 @@
           return '<button type="button" class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head"><span class="stat-name">' + v.label + '</span>' +
             '<span class="stat-elev">' + v.forecast.ft.toLocaleString() + ' ft</span></span>' +
-            '<span class="stat-grid"><span></span><span class="stat-col">Snow</span><span class="stat-col">Precip</span>' + rows + '</span>' +
+            '<span class="stat-grid"><span></span>' +
+            '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
+            '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
+            barChart('snow', 'Snow by day', d.snowfall_sum.map(Number), snowMax, days, function(x){ return x.toFixed(1) + '"'; }) +
+            barChart('precip', 'Precip by day', d.precipitation_sum.map(Number), precipMax, days, formatPrecip) +
+            '<span class="stat-days">' + days.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
             '</button>';
         }).join('');
-        statsEl.querySelectorAll('[data-stat-view]').forEach(function(card){
+        statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
           card.addEventListener('click', function(){ select(card.getAttribute('data-stat-view'), true); });
         });
-        markCurrentCard();
         statsState = 'done';
+        updateCarousel();
       })
       .catch(function(){
-        statsEl.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
+        statsRail.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
         statsState = 'idle'; // try again next time the tracker opens
       });
   }
-  function markCurrentCard(){
-    if(!statsEl) return;
-    statsEl.querySelectorAll('[data-stat-view]').forEach(function(card){
+  function updateCarousel(){
+    if(!statsRail) return;
+    if(ZONES.indexOf(currentView) >= 0) statIndex = ZONES.indexOf(currentView);
+    if(statsState === 'done') statsRail.style.transform = 'translateX(' + (-100 * statIndex) + '%)';
+    statsRail.querySelectorAll('[data-stat-view]').forEach(function(card, i){
       card.classList.toggle('is-current', card.getAttribute('data-stat-view') === currentView);
+      card.tabIndex = i === statIndex ? 0 : -1; // only the card in view takes focus
     });
+    if(statsCount) statsCount.textContent = (statIndex + 1) + ' / ' + ZONES.length;
+    if(statsPrev) statsPrev.disabled = statIndex <= 0;
+    if(statsNext) statsNext.disabled = statIndex >= ZONES.length - 1;
   }
+  [statsPrev, statsNext].forEach(function(btn){
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      var i = Math.max(0, Math.min(ZONES.length - 1, statIndex + parseInt(btn.getAttribute('data-stats-step'), 10)));
+      select(ZONES[i], true);
+    });
+  });
 
   // ---- location readout (top bar) ----
   var WEATHER_CODES = {
@@ -356,7 +411,7 @@
     }
     updateReadout(v);
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
-    markCurrentCard();
+    updateCarousel();
     if(animate){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){

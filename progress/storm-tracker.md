@@ -28,7 +28,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Location tabs live inside the snowflake pill and only appear in Tracker mode. The pill grows to the left (grid 0fr→1fr), the tabs slide out one after another nearest-first, and the snowflake turns 90°. People with reduced motion turned on get no animation.
 - Lake Tahoe's shoreline is traced from z13 Terrarium tiles (~15 m per pixel, the contour 0.5 m above the 1,897.55 m lake surface), 1,425 points. It replaces Natural Earth's coarse outline in `west-outlines.geojson`. The scripts (`dem.py`, `tahoe_shore.py`, `clip_west.py`) are in the session scratchpad, not the repo.
 
+## Contrast, carousel, bar charts (done)
+- Map lines have two contrast levels. Outside Tracker mode they're quiet: minor contours at 0.4, major at 0.75, the coast and lakes in the same terrain color at width 1. Tracker mode switches to `--terrain-line-strong`, raises the opacities, and widens the coast to 1.2, easing over 600 ms. The Tahoe shore is defined without standing out.
+- The totals cards are a carousel at every screen size: one card in view, with back / next carets and "2 / 4" underneath. The carets step through the zones and fly the map; they're disabled at the ends, and picking a footer tab moves the carousel too.
+- The selected location tab is accent text only (no pill), with 6 px of space before the snowflake.
+- Each card has two daily bar charts for the next 7 days, snow and precip. They're separate charts because the measures don't share a scale, and each scale is shared across all cards, with floors of 4" snow and 0.40" precip. Hovering a bar shows its day and amount. Colors are violet `--snow-bar` and green `--precip-bar`, validated as a pair in both themes with the dataviz palette script.
+
 ## Not done yet
+- On phones the taller card now covers the top half of Lake Tahoe. It could collapse to just the totals, or the Tahoe view could sit lower.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
 - On phones the totals cards cover the north end of the lake.
 - The radar uses IEM's built-in colors; recoloring it to match the site comes later. HRRR only covers the lower 48, so BC is blank.
