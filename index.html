@@ -122,7 +122,9 @@
   @media (prefers-reduced-motion: reduce){
     .page, body.is-tracking .page{transition:none;}
   }
-  body.is-tracking #storm-map{pointer-events:auto;}
+  /* In Tracker mode the map comes up out of the background (z -2 sits under the body, which would
+     catch the pointer) to just above the page, still under every tracker panel (z 40+). */
+  body.is-tracking #storm-map{pointer-events:auto;z-index:1;}
   /* Map cursor in Tracker mode: an old-school ski pole with a big strapped basket and a leather grip.
      The tip (3, 29) is the hotspot; a white outline keeps it readable on dark and light maps. */
   body.is-tracking #storm-map .maplibregl-canvas-container.maplibregl-interactive,

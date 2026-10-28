@@ -114,6 +114,11 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The snowflake circle is transparent when off and fills (`--glass-indicator`, accent icon) when on.
 - Phones: the footer wraps to 82 px, so the tabs sit full width at `bottom: 94px` with the radar above them at 150 px. The map framing's phone bottom padding went from 170 to 210.
 
+## Tracker map interaction fix (done)
+- Bug since step 1: in Tracker mode the map stayed at z-index -2, under the body's box, so the body caught the pointer. Dragging, scroll-zoom and the ski pole cursor never reached the map.
+- Fix: `body.is-tracking #storm-map{z-index:1}`, above the hidden page and still under every tracker panel (z 40+). Outside Tracker mode it drops back behind the page, so the portfolio stays clickable.
+- Verified: a pointer on the map hits the canvas with the pole cursor, a drag pans, the wheel zooms, and the cards are still on top.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
