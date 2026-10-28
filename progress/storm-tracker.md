@@ -102,6 +102,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - So the label shows that poster as a still: `pub.api?cmd=poster&oid=EMB_EIFC0000015B`, 1920x1080, cross-origin allowed, cached 15 min. The camera pans, so the view varies.
   - Targets with `fixedCams: true` always use their listed cam (with `url` and `credit`) instead of the nearest ALERTCalifornia pick.
 
+## Step 2: zone panels (done, browser-only data)
+- Each zone card now has Snow / Wind / Odds tabs, following OpenSnow's feature set but not its look. The tab choice lives on the rail (`data-tab`), so every card shows the same tab and paging keeps it. On phones the tabs sit in the collapsible section.
+- **Data:** one Open-Meteo request for the 4 targets (10-day daily snow and precip; 240 h hourly snow, precip, freezing level, gusts and direction in mph), plus the ECMWF ensemble (51 runs, daily snowfall) and NOAA WPC winter odds (`wpc_prob_winter_precip` identify, one per target, cross-origin allowed). The ensemble and NOAA are optional; the card still renders if they fail.
+- **Snow tab:** totals for days 1–5 and 6–10, and 10-day bars with the ensemble's likely range (10th–90th percentile) as capped lines. Below them, the daily lowest snow level (freezing level minus 1,000 ft) as a line against dashed lines for the target's base and the target itself. Bases added per target: Bunny Flat 6,930, Palisades base 6,200, Main Lodge 8,790, Whitney Portal 8,360.
+  - Gotcha: with `precipitation_unit=inch`, Open-Meteo returns `freezing_level_height` in feet, so it's read from `hourly_units`. The y range is capped around the base and target so the two lines stay readable.
+- **Wind tab:** the next 24 h's peak gust and direction in words, daily peak gust bars (neutral ink, darker past 40 mph) with a lift-hold line at 40 mph, and daily direction arrows (vector-averaged, pointing where the wind blows).
+- **Odds tab:** NOAA's days 1–3 chance of 4", 8" and 12"+ as WPC categories (no polygon at the point means "<10%"), then the share of ensemble runs with 6"+ for each of the 10 days.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
