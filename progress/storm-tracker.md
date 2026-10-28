@@ -130,6 +130,20 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The Worker serves the homepage at `/elnino` (the address stays), and `/elnino/` redirects to `/elnino` because the homepage's asset paths are relative. `storm-map.js` opens the tracker when the path is `/elnino`. Opening or closing the tracker by hand switches the address between `/elnino` and `/` with `replaceState`, so the link can be copied from inside.
 - Locally `serve.py` has no Worker, so `/elnino` 404s there; test it on the preview URL.
 
+## Overlays, SF and LA, closable labels (done)
+- The radar bar's model-run label ("HRRR 17Z +2h") is gone; the bar shows just the valid time.
+- **Overlay switch** at the start of the radar bar: Radar (default, the only one with a timeline), Wind, Temp. Play and the slider step aside for Wind and Temp, and the label says what's showing.
+  - Temp: NOAA NDFD temperature as ArcGIS `export` tiles (`{bbox-epsg-3857}`, `layers=show:0,1,4`), under the contours at 0.55 opacity. NOAA's image has a one-pixel line at its grid's west edge near 130 W, so an ocean strip from 133 to 128.5 W is painted in `--bg` (the coastal data stops near 126 W).
+  - Wind: no wind tiles are available (NOAA's map services and nowCOAST don't offer forecast wind), so it's Open-Meteo's current wind on a 9x11 grid over the visible bounds, drawn as arrows that lengthen and thicken with speed, refetched 300 ms after the map stops moving. It loads only while Wind is on.
+- **SF and LA** sit right after West (tabs and cards: West, SF, LA, Shasta, Tahoe, Mammoth, Whitney).
+  - SF: Golden Gate Bridge (37.8183, -122.4784, 220 ft roadway).
+  - LA: Hollywood Sign (34.1341, -118.3217, 1,575 ft from the terrain tiles).
+  - Both are `landmark: true`: the cam picker wants a camera aimed at them, since the Mt. Lee cams sit on the sign and look away from it. Picks today: Sutro Tower 2 for the bridge, Star Mtn. for the sign.
+  - Landmarks stay out of the Pacific Maritime region averages.
+- **Target labels:** the crosshair is now its own button inside a div marker. Each label has an X that closes just the label, and clicking the crosshair reopens it (and selects the target).
+- **Reopening unfurls:** the leader draws out (stroke-dashoffset, `--dur-quick`), then the label unrolls from the top (clip-path, `--dur-base`, after `--dur-quick`). No animation with reduced motion turned on.
+- Phones: the radar bar wraps (switch on its own row), and the map framing's bottom padding is now 250.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

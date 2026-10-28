@@ -310,15 +310,8 @@
   .stat-target{display:block;margin:-4px 0 10px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
   /* Target over each zone's forecast point (Tracker mode only), pinned to the map. */
-  .target-marker{
-    width:24px;
-    height:24px;
-    padding:0;
-    border:none;
-    background:transparent;
-    color:var(--strong);
-    cursor:pointer;
-  }
+  .target-marker{width:24px;height:24px;color:var(--strong);}
+  .target-hit{display:block;width:24px;height:24px;padding:0;border:none;background:transparent;color:inherit;cursor:pointer;}
   body:not(.is-entered) .target-marker{pointer-events:none;}
   .target-body{position:relative;display:block;width:24px;height:24px;}
   .target-marker.is-current{color:var(--accent);}
@@ -340,7 +333,7 @@
     stroke-width:1;
     pointer-events:none;
   }
-  .show-target-labels .target-leader{display:block;}
+  .show-target-labels .target-marker.is-open .target-leader{display:block;}
   .target-marker.is-current .target-leader{stroke:var(--accent);}
   .target-label{
     position:absolute;
@@ -360,7 +353,22 @@
     white-space:nowrap;
     pointer-events:none;
   }
-  .show-target-labels .target-label{display:block;}
+  .show-target-labels .target-marker.is-open .target-label{display:block;}
+  .target-label{padding-right:26px;}
+  .target-close{
+    position:absolute;top:3px;right:3px;width:18px;height:18px;padding:0;border:none;border-radius:50%;
+    background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;pointer-events:auto;transition:color 0.15s ease, background-color 0.15s ease;
+  }
+  .target-close:hover{color:var(--accent);background:var(--glass-indicator);}
+  .target-close svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;}
+  /* Reopening unfurls: the leader draws out from the target, then the label unrolls from the top. */
+  .target-leader path{stroke-dasharray:40;stroke-dashoffset:0;}
+  .is-unfurling .target-leader path{animation:leader-draw var(--dur-quick) var(--ease-out) both;}
+  .is-unfurling .target-label{animation:label-unfurl var(--dur-base) var(--ease-out) var(--dur-quick) both;}
+  @keyframes leader-draw{from{stroke-dashoffset:40;}to{stroke-dashoffset:0;}}
+  @keyframes label-unfurl{from{clip-path:inset(0 0 100% 0);}to{clip-path:inset(0 0 0 0);}}
+  @media (prefers-reduced-motion: reduce){ .is-unfurling .target-leader path, .is-unfurling .target-label{animation:none;} }
   .target-name{display:block;font-family:var(--font-title);font-size:10px;font-weight:500;color:var(--strong);}
   .target-marker.is-current .target-label{border-color:var(--accent);}
   /* The selected target's label carries the latest frame from its mountain camera
@@ -502,7 +510,7 @@
     display:flex;
     align-items:center;
     gap:12px;
-    width:clamp(280px, calc(100vw - 2 * max(60px, 50vw - 640px) - 420px), 520px);
+    width:clamp(420px, calc(100vw - 2 * max(60px, 50vw - 640px) - 480px), 640px);
     padding:8px 14px 8px 8px;
     border:1px solid var(--glass-border);
     border-radius:999px;
@@ -533,7 +541,17 @@
   .radar-panel button[aria-pressed="true"] .pause-icon{display:block;}
   .radar-panel input[type="range"]{flex:1;min-width:80px;accent-color:var(--accent);}
   .radar-panel .radar-time{white-space:nowrap;color:var(--strong);}
-  .radar-panel .radar-run{color:var(--muted);}
+  /* Overlay switch at the start of the bar. Only Radar has a timeline, so the play button and slider
+     step aside for Wind and Temp, and the label says what's showing. */
+  .overlay-switch{display:flex;gap:12px;padding:0 4px 0 8px;margin-right:2px;border-right:1px solid var(--divider);}
+  .overlay-switch button{
+    width:auto;height:30px;padding:0 2px;border:none;border-radius:0;background:none;
+    font:inherit;letter-spacing:0.06em;color:var(--muted);cursor:pointer;transition:color 0.15s ease;
+  }
+  .overlay-switch button:hover{color:var(--strong);}
+  .overlay-switch button[aria-pressed="true"]{color:var(--accent);}
+  .radar-panel:not([data-active="radar"]) #radar-play,
+  .radar-panel:not([data-active="radar"]) input[type="range"]{display:none;}
   /* Fixed top bar: opaque, with a rule across the full window. */
   .top-bar{
     position:fixed;
@@ -765,8 +783,8 @@
     /* Phones: the footer wraps to two rows (82px), so the tabs sit full width just above it and the
        radar timeline above them. */
     .view-tabs{left:16px;right:16px;bottom:94px;justify-content:space-between;}
-    .radar-panel{left:16px;right:16px;width:auto;bottom:150px;font-size:10px;}
-    .radar-panel .radar-run{display:none;}
+    .radar-panel{left:16px;right:16px;width:auto;bottom:150px;font-size:10px;flex-wrap:wrap;row-gap:4px;border-radius:22px;}
+    .overlay-switch{width:100%;justify-content:center;border-right:none;border-bottom:1px solid var(--divider);padding:0 0 4px;margin:0;}
     .site-stats{top:calc(var(--bar-h) + 12px);left:16px;right:16px;width:auto;}
     /* Phones: cards collapse to name + totals; the chart button grows the bars back in. */
     .stats-nav .stats-expand{display:flex;}
@@ -782,7 +800,12 @@
 
 <div id="storm-map"></div>
 <div class="terrain-scrim"></div>
-<div class="radar-panel enter" style="--i:1" role="group" aria-label="Forecast radar timeline">
+<div class="radar-panel enter" style="--i:1" data-active="radar" role="group" aria-label="Map overlay and radar timeline">
+  <span class="overlay-switch" role="group" aria-label="Map overlay">
+    <button type="button" data-overlay="radar" aria-pressed="true">Radar</button>
+    <button type="button" data-overlay="wind" aria-pressed="false">Wind</button>
+    <button type="button" data-overlay="temp" aria-pressed="false">Temp</button>
+  </span>
   <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
     <svg class="play-icon" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"></path></svg>
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
@@ -792,6 +815,8 @@
 </div>
 <div class="view-tabs enter" id="view-tabs" style="--i:1" role="group" aria-label="Map view">
   <button type="button" data-view="west" aria-pressed="false">West</button>
+  <button type="button" data-view="sf" aria-pressed="false">SF</button>
+  <button type="button" data-view="la" aria-pressed="false">LA</button>
   <button type="button" data-view="shasta" aria-pressed="false">Shasta</button>
   <button type="button" data-view="tahoe" aria-pressed="true">Tahoe</button>
   <button type="button" data-view="mammoth" aria-pressed="false">Mammoth</button>
@@ -937,7 +962,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=23"></script>
+<script src="assets/storm-map.js?v=27"></script>
 
 </body>
 </html>

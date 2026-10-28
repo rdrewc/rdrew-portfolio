@@ -27,6 +27,22 @@
   // the live camera feed (see "mountain cams" below) doesn't load.
   var VIEWS = {
     west: { label: 'West Coast' },
+    // Landmarks: `landmark` makes the cam picker want a camera aimed at the target, not merely near it
+    // (the Mt. Lee cams sit on the Hollywood Sign and look away from it).
+    sf: {
+      label: 'SF', center: [-122.47, 37.80], zoom: 11.2,
+      target: { name: 'Golden Gate Bridge', lat: 37.8183, lon: -122.4784, ft: 220, landmark: true, cams: [ // roadway above the water
+        { id: 'sutrotower-cam02', name: 'Sutro Tower 2', mi: 4.7 },
+        { id: 'mttam-cam01', name: 'Mt. Tamalpais East', mi: 9.2 }
+      ] }
+    },
+    la: {
+      label: 'LA', center: [-118.32, 34.12], zoom: 11.2,
+      target: { name: 'Hollywood Sign', lat: 34.1341, lon: -118.3217, ft: 1575, landmark: true, cams: [ // terrain tiles
+        { id: 'briar-cam02', name: 'Star Mtn. 2', mi: 4.2 },
+        { id: 'belairridge-cam01', name: 'Bel Air Ridge 1', mi: 7.0 }
+      ] }
+    },
     shasta: {
       label: 'Shasta', center: [-122.208, 41.405], zoom: 10.6,
       target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330, cams: [ // Shasta's west-side peak
@@ -65,11 +81,11 @@
     return Math.abs(t.lat).toFixed(4) + '° ' + (t.lat >= 0 ? 'N' : 'S') + ', ' +
       Math.abs(t.lon).toFixed(4) + '° ' + (t.lon >= 0 ? 'E' : 'W');
   }
-  var ZONES = ['shasta', 'tahoe', 'mammoth', 'whitney']; // north to south
+  var ZONES = ['sf', 'la', 'shasta', 'tahoe', 'mammoth', 'whitney']; // landmarks, then mountains north to south
   var CARDS = ['west'].concat(ZONES); // the carousel: the region card first, then the zones
 
   // Region card (West view): the Pacific maritime snowpack, Cascades to Sierra. Its trend and charts
-  // average these sites; the four zone targets are added after them.
+  // average these sites; the mountain targets (not the city landmarks) are added after them.
   var REGION_SITES = [
     { name: 'Mt. Baker', lat: 48.857, lon: -121.665, ft: 5000 },  // ski area
     { name: 'Mt. Hood', lat: 45.331, lon: -121.711, ft: 6000 },   // Timberline
@@ -164,6 +180,8 @@
       map.setPaintProperty(id, 'line-opacity', opacity[id]);
     });
     map.setPaintProperty('outline-coast', 'line-width', tracking ? 1.2 : 1);
+    if(map.getLayer('wind')) map.setPaintProperty('wind', 'line-color', cssVar('--strong', '#eef0f6'));
+    if(map.getLayer('temp-seam')) map.setPaintProperty('temp-seam', 'fill-color', cssVar('--bg', '#12131c'));
   }
   map.on('load', function(){
     map.resize(); // a page opened in a background tab can start the map at the wrong size
@@ -180,23 +198,35 @@
   // an inner .target-body; each target arrives after the cards and timeline (--i from 2).
   var markers = ZONES.map(function(k, i){
     var t = VIEWS[k].target;
-    var node = document.createElement('button');
-    node.type = 'button';
-    node.className = 'target-marker';
+    var node = document.createElement('div');
+    node.className = 'target-marker is-open';
     node.setAttribute('data-zone', k);
-    node.setAttribute('aria-label', VIEWS[k].label + ' forecast point: ' + t.name);
     node.innerHTML = '<span class="target-body enter" style="--i:' + (2 + i) + '">' +
-      '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>' +
+      '<button type="button" class="target-hit" aria-label="' + VIEWS[k].label + ' forecast point: ' + t.name + '">' +
+      '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg></button>' +
       // leader, in a box that starts 18px above the target: from the ring at 45 degrees, then flat into the label
       '<svg class="target-leader" viewBox="0 0 44 30" aria-hidden="true"><path d="M17 25 30 12h14"/></svg>' +
-      '<span class="target-label"><span class="target-name">' + t.name + '</span>' +
+      '<span class="target-label">' +
+      '<button type="button" class="target-close" aria-label="Close the ' + t.name + ' label"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg></button>' +
+      '<span class="target-name">' + t.name + '</span>' +
       formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft' +
       '<span class="target-cam"><span class="target-cam-frame"><img alt="" decoding="async"></span>' +
       '<span class="target-cam-caption"><span class="target-cam-name"></span><span class="target-cam-dist"></span></span></span>' +
       '</span></span>';
-    node.addEventListener('click', function(){ select(k, true); });
+    // The crosshair selects the target and (re)opens its label; the label's X closes just the label.
+    node.querySelector('.target-hit').addEventListener('click', function(){ openLabel(node); select(k, true); });
+    node.querySelector('.target-close').addEventListener('click', function(){ node.classList.remove('is-open'); });
     return new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat([t.lon, t.lat]).addTo(map);
   });
+  // Opening plays the unfurl: the leader draws out from the target, then the label unrolls downward.
+  function openLabel(node){
+    node.classList.add('is-open');
+    node.classList.remove('is-unfurling');
+    void node.offsetWidth; // restart the animation if it's already open
+    node.classList.add('is-unfurling');
+    clearTimeout(node.unfurlTimer);
+    node.unfurlTimer = setTimeout(function(){ node.classList.remove('is-unfurling'); }, 1000);
+  }
   function updateMarkers(){
     el.classList.toggle('show-target-labels', map.getZoom() >= LABEL_MIN_ZOOM);
     markers.forEach(function(m){
@@ -263,7 +293,7 @@
     frame = Math.max(0, Math.min(frames.length - 1, i));
     ensureLayer(frame);
     ensureLayer(frame + 1); // load the next frame early so playback doesn't flash
-    var opacity = tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
+    var opacity = overlay !== 'radar' ? 0 : tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
     frames.forEach(function(_, k){
       if(map.getLayer(layerId(k))) map.setPaintProperty(layerId(k), 'raster-opacity', k === frame ? opacity : 0);
     });
@@ -280,9 +310,11 @@
   }
   function updateTimeLabel(){
     if(!timeLabel) return;
+    if(overlay === 'temp'){ timeLabel.textContent = 'Temperature \u00b7 NOAA forecast'; return; }
+    if(overlay === 'wind'){ timeLabel.textContent = 'Wind now \u00b7 arrows grow with speed'; return; }
     var d = validAt(frame);
     if(!d){ timeLabel.textContent = 'Loading radar…'; return; }
-    timeLabel.innerHTML = formatTime(d) + '<span class="radar-run"> · HRRR ' + run.toISOString().slice(11, 13) + 'Z +' + (frames[frame] / 60) + 'h</span>';
+    timeLabel.textContent = formatTime(d);
   }
 
   if(slider){
@@ -319,6 +351,91 @@
       })
       .catch(function(){ if(timeLabel) timeLabel.textContent = 'Radar unavailable'; });
   });
+
+  // ---- overlays: forecast radar, wind, temperature ----
+  // Radar is the default and the only one with a timeline. Temperature is NOAA's NDFD forecast as map
+  // tiles, under the contour lines. Wind is Open-Meteo's current wind sampled on a grid over the part
+  // of the map in view, drawn as arrows that lengthen and thicken with speed; it's refetched when the
+  // map stops moving.
+  var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
+    '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
+  var WIND_GRID = [9, 11]; // columns, rows
+  var overlay = 'radar';
+  var radarPanel = document.querySelector('.radar-panel');
+  var overlayBtns = document.querySelectorAll('[data-overlay]');
+  var windKey = null;
+  function ensureOverlays(){
+    if(map.getSource('temp')) return;
+    map.addSource('temp', { type: 'raster', tileSize: 256, tiles: [TEMP_TILES] });
+    map.addLayer({ id: 'temp', type: 'raster', source: 'temp', layout: { visibility: 'none' },
+      paint: { 'raster-opacity': 0.55, 'raster-fade-duration': 0 } }, 'contour-minor');
+    // NOAA's temperature image carries a one-pixel line at the west edge of its grid, out in the
+    // Pacific near 130 W. Its coastal-water data stops around 126 W, so paint a strip of open ocean
+    // (133-128.5 W) in the background color over the line.
+    map.addSource('temp-seam', { type: 'geojson', data: { type: 'Feature', properties: {},
+      geometry: { type: 'Polygon', coordinates: [[[-133, 10], [-128.5, 10], [-128.5, 60], [-133, 60], [-133, 10]]] } } });
+    map.addLayer({ id: 'temp-seam', type: 'fill', source: 'temp-seam', layout: { visibility: 'none' },
+      paint: { 'fill-color': cssVar('--bg', '#12131c') } }, 'contour-minor');
+    map.addSource('wind', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    map.addLayer({ id: 'wind', type: 'line', source: 'wind',
+      layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': cssVar('--strong', '#eef0f6'), 'line-opacity': 0.85,
+        'line-width': ['interpolate', ['linear'], ['get', 'mph'], 0, 1, 40, 3] } });
+  }
+  function setOverlay(name){
+    overlay = name;
+    if(radarPanel) radarPanel.setAttribute('data-active', name);
+    overlayBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-overlay') === name)); });
+    if(name !== 'radar') stop();
+    updateTimeLabel();
+    if(!map.isStyleLoaded()) return;
+    ensureOverlays();
+    map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
+    map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
+    map.setLayoutProperty('wind', 'visibility', name === 'wind' ? 'visible' : 'none');
+    showFrame(frame);
+    loadWind();
+  }
+  overlayBtns.forEach(function(b){
+    b.addEventListener('click', function(){ setOverlay(b.getAttribute('data-overlay')); });
+  });
+  function loadWind(){
+    if(overlay !== 'wind') return;
+    var b = map.getBounds(), w = b.getWest(), e = b.getEast(), so = b.getSouth(), n = b.getNorth();
+    var key = [w, so, e, n].map(function(v){ return v.toFixed(2); }).join(',');
+    if(key === windKey) return;
+    windKey = key;
+    var pts = [];
+    for(var r = 0; r < WIND_GRID[1]; r++){
+      for(var c = 0; c < WIND_GRID[0]; c++){
+        pts.push([w + (c + 0.5) / WIND_GRID[0] * (e - w), so + (r + 0.5) / WIND_GRID[1] * (n - so)]);
+      }
+    }
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + pts.map(function(p){ return p[1].toFixed(3); }).join(',') +
+      '&longitude=' + pts.map(function(p){ return p[0].toFixed(3); }).join(',') +
+      '&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=mph';
+    fetch(url).then(function(res){ return res.json(); }).then(function(data){
+      if(key !== windKey || !map.getSource('wind')) return;
+      var list = Array.isArray(data) ? data : [data];
+      var cell = Math.min((e - w) / WIND_GRID[0], (n - so) / WIND_GRID[1]); // arrow scale, in degrees
+      map.getSource('wind').setData({ type: 'FeatureCollection', features: list.map(function(z, i){
+        var mph = z.current.wind_speed_10m;
+        var to = ((z.current.wind_direction_10m + 180) % 360) * Math.PI / 180; // where it's blowing
+        var len = cell * (0.25 + 0.55 * Math.min(1, mph / 35));
+        var k = 1 / Math.cos(pts[i][1] * Math.PI / 180); // a degree of longitude is shorter up north
+        function step(from, ang, d){ return [from[0] + Math.sin(ang) * d * k, from[1] + Math.cos(ang) * d]; }
+        var tail = step(pts[i], to + Math.PI, len / 2), tip = step(pts[i], to, len / 2);
+        var head = len * 0.35;
+        return { type: 'Feature', properties: { mph: mph }, geometry: { type: 'MultiLineString', coordinates: [
+          [tail, tip], [step(tip, to + Math.PI * 0.8, head), tip, step(tip, to - Math.PI * 0.8, head)]
+        ] } };
+      }) });
+    }).catch(function(){ windKey = null; });
+  }
+  var windTimer = null;
+  map.on('moveend', function(){ clearTimeout(windTimer); windTimer = setTimeout(loadWind, 300); });
+  map.on('load', function(){ setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
   // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
@@ -577,7 +694,7 @@
       '&precipitation_unit=inch&wind_speed_unit=mph&timezone=America%2FLos_Angeles';
     var ensembleUrl = 'https://ensemble-api.open-meteo.com/v1/ensemble' + where +
       '&models=ecmwf_ifs025&daily=snowfall_sum&forecast_days=10&precipitation_unit=inch&timezone=America%2FLos_Angeles';
-    var sites = REGION_SITES.concat(ZONES.map(function(k){
+    var sites = REGION_SITES.concat(ZONES.filter(function(k){ return !VIEWS[k].target.landmark; }).map(function(k){
       var t = VIEWS[k].target;
       return { name: VIEWS[k].label, lat: t.lat, lon: t.lon, ft: t.ft };
     }));
@@ -680,7 +797,7 @@
         var c = f.geometry.coordinates, p = f.properties;
         var mi = miles(c[1], c[0], t.lat, t.lon);
         var off = p.az_current == null ? 180 : Math.abs(((bearing(c[1], c[0], t.lat, t.lon) - p.az_current + 540) % 360) - 180);
-        return { id: p.id, name: p.name, mi: Math.round(mi * 10) / 10, facing: mi < 1 || off <= (p.fov || 60) / 2 };
+        return { id: p.id, name: p.name, mi: Math.round(mi * 10) / 10, facing: (mi < 1 && !t.landmark) || off <= (p.fov || 60) / 2 };
       }).filter(function(c){ return c.mi <= CAM_RANGE_MI; })
         .sort(function(a, b){ return (b.facing - a.facing) || (a.mi - b.mi); })
         .slice(0, 3);
@@ -830,7 +947,7 @@
   // and footer, and the totals card (left column on desktop, a band across the top on phones).
   function framePadding(){
     return window.innerWidth <= 860
-      ? { top: 230, bottom: 210, left: 24, right: 24 } // phones: radar and tabs stack above the footer
+      ? { top: 230, bottom: 250, left: 24, right: 24 } // phones: radar (two rows) and tabs stack above the footer
       : { top: 90, bottom: 150, left: 340, right: 60 };
   }
   var currentView = null;
