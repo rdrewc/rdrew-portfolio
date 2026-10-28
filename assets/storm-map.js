@@ -398,7 +398,8 @@
   // Faster air moves faster, and its trails are brighter and a touch thicker. They're drawn in the
   // accent color so they separate from the white contour lines, and zoomed in (light winds over a
   // small area) the motion is scaled up a little so it still reads.
-  var WIND_GRID = [14, 18];   // columns, rows of wind samples over the view
+  var WIND_GRID = [10, 12];   // columns, rows of wind samples (each one counts against Open-Meteo's limit)
+  var WIND_MARGIN = 0.25;     // fetch this much extra on every side, so small pans reuse the data
   var FIELD_CELL = 16;        // px between flow-field points on screen
   var PX_PER_MPH = 0.035;     // particle speed, px per frame per mph
   var MAX_AGE = 130;          // frames before a particle is respawned (longer, so slow ones still travel)
@@ -533,9 +534,16 @@
   }
   function loadWind(){
     if(overlay !== 'wind') return;
-    var b = map.getBounds(), w = b.getWest(), e = b.getEast(), so = b.getSouth(), n = b.getNorth();
+    var b = map.getBounds(), vw = b.getWest(), ve = b.getEast(), vs = b.getSouth(), vn = b.getNorth();
+    // Still inside the area already fetched, at a similar scale: just rebuild the field.
+    var d = windData;
+    if(d && vw >= d.w && ve <= d.e && vs >= d.s && vn <= d.n && (ve - vw) > (d.e - d.w) * 0.4){
+      buildField(); resetParticles(); runWind(); return;
+    }
+    var mx = (ve - vw) * WIND_MARGIN, my = (vn - vs) * WIND_MARGIN;
+    var w = vw - mx, e = ve + mx, so = Math.max(-85, vs - my), n = Math.min(85, vn + my);
     var key = [w, so, e, n].map(function(v){ return v.toFixed(2); }).join(',');
-    if(key === windKey){ buildField(); resetParticles(); runWind(); return; }
+    if(key === windKey) return; // already on its way
     windKey = key;
     var cols = WIND_GRID[0], rows = WIND_GRID[1], pts = [];
     for(var r = 0; r < rows; r++){
@@ -893,12 +901,21 @@
             '</div>';
         }).join('');
         statsState = 'done';
+        loadStats.retried = false;
         showTab(currentTab);
         updateCarousel();
       })
       .catch(function(){
-        statsRail.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
-        statsState = 'idle'; // try again next time the tracker opens
+        // One quiet retry: the free forecast API sometimes refuses a burst of requests.
+        if(!loadStats.retried){
+          loadStats.retried = true;
+          statsState = 'idle';
+          setTimeout(loadStats, 4000);
+          return;
+        }
+        loadStats.retried = false;
+        statsRail.innerHTML = '<p class="stat-note">Forecast unavailable. It\u2019ll try again next time the tracker opens.</p>';
+        statsState = 'idle';
       });
   }
   var currentTab = 'snow';

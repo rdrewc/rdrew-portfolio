@@ -151,6 +151,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - **Reopening unfurls:** the leader draws out (stroke-dashoffset, `--dur-quick`), then the label unrolls from the top (clip-path, `--dur-base`, after `--dur-quick`). No animation with reduced motion turned on.
 - Phones: the radar bar wraps (switch on its own row), and the map framing's bottom padding is now 250.
 
+## Label padding, wind fetch budget (done)
+- The label's X now reserves its space on the title line only (`.target-name` padding-right), so the cam runs edge to edge with even 9 px sides.
+- "Forecast unavailable" showed up once. The wind grid was spending Open-Meteo's free per-minute budget (252 points per pan), so:
+  - Wind now samples 10x12 over the view plus a 25% margin on every side, and reuses that data while the view stays inside it.
+  - The cards retry once after 4 s before showing the note.
+  - The note is framed like a card.
+  - The real fix for traffic is still the Worker cache (step 3+).
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

@@ -354,7 +354,7 @@
     pointer-events:none;
   }
   .show-target-labels .target-marker.is-open .target-label{display:block;}
-  .target-label{padding-right:26px;}
+  .target-name{padding-right:20px;} /* room for the X on the title line only, so the cam runs edge to edge */
   .target-close{
     position:absolute;top:3px;right:3px;width:18px;height:18px;padding:0;border:none;border-radius:50%;
     background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;
@@ -497,7 +497,11 @@
   .stat-enso-source{display:block;margin-top:6px;font-size:9px;color:var(--label);}
   .stat-days{display:flex;justify-content:space-between;gap:2px;margin-top:4px;}
   .stat-days span{flex:1;max-width:24px;text-align:center;font-size:8px;letter-spacing:0;color:var(--label);}
-  .stat-note{padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .stat-note{ /* loading or error, framed like a card instead of floating over the map */
+    flex:0 0 100%;padding:12px 14px;border:1px solid var(--glass-border);border-radius:12px;background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);backdrop-filter:var(--bar-blur);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:var(--muted);pointer-events:auto;
+  }
   body.is-tracking .terrain-scrim{opacity:0;}
 
   /* Radar timeline, shown in Tracker mode just above the footer, aligned left (the location tabs
@@ -966,7 +970,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=30"></script>
+<script src="assets/storm-map.js?v=31"></script>
 
 </body>
 </html>
