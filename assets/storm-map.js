@@ -23,39 +23,39 @@
   // Each zone forecasts for one named target: the top bar's weather, elevation and coordinates (in
   // Tracker mode), the totals card and the map's target marker all use it. Positions are OpenStreetMap's
   // for each named place; `ft` is the published elevation, or read off the z13 terrain tiles where none
-  // is published. `cams` are the nearest working Caltrans highway cameras, closest first; the card shows
-  // the first one that loads.
-  var CAM = 'https://cwwp2.dot.ca.gov/data/';
+  // is published. `cams` is a fallback list of nearby ALERTCalifornia mountain cameras, used only if
+  // the live camera feed (see "mountain cams" below) doesn't load.
   var VIEWS = {
     west: { label: 'West Coast' },
     shasta: {
       label: 'Shasta', center: [-122.208, 41.405], zoom: 10.6,
       target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330, cams: [ // Shasta's west-side peak
-        { name: 'I-5 at Abrams Lake', mi: 7.6, url: CAM + 'd2/cctv/image/abramslakenb/abramslakenb.jpg' },
-        { name: 'I-5 at Black Butte', mi: 7.9, url: CAM + 'd2/cctv/image/blackbutte/blackbutte.jpg' },
-        { name: 'I-5 at South Weed', mi: 8.1, url: CAM + 'd2/cctv/image/southweed/southweed.jpg' }
+        { id: 'weed-cam02', name: 'Weed 2', mi: 9.2 },
+        { id: 'hammondranch-cam01', name: 'Hammond Ranch 1', mi: 12.1 },
+        { id: 'shastaskipark-cam01', name: 'Shasta Ski Park', mi: 6.0 }
       ] }
     },
     tahoe: {
       // framed to the lake plus Granite Chief, so both fit on any screen
       label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
       target: { name: 'Granite Chief, Palisades', lat: 39.1983, lon: -120.2870, ft: 9006, cams: [ // top of Palisades
-        { name: 'Hwy 89 at Olympic Valley', mi: 4.7, url: CAM + 'd3/cctv/image/hwy89atolympicvalley/hwy89atolympicvalley.jpg' },
-        { name: 'Hwy 89 at Alpine Meadows', mi: 5.0, url: CAM + 'd3/cctv/image/hwy89atalpinemeadows/hwy89atalpinemeadows.jpg' },
-        { name: 'Hwy 89 at Rampart', mi: 6.3, url: CAM + 'd3/cctv/image/hwy89atrampart/hwy89atrampart.jpg' }
+        { id: 'duncanpeaklookout-cam01', name: 'Duncan Peak Lookout 1', mi: 12.5 },
+        { id: 'duncanpeaklookout-cam02', name: 'Duncan Peak Lookout 2', mi: 12.5 },
+        { id: 'martispeak-cam01', name: 'Martis Peak 1', mi: 15.0 }
       ] }
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
       target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053, cams: [ // summit
-        { name: 'SR-203 at Mammoth Mountain', mi: 6.3, url: CAM + 'd9/cctv/image/sr203mammothmountain/sr203mammothmountain.jpg' },
-        { name: 'US-395 at Crestview', mi: 8.8, url: CAM + 'd9/cctv/image/us395crestview/us395crestview.jpg' }
+        { id: 'mammothmtn-cam01', name: 'Mammoth Mtn. 1', mi: 0 },
+        { id: 'mammothmtn-cam02', name: 'Mammoth Mtn. 2', mi: 0 }
       ] }
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
       target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505, cams: [
-        { name: 'US-395 at Lone Pine', mi: 12.8, url: CAM + 'd9/cctv/image/us395lonepine1/us395lonepine1.jpg' }
+        { id: 'whitneyportal-cam01', name: 'Whitney Portal 1', mi: 8.3 },
+        { id: 'lonepine-cam02', name: 'Lone Pine 2', mi: 13.1 }
       ] }
     }
   };
@@ -384,10 +384,49 @@
         statsState = 'idle'; // try again next time the tracker opens
       });
   }
-  // Latest still from the nearest camera that answers. Caltrans updates each still about once a
-  // minute and stamps the time on the image, so the query only has to change once a minute.
+  // ---- mountain cams ----
+  // ALERTCalifornia (UC San Diego) runs pan-tilt cameras on peaks and lookouts and publishes each
+  // one's latest frame, time stamped. Their feed lists every camera's position and current heading, so
+  // each card picks the nearest camera within 25 miles that is pointed at its target (or sits on it),
+  // then the nearest of the rest. Thumbnails are 480 x 270.
+  var CAM_FEED = 'https://cameras.alertcalifornia.org/public-camera-data/all_cameras-v3.json';
+  var CAM_IMG = 'https://cameras.alertcalifornia.org/public-camera-data/{id}/latest-thumb.jpg';
+  var CAM_RANGE_MI = 25;
+  var camPicks = {};  // zone -> cameras to try, best first
+  var camFeed = null; // promise, fetched once
+  function miles(lat1, lon1, lat2, lon2){
+    var r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+    var h = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.pow(Math.sin(dLon / 2), 2);
+    return 7917.6 * Math.asin(Math.sqrt(h));
+  }
+  function bearing(lat1, lon1, lat2, lon2){
+    var r = Math.PI / 180, dLon = (lon2 - lon1) * r;
+    var y = Math.sin(dLon) * Math.cos(lat2 * r);
+    var x = Math.cos(lat1 * r) * Math.sin(lat2 * r) - Math.sin(lat1 * r) * Math.cos(lat2 * r) * Math.cos(dLon);
+    return (Math.atan2(y, x) / r + 360) % 360;
+  }
+  function pickCams(feed){
+    ZONES.forEach(function(k){
+      var t = VIEWS[k].target;
+      camPicks[k] = feed.features.map(function(f){
+        var c = f.geometry.coordinates, p = f.properties;
+        var mi = miles(c[1], c[0], t.lat, t.lon);
+        var off = p.az_current == null ? 180 : Math.abs(((bearing(c[1], c[0], t.lat, t.lon) - p.az_current + 540) % 360) - 180);
+        return { id: p.id, name: p.name, mi: Math.round(mi * 10) / 10, facing: mi < 1 || off <= (p.fov || 60) / 2 };
+      }).filter(function(c){ return c.mi <= CAM_RANGE_MI; })
+        .sort(function(a, b){ return (b.facing - a.facing) || (a.mi - b.mi); })
+        .slice(0, 3);
+    });
+  }
+  function loadCamFeed(){
+    if(!camFeed) camFeed = fetch(CAM_FEED).then(function(r){ return r.json(); }).then(pickCams).catch(function(){});
+    return camFeed;
+  }
+
+  // Latest frame from the best camera that answers; the query changes once a minute so a fresh
+  // frame is fetched without hammering the server.
   function showCam(card, k, n){
-    var cams = VIEWS[k].target.cams;
+    var cams = (camPicks[k] && camPicks[k].length) ? camPicks[k] : VIEWS[k].target.cams;
     var box = card.querySelector('.stat-cam');
     var img = box && box.querySelector('img');
     if(!img) return;
@@ -401,14 +440,16 @@
     box.classList.remove('is-offline');
     img.onerror = function(){ showCam(card, k, n + 1); };
     img.alt = 'Latest still from the ' + cam.name + ' camera';
-    img.src = cam.url + '?t=' + Math.floor(Date.now() / 60000);
+    img.src = CAM_IMG.replace('{id}', cam.id) + '?t=' + Math.floor(Date.now() / 60000);
     box.querySelector('.stat-cam-name').textContent = cam.name;
-    box.querySelector('.stat-cam-dist').textContent = cam.mi + ' mi away · Caltrans';
+    box.querySelector('.stat-cam-dist').textContent = (cam.mi < 1 ? 'on the mountain' : cam.mi + ' mi away') + ' · ALERTCalifornia';
   }
   function refreshCams(){
     if(!statsRail || statsState !== 'done') return;
-    statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
-      showCam(card, card.getAttribute('data-stat-view'), 0);
+    loadCamFeed().then(function(){
+      statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
+        showCam(card, card.getAttribute('data-stat-view'), 0);
+      });
     });
   }
   setInterval(function(){ if(tracking) refreshCams(); }, 60000);

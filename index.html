@@ -190,7 +190,8 @@
     visibility:visible;
     transition:grid-template-columns 0.55s var(--ease-out), visibility 0s;
   }
-  .view-tabs-inner{display:flex;align-items:center;min-width:0;overflow:hidden;padding-right:6px;} /* breathing room before the snowflake */
+  .view-tabs-inner{display:flex;align-items:center;min-width:0;overflow:hidden;}
+  .view-tabs button:last-child{margin-right:6px;} /* breathing room before the snowflake; folds away with the tabs */
   .view-tabs button{
     height:28px;
     padding:0 11px;
@@ -337,9 +338,9 @@
   .snow .stat-swatch{background:var(--snow-bar);}
   .precip .stat-swatch{background:var(--precip-bar);}
 
-  /* Latest still from the nearest highway camera (320 x 260, time stamped along the bottom). */
+  /* Latest frame from the best mountain camera (480 x 270, time stamped along the bottom). */
   .stat-cam{display:block;margin-top:12px;}
-  .stat-cam-frame{display:block;aspect-ratio:320 / 260;border-radius:8px;overflow:hidden;background:var(--tile-bg);}
+  .stat-cam-frame{display:block;aspect-ratio:16 / 9;border-radius:8px;overflow:hidden;background:var(--tile-bg);}
   .stat-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
   .stat-cam.is-offline img{visibility:hidden;}
   .stat-cam-caption{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:9px;letter-spacing:0.02em;color:var(--label);}
@@ -660,9 +661,6 @@
     .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s var(--ease-out);}
     .site-stats.is-expanded .stat-charts{grid-template-rows:1fr;}
     .stat-charts-inner{min-height:0;overflow:hidden;}
-    /* full-width cams get tall; crop from the top so the time stamp along the bottom stays */
-    .stat-cam-frame{aspect-ratio:auto;height:150px;}
-    .stat-cam-frame img{object-position:center bottom;}
     .view-tabs button{padding:0 7px;font-size:10px;}
   }
 </style>
@@ -838,7 +836,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=9"></script>
+<script src="assets/storm-map.js?v=10"></script>
 
 </body>
 </html>

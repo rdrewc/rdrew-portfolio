@@ -56,15 +56,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Framed views (the whole coast, Tahoe) now pad around the top bar, timeline, footer and totals card, so the whole lake and Granite Chief show on desktop and phones.
 
 ## Live cams, header, snowflake (done)
-- Each totals card shows the latest still from the nearest working Caltrans highway camera. Caltrans publishes them as a public feed; each 320x260 still refreshes about once a minute and has the time printed on it.
-  - Granite Chief: Hwy 89 at Olympic Valley, 4.7 mi.
-  - Shastina: I-5 at Abrams Lake, 7.6 mi.
-  - Mammoth Mountain: SR-203 at Mammoth Mountain, 6.3 mi.
-  - Whitney: US-395 at Lone Pine, 12.8 mi.
-  - Each target lists 1–3 cams, closest first. If one fails to load, the card moves to the next, and says "Cams offline" when none answer. Stills reload when the tracker opens and every minute while it's open. Cams were picked from the D2/D3/D9 `cctvStatusD0x.json` feeds, which allow cross-origin requests if we ever want to pick them live.
-  - On phones the cam sits in the collapsible section, cropped to 150 px tall from the top so the time stamp stays.
+- Each totals card shows the latest frame from a mountain camera, not a highway camera. The cameras are ALERTCalifornia's (UC San Diego) pan-tilt units on peaks and lookouts.
+  - On first tracker open, the public feed (`all_cameras-v3.json`, about 137 KB gzipped, cross-origin allowed) gives every camera's position, current heading and field of view. Per target, the card picks the nearest camera within 25 mi that's pointed at it (or sits on it, under 1 mi), then the nearest of the rest. It keeps the top 3 to fall back through if one fails to load.
+  - Images are `/{id}/latest-thumb.jpg`, 480x270 at about 22 KB, time stamped and watermarked by ALERTCalifornia. They reload every minute while the tracker is open.
+  - `cams` in VIEWS is the fallback if the feed doesn't load: Weed 2 for Shastina, Duncan Peak Lookout for Granite Chief, the Mammoth Mtn. summit cams, and Whitney Portal 1.
+  - The Palisades webcam page uses an Ozolio player embed, not plain image files, so resort cams weren't used.
+  - On 2026-10-28, no camera within 25 mi was pointed at Granite Chief, so Tahoe falls back to the nearest (Duncan Peak Lookout, 12.5 mi west).
 - The top bar outside Tracker mode always shows home, as before: Lake Tahoe at 39.0968° N, 120.0324° W, 6,225 ft, with Tahoe City weather. Inside Tracker mode it shows the selected target.
-- The snowflake is always a filled circle, like the theme toggle's indicator, and turns accent-colored when on.
+- The snowflake is always a filled circle, like the theme toggle's indicator, and turns accent-colored when on. Closed, the pill is a 34 px circle; the space before the snowflake is a margin on the last tab, so it folds away with the tabs.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
