@@ -38,14 +38,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 
 ## Named forecast targets (done)
 - Each zone forecasts for one named target. The top bar's weather, elevation and coordinates, the totals card and the map marker all use the same point:
-  - Shasta: Hidden Valley, the west side below Shastina. 41.3878, -122.2333, 9,200 ft (published; terrain tiles say 9,203).
-  - Tahoe: Palisades, KT-22. 39.1829, -120.2417, 8,050 ft (terrain tiles; no published figure found).
+  - Shasta: Shastina summit, Shasta's west-side peak. 41.4092, -122.2233, 12,330 ft (terrain tiles say 12,313). It was Hidden Valley at 9,200 ft until Ryan asked for higher.
+  - Tahoe: Granite Chief, the top of Palisades. 39.1983, -120.2870, 9,006 ft (terrain tiles say 9,025). It was KT-22 first. The Tahoe view is framed to the lake plus Granite Chief so both fit on any screen.
   - Mammoth: Mammoth Mountain summit. 37.6308, -119.0326, 11,053 ft.
   - Whitney: summit. 36.5786, -118.2921, 14,505 ft.
   - Positions are OpenStreetMap's (Nominatim) for each named place. The old split between a top-bar spot and a card spot is gone.
 - Tracker mode puts a target marker at each point (MapLibre markers, so they move with the map). Each has a label with the name, GPS position and elevation. Labels hide below zoom 7 (the whole-coast view), the current zone's target is accent-colored, and clicking one flies there. The cards also show the target name and coordinates.
 
 ## Not done yet
+- On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
 - On phones the totals cards cover the north end of the lake.
 - The radar uses IEM's built-in colors; recoloring it to match the site comes later. HRRR only covers the lower 48, so BC is blank.

@@ -26,12 +26,13 @@
   var VIEWS = {
     west: { label: 'West Coast' },
     shasta: {
-      label: 'Shasta', center: [-122.212, 41.399], zoom: 10.6,
-      target: { name: 'Hidden Valley', lat: 41.3878, lon: -122.2333, ft: 9200 }      // west side, below Shastina
+      label: 'Shasta', center: [-122.208, 41.405], zoom: 10.6,
+      target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330 }   // Shasta's west-side peak
     },
     tahoe: {
-      label: 'Tahoe', center: [-120.09, 39.12], zoom: 9.6,
-      target: { name: 'Palisades, KT-22', lat: 39.1829, lon: -120.2417, ft: 8050 }   // terrain tiles
+      // framed to the lake plus Granite Chief, so both fit on any screen
+      label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
+      target: { name: 'Granite Chief, Palisades', lat: 39.1983, lon: -120.2870, ft: 9006 } // top of Palisades
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
@@ -444,8 +445,8 @@
     currentView = key;
     var v = VIEWS[key];
     var instant = !animate || reduceMotion;
-    if(key === 'west'){
-      map.fitBounds(WEST_BOUNDS, { padding: 40, duration: instant ? 0 : 2400 });
+    if(key === 'west' || v.bounds){
+      map.fitBounds(v.bounds || WEST_BOUNDS, { padding: 40, duration: instant ? 0 : 2400 });
     } else {
       var cam = { center: v.center, zoom: v.zoom };
       instant ? map.jumpTo(cam) : map.flyTo(Object.assign(cam, { duration: 3000, essential: true }));
@@ -460,8 +461,12 @@
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
   map.on('load', function(){ select(saved() || DEFAULT_VIEW, false); });
-  // Keep the whole coast in frame when the window changes shape, unless you're steering the map.
+  // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
+  // steering the map.
   map.on('resize', function(){
-    if(currentView === 'west' && !tracking) map.fitBounds(WEST_BOUNDS, { padding: 40, duration: 0 });
+    if(tracking || !currentView) return;
+    if(currentView === 'west' || VIEWS[currentView].bounds){
+      map.fitBounds(VIEWS[currentView].bounds || WEST_BOUNDS, { padding: 40, duration: 0 });
+    }
   });
 })();
