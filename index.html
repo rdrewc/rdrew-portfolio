@@ -163,7 +163,7 @@
     height:28px;
     border:none;
     border-radius:50%;
-    background:transparent;
+    background:var(--glass-indicator); /* always a filled circle, like the theme toggle's indicator */
     color:var(--muted);
     display:flex;
     align-items:center;
@@ -172,7 +172,7 @@
     transition:color 0.2s ease, background-color 0.2s ease;
   }
   .tracker-toggle [data-tracker]:hover{color:var(--strong);}
-  .tracker-toggle [data-tracker][aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
+  .tracker-toggle [data-tracker][aria-pressed="true"]{color:var(--accent);}
   .tracker-toggle [data-tracker] svg{
     width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
     transition:transform 0.6s var(--ease-out);
@@ -336,6 +336,15 @@
   .stat-swatch{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:2px;vertical-align:0;}
   .snow .stat-swatch{background:var(--snow-bar);}
   .precip .stat-swatch{background:var(--precip-bar);}
+
+  /* Latest still from the nearest highway camera (320 x 260, time stamped along the bottom). */
+  .stat-cam{display:block;margin-top:12px;}
+  .stat-cam-frame{display:block;aspect-ratio:320 / 260;border-radius:8px;overflow:hidden;background:var(--tile-bg);}
+  .stat-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
+  .stat-cam.is-offline img{visibility:hidden;}
+  .stat-cam-caption{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:9px;letter-spacing:0.02em;color:var(--label);}
+  .stat-cam-name{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .stat-cam-dist{white-space:nowrap;}
 
   /* Daily bars: one chart per measure (they don't share a scale), both scaled the same on every card. */
   .stat-chart{display:block;margin-top:12px;}
@@ -651,6 +660,9 @@
     .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s var(--ease-out);}
     .site-stats.is-expanded .stat-charts{grid-template-rows:1fr;}
     .stat-charts-inner{min-height:0;overflow:hidden;}
+    /* full-width cams get tall; crop from the top so the time stamp along the bottom stays */
+    .stat-cam-frame{aspect-ratio:auto;height:150px;}
+    .stat-cam-frame img{object-position:center bottom;}
     .view-tabs button{padding:0 7px;font-size:10px;}
   }
 </style>
@@ -687,7 +699,7 @@
   <button type="button" class="tracker-home" data-tracker-home aria-label="Back to the homepage">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h4.5v-6h4v6h4.5V9"/></svg>
   </button>
-  <div class="geo-coords">39.1983&deg; N, 120.2870&deg; W</div>
+  <div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
 </header>
 
 <div class="page">
@@ -826,7 +838,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=8"></script>
+<script src="assets/storm-map.js?v=9"></script>
 
 </body>
 </html>

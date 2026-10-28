@@ -55,6 +55,17 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Opening the tracker: the page slides out over `--dur-slow`, then the totals card (`--i` 0), the radar timeline (1) and the four targets (2–5) enter in sequence. Everything has settled by about 2 s. Closing: those leave first (`--dur-quick`), then the page slides back.
 - Framed views (the whole coast, Tahoe) now pad around the top bar, timeline, footer and totals card, so the whole lake and Granite Chief show on desktop and phones.
 
+## Live cams, header, snowflake (done)
+- Each totals card shows the latest still from the nearest working Caltrans highway camera. Caltrans publishes them as a public feed; each 320x260 still refreshes about once a minute and has the time printed on it.
+  - Granite Chief: Hwy 89 at Olympic Valley, 4.7 mi.
+  - Shastina: I-5 at Abrams Lake, 7.6 mi.
+  - Mammoth Mountain: SR-203 at Mammoth Mountain, 6.3 mi.
+  - Whitney: US-395 at Lone Pine, 12.8 mi.
+  - Each target lists 1–3 cams, closest first. If one fails to load, the card moves to the next, and says "Cams offline" when none answer. Stills reload when the tracker opens and every minute while it's open. Cams were picked from the D2/D3/D9 `cctvStatusD0x.json` feeds, which allow cross-origin requests if we ever want to pick them live.
+  - On phones the cam sits in the collapsible section, cropped to 150 px tall from the top so the time stamp stays.
+- The top bar outside Tracker mode always shows home, as before: Lake Tahoe at 39.0968° N, 120.0324° W, 6,225 ft, with Tahoe City weather. Inside Tracker mode it shows the selected target.
+- The snowflake is always a filled circle, like the theme toggle's indicator, and turns accent-colored when on.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

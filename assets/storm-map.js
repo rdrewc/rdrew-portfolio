@@ -20,29 +20,47 @@
   var RADAR_OPACITY = { page: 0.45, tracker: 0.85 };
 
   var WEST_BOUNDS = [[-125.6, 31.8], [-114.2, 49.1]];
-  // Each zone forecasts for one named target: the top bar's weather, elevation and coordinates, the
-  // totals card and the map's target marker all use it. Positions are OpenStreetMap's for each named
-  // place; `ft` is the published elevation, or read off the z13 terrain tiles where none is published.
+  // Each zone forecasts for one named target: the top bar's weather, elevation and coordinates (in
+  // Tracker mode), the totals card and the map's target marker all use it. Positions are OpenStreetMap's
+  // for each named place; `ft` is the published elevation, or read off the z13 terrain tiles where none
+  // is published. `cams` are the nearest working Caltrans highway cameras, closest first; the card shows
+  // the first one that loads.
+  var CAM = 'https://cwwp2.dot.ca.gov/data/';
   var VIEWS = {
     west: { label: 'West Coast' },
     shasta: {
       label: 'Shasta', center: [-122.208, 41.405], zoom: 10.6,
-      target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330 }   // Shasta's west-side peak
+      target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330, cams: [ // Shasta's west-side peak
+        { name: 'I-5 at Abrams Lake', mi: 7.6, url: CAM + 'd2/cctv/image/abramslakenb/abramslakenb.jpg' },
+        { name: 'I-5 at Black Butte', mi: 7.9, url: CAM + 'd2/cctv/image/blackbutte/blackbutte.jpg' },
+        { name: 'I-5 at South Weed', mi: 8.1, url: CAM + 'd2/cctv/image/southweed/southweed.jpg' }
+      ] }
     },
     tahoe: {
       // framed to the lake plus Granite Chief, so both fit on any screen
       label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
-      target: { name: 'Granite Chief, Palisades', lat: 39.1983, lon: -120.2870, ft: 9006 } // top of Palisades
+      target: { name: 'Granite Chief, Palisades', lat: 39.1983, lon: -120.2870, ft: 9006, cams: [ // top of Palisades
+        { name: 'Hwy 89 at Olympic Valley', mi: 4.7, url: CAM + 'd3/cctv/image/hwy89atolympicvalley/hwy89atolympicvalley.jpg' },
+        { name: 'Hwy 89 at Alpine Meadows', mi: 5.0, url: CAM + 'd3/cctv/image/hwy89atalpinemeadows/hwy89atalpinemeadows.jpg' },
+        { name: 'Hwy 89 at Rampart', mi: 6.3, url: CAM + 'd3/cctv/image/hwy89atrampart/hwy89atrampart.jpg' }
+      ] }
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
-      target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053 }  // summit
+      target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053, cams: [ // summit
+        { name: 'SR-203 at Mammoth Mountain', mi: 6.3, url: CAM + 'd9/cctv/image/sr203mammothmountain/sr203mammothmountain.jpg' },
+        { name: 'US-395 at Crestview', mi: 8.8, url: CAM + 'd9/cctv/image/us395crestview/us395crestview.jpg' }
+      ] }
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
-      target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505 }
+      target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505, cams: [
+        { name: 'US-395 at Lone Pine', mi: 12.8, url: CAM + 'd9/cctv/image/us395lonepine1/us395lonepine1.jpg' }
+      ] }
     }
   };
+  // Outside Tracker mode the top bar always reports on home: Lake Tahoe at lake level.
+  var HOME = { label: 'Tahoe', coords: '39.0968° N, 120.0324° W', target: { lat: 39.1657, lon: -120.1400, ft: 6225 } };
   function formatCoords(t){
     return Math.abs(t.lat).toFixed(4) + '° ' + (t.lat >= 0 ? 'N' : 'S') + ', ' +
       Math.abs(t.lon).toFixed(4) + '° ' + (t.lon >= 0 ? 'E' : 'W');
@@ -176,7 +194,8 @@
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
-    if(on) loadStats();
+    refreshReadout();
+    if(on){ loadStats(); refreshCams(); }
     else stop();
   }
   setTracking(false);
@@ -218,7 +237,7 @@
     });
     if(slider) slider.value = String(frame);
     updateTimeLabel();
-    if(currentView === 'west') updateReadout(VIEWS.west);
+    if(tracking && currentView === 'west') updateReadout(VIEWS.west);
   }
 
   function validAt(i){
@@ -345,6 +364,8 @@
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
             '<span class="stat-charts"><span class="stat-charts-inner">' +
+            '<span class="stat-cam"><span class="stat-cam-frame"><img alt="" decoding="async"></span>' +
+            '<span class="stat-cam-caption"><span class="stat-cam-name"></span><span class="stat-cam-dist"></span></span></span>' +
             barChart('snow', 'Snow by day', d.snowfall_sum.map(Number), snowMax, days, function(x){ return x.toFixed(1) + '"'; }) +
             barChart('precip', 'Precip by day', d.precipitation_sum.map(Number), precipMax, days, formatPrecip) +
             '<span class="stat-days">' + days.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
@@ -356,12 +377,42 @@
         });
         statsState = 'done';
         updateCarousel();
+        refreshCams();
       })
       .catch(function(){
         statsRail.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
         statsState = 'idle'; // try again next time the tracker opens
       });
   }
+  // Latest still from the nearest camera that answers. Caltrans updates each still about once a
+  // minute and stamps the time on the image, so the query only has to change once a minute.
+  function showCam(card, k, n){
+    var cams = VIEWS[k].target.cams;
+    var box = card.querySelector('.stat-cam');
+    var img = box && box.querySelector('img');
+    if(!img) return;
+    if(n >= cams.length){
+      box.classList.add('is-offline');
+      box.querySelector('.stat-cam-name').textContent = 'Cams offline';
+      box.querySelector('.stat-cam-dist').textContent = '';
+      return;
+    }
+    var cam = cams[n];
+    box.classList.remove('is-offline');
+    img.onerror = function(){ showCam(card, k, n + 1); };
+    img.alt = 'Latest still from the ' + cam.name + ' camera';
+    img.src = cam.url + '?t=' + Math.floor(Date.now() / 60000);
+    box.querySelector('.stat-cam-name').textContent = cam.name;
+    box.querySelector('.stat-cam-dist').textContent = cam.mi + ' mi away · Caltrans';
+  }
+  function refreshCams(){
+    if(!statsRail || statsState !== 'done') return;
+    statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
+      showCam(card, card.getAttribute('data-stat-view'), 0);
+    });
+  }
+  setInterval(function(){ if(tracking) refreshCams(); }, 60000);
+
   function updateCarousel(){
     if(!statsRail) return;
     if(ZONES.indexOf(currentView) >= 0) statIndex = ZONES.indexOf(currentView);
@@ -404,6 +455,9 @@
     85: 'Snow Showers', 86: 'Snow Showers',
     95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm'
   };
+  function refreshReadout(){
+    updateReadout(tracking && currentView ? VIEWS[currentView] : HOME);
+  }
   var coordsEl = document.querySelector('.geo-coords');
   var weatherLine = document.getElementById('weather-line');
   var elevLine = document.getElementById('elev-line');
@@ -422,7 +476,7 @@
     if(readoutFor === v) return;
     readoutFor = v;
     var t = v.target;
-    if(coordsEl) coordsEl.textContent = formatCoords(t);
+    if(coordsEl) coordsEl.textContent = v.coords || formatCoords(t);
     weatherLine.innerHTML = '&hellip;';
     // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
     elevLine.textContent = 'ELEV ' + t.ft.toLocaleString() + ' FT';
@@ -461,7 +515,7 @@
       var cam = { center: v.center, zoom: v.zoom };
       instant ? map.jumpTo(cam) : map.flyTo(Object.assign(cam, { duration: 3000, essential: true }));
     }
-    updateReadout(v);
+    refreshReadout();
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
     updateCarousel();
     updateMarkers();
