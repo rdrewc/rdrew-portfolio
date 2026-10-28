@@ -82,11 +82,12 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The El Niño summary is hand-written in `ENSO` in `storm-map.js`, because NOAA's CPC files don't allow cross-origin requests. It cites the CPC discussion of Oct 8, weekly Niño-3.4 +3.4°C for the week of Oct 21, and NOAA's winter outlook of Oct 15. It needs updating after each monthly CPC discussion (2nd Thursday) until the Worker fetches it.
 - Cards cap their height to the window and scroll inside, and the footer is now solid so content doesn't show through it. On phones the region card collapses to its trend sentence.
 
-## Region card: temp trend and snow callout (done, not yet checked on screen)
+## Region card: temp trend and snow callout (done, checked on screen)
 - The snowiest site for the next 7 days is pulled out of the trend sentence into its own callout: a 36 px number, the site name, and its precip and elevation, under a "Most snow, next 7 days" label with the snow swatch. If no site expects 0.5" or more, it says "No snow ahead". The number uses text color, per the dataviz rules; the swatch carries the meaning.
 - A "Past week · next week" block now stacks an average-temperature line above the precip bars, then the snow bars, all on the same day columns. Temperature gets its own chart instead of a second axis. Past days are dashed and today has a dot; the header shows the low–high range, and hovering a column shows that day's value.
 - Temperature color: `--temp-line` (#d95926 dark, #eb6834 light), validated together with the snow and precip colors in both themes.
-- Content and layout were checked by measurement. The session's window wasn't showing, so the preview couldn't draw it yet.
+- Checked on screen on desktop.
+- Cards keep their own height: the rail is top-aligned (`align-items: flex-start`) and the track eases to the height of the card in view, so the footer sits at that card's bottom. A ResizeObserver follows height changes such as the phone chart toggle. Before this, every card stretched to the 622 px region card; zone cards are back to 311 px.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

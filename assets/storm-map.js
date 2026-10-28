@@ -499,6 +499,7 @@
         }).join('');
         statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
           card.addEventListener('click', function(){ select(card.getAttribute('data-stat-view'), true); });
+          if(cardSizes) cardSizes.observe(card);
         });
         statsState = 'done';
         updateCarousel();
@@ -579,6 +580,15 @@
   }
   setInterval(function(){ if(tracking) refreshCams(); }, 60000);
 
+  // The track takes the height of the card in view (cards are top-aligned at their own heights), and
+  // follows it when that card grows or shrinks, like the phone's chart toggle.
+  var statsTrack = document.querySelector('.stats-track');
+  function fitTrack(){
+    var card = statsRail && statsRail.children[statIndex];
+    if(statsTrack && card && card.classList.contains('stat-card')) statsTrack.style.height = card.offsetHeight + 'px';
+  }
+  var cardSizes = window.ResizeObserver ? new ResizeObserver(fitTrack) : null;
+
   function updateCarousel(){
     if(!statsRail) return;
     if(CARDS.indexOf(currentView) >= 0) statIndex = CARDS.indexOf(currentView);
@@ -590,6 +600,7 @@
     if(statsCount) statsCount.textContent = (statIndex + 1) + ' / ' + CARDS.length;
     if(statsPrev) statsPrev.disabled = statIndex <= 0;
     if(statsNext) statsNext.disabled = statIndex >= CARDS.length - 1;
+    fitTrack();
   }
   // On phones the cards start collapsed to the name and totals; the chart button opens the bars.
   var statsEl = document.getElementById('site-stats');

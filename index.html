@@ -240,7 +240,10 @@
   }
   /* clip, not hidden: a hidden overflow can still be scrolled by focus, which knocked the cards sideways */
   .stats-track{position:relative;overflow:hidden;overflow:clip;border-radius:12px;}
-  .stats-rail{display:flex;transition:transform 0.45s var(--ease-out);}
+  /* Cards keep their own height (top-aligned); the track eases to the height of the card in view,
+     so the footer sits at the bottom of that card. */
+  .stats-track{transition:height var(--dur-base) var(--ease-out);}
+  .stats-rail{display:flex;align-items:flex-start;transition:transform 0.45s var(--ease-out);}
   @media (prefers-reduced-motion: reduce){ .stats-rail, .stat-charts{transition:none !important;} }
   .stat-charts, .stat-charts-inner{display:block;}
   /* Card footer, inside the card's stroke: back / next in the bottom corners, the count (and on phones
@@ -905,7 +908,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=14"></script>
+<script src="assets/storm-map.js?v=15"></script>
 
 </body>
 </html>
