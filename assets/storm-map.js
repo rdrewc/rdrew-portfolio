@@ -38,7 +38,7 @@
     tahoe: {
       // framed to the lake plus Granite Chief, so both fit on any screen
       label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
-      target: { name: 'Granite Chief, Palisades', lat: 39.1983, lon: -120.2870, ft: 9006, cams: [ // top of Palisades
+      target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, cams: [ // top of Siberia Express
         { id: 'duncanpeaklookout-cam01', name: 'Duncan Peak Lookout 1', mi: 12.5 },
         { id: 'duncanpeaklookout-cam02', name: 'Duncan Peak Lookout 2', mi: 12.5 },
         { id: 'martispeak-cam01', name: 'Martis Peak 1', mi: 15.0 }
@@ -319,9 +319,6 @@
   // The cards sit in a carousel, one at a time; its back / next carets step through the zones and
   // fly the map there.
   var statsRail = document.getElementById('stats-rail');
-  var statsCount = document.getElementById('stats-count');
-  var statsPrev = document.querySelector('[data-stats-step="-1"]');
-  var statsNext = document.querySelector('[data-stats-step="1"]');
   var statsState = 'idle'; // idle, loading, done
   var statIndex = CARDS.indexOf(DEFAULT_VIEW);
   var STAT_WINDOWS = [[24, 'Next 24h'], [72, '3 days'], [168, '7 days']];
@@ -415,7 +412,7 @@
     var days = dates.map(function(t, i){ return i === TODAY ? 'Today' : dayName(t); });
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
     var snowMax = Math.max.apply(null, [2].concat(snow)), precipMax = Math.max.apply(null, [0.2].concat(precip));
-    return '<button type="button" class="stat-card stat-card-region" data-stat-view="west">' +
+    return '<div class="stat-card stat-card-region" data-stat-view="west">' +
       '<span class="stat-head"><span class="stat-name">Pacific Maritime Snowpack</span></span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
       '<span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow, next 7 days</span>' +
@@ -441,7 +438,8 @@
       '<span class="stat-enso-source">' + ENSO.source + '</span>' +
       '</span>' +
       '</span></span>' +
-      '</button>';
+      cardFooter(0) +
+      '</div>';
   }
   function loadStats(){
     if(!statsRail || statsState !== 'idle') return;
@@ -483,7 +481,7 @@
               '<span class="stat-val">' + formatSnow(sum(h.snowfall, w[0])) + '</span>' +
               '<span class="stat-val">' + formatPrecip(sum(h.precipitation, w[0])) + '</span>';
           }).join('');
-          return '<button type="button" class="stat-card" data-stat-view="' + k + '">' +
+          return '<div class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head"><span class="stat-name">' + v.label + '</span>' +
             '<span class="stat-elev">' + v.target.ft.toLocaleString() + ' ft</span></span>' +
             '<span class="stat-target">' + v.target.name + ' &middot; ' + formatCoords(v.target) + '</span>' +
@@ -495,12 +493,9 @@
             barChart('precip', 'Precip by day', d.precipitation_sum.map(Number), precipMax, days, formatPrecip) +
             '<span class="stat-days">' + days.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
             '</span></span>' +
-            '</button>';
+            cardFooter(i + 1) +
+            '</div>';
         }).join('');
-        statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
-          card.addEventListener('click', function(){ select(card.getAttribute('data-stat-view'), true); });
-          if(cardSizes) cardSizes.observe(card);
-        });
         statsState = 'done';
         updateCarousel();
       })
@@ -580,14 +575,20 @@
   }
   setInterval(function(){ if(tracking) refreshCams(); }, 60000);
 
-  // The track takes the height of the card in view (cards are top-aligned at their own heights), and
-  // follows it when that card grows or shrinks, like the phone's chart toggle.
-  var statsTrack = document.querySelector('.stats-track');
-  function fitTrack(){
-    var card = statsRail && statsRail.children[statIndex];
-    if(statsTrack && card && card.classList.contains('stat-card')) statsTrack.style.height = card.offsetHeight + 'px';
+  // Each card carries its own footer (back / next in the corners, the count, and on phones the expand
+  // arrow), so a card and its footer slide as one piece. Cards keep their own heights; nothing
+  // animates vertically while paging.
+  function cardFooter(i){
+    return '<span class="stats-nav">' +
+      '<button type="button" data-stats-step="-1" aria-label="Previous location"' + (i === 0 ? ' disabled' : '') + '>' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>' +
+      '<span class="stats-nav-mid"><span>' + (i + 1) + ' / ' + CARDS.length + '</span>' +
+      '<button type="button" class="stats-expand" data-stats-expand aria-expanded="false" aria-label="Show daily charts">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></span>' +
+      '<button type="button" data-stats-step="1" aria-label="Next location"' + (i === CARDS.length - 1 ? ' disabled' : '') + '>' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>' +
+      '</span>';
   }
-  var cardSizes = window.ResizeObserver ? new ResizeObserver(fitTrack) : null;
 
   function updateCarousel(){
     if(!statsRail) return;
@@ -595,28 +596,29 @@
     if(statsState === 'done') statsRail.style.transform = 'translateX(' + (-100 * statIndex) + '%)';
     statsRail.querySelectorAll('[data-stat-view]').forEach(function(card, i){
       card.classList.toggle('is-current', card.getAttribute('data-stat-view') === currentView);
-      card.tabIndex = i === statIndex ? 0 : -1; // only the card in view takes focus
+      card.inert = i !== statIndex; // off-screen cards (and their footers) stay out of tab order
     });
-    if(statsCount) statsCount.textContent = (statIndex + 1) + ' / ' + CARDS.length;
-    if(statsPrev) statsPrev.disabled = statIndex <= 0;
-    if(statsNext) statsNext.disabled = statIndex >= CARDS.length - 1;
-    fitTrack();
   }
-  // On phones the cards start collapsed to the name and totals; the chart button opens the bars.
+  // One listener for every card: footer arrows page, the expand arrow opens the bars on phones (all
+  // cards together), and a click anywhere else on a card flies the map there.
   var statsEl = document.getElementById('site-stats');
-  var statsExpand = document.querySelector('[data-stats-expand]');
-  if(statsEl && statsExpand) statsExpand.addEventListener('click', function(){
-    var open = statsExpand.getAttribute('aria-expanded') !== 'true';
-    statsEl.classList.toggle('is-expanded', open);
-    statsExpand.setAttribute('aria-expanded', String(open));
-    statsExpand.setAttribute('aria-label', open ? 'Hide daily charts' : 'Show daily charts');
-  });
-  [statsPrev, statsNext].forEach(function(btn){
-    if(!btn) return;
-    btn.addEventListener('click', function(){
-      var i = Math.max(0, Math.min(CARDS.length - 1, statIndex + parseInt(btn.getAttribute('data-stats-step'), 10)));
+  if(statsRail) statsRail.addEventListener('click', function(e){
+    var step = e.target.closest('[data-stats-step]');
+    var expand = e.target.closest('[data-stats-expand]');
+    var card = e.target.closest('[data-stat-view]');
+    if(step){
+      var i = Math.max(0, Math.min(CARDS.length - 1, statIndex + parseInt(step.getAttribute('data-stats-step'), 10)));
       select(CARDS[i], true);
-    });
+    } else if(expand){
+      var open = !statsEl.classList.contains('is-expanded');
+      statsEl.classList.toggle('is-expanded', open);
+      statsRail.querySelectorAll('[data-stats-expand]').forEach(function(b){
+        b.setAttribute('aria-expanded', String(open));
+        b.setAttribute('aria-label', open ? 'Hide daily charts' : 'Show daily charts');
+      });
+    } else if(card){
+      select(card.getAttribute('data-stat-view'), true);
+    }
   });
 
   // ---- location readout (top bar) ----

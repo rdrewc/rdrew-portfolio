@@ -89,6 +89,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Checked on screen on desktop.
 - Cards keep their own height: the rail is top-aligned (`align-items: flex-start`) and the track eases to the height of the card in view, so the footer sits at that card's bottom. A ResizeObserver follows height changes such as the phone chart toggle. Before this, every card stretched to the 622 px region card; zone cards are back to 311 px.
 
+## Siberia target, whole-card paging, ski pole cursor (done)
+- Tahoe's target is now Siberia at Palisades: the top of Siberia Express (from OpenStreetMap), 39.1828, -120.2722, 8,630 ft from the terrain tiles. It was Granite Chief before.
+- Each card carries its own footer (`cardFooter(i)`), so a card and its arrows slide sideways as one piece.
+  - The track clips sideways only (`overflow-x: clip`); cards keep their own heights and nothing animates vertically when paging. The track-height easing and ResizeObserver are gone.
+  - Cards are now `div`s, since buttons can't hold buttons. One click listener on the rail handles arrows, the expand chevron (all cards together) and fly-to. Off-screen cards are `inert`.
+  - The footer is sticky to the bottom of a card that scrolls (the tall region card). `.site-stats` lets clicks through below a short card.
+- In Tracker mode the map cursor is an inline-SVG ski pole: an old big strapped basket and a leather grip, with the tip as the hotspot (3, 29) and a white outline. It falls back to `grab`.
+- Still waiting on Ryan for the cam he meant ("use this cam"); no link came through.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
