@@ -38,11 +38,11 @@
     tahoe: {
       // framed to the lake plus Granite Chief, so both fit on any screen
       label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
-      target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, cams: [ // top of Siberia Express
-        { id: 'duncanpeaklookout-cam01', name: 'Duncan Peak Lookout 1', mi: 12.5 },
-        { id: 'duncanpeaklookout-cam02', name: 'Duncan Peak Lookout 2', mi: 12.5 },
-        { id: 'martispeak-cam01', name: 'Martis Peak 1', mi: 15.0 }
-      ] }
+      target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, // top of Siberia Express
+        // Palisades' own Scope cam at High Camp, 8,200 ft, next to Siberia. Its live player only plays
+        // on Palisades' site, but the player's poster is a public still (refreshed about every 15 min).
+        cams: [{ name: 'Palisades Scope 8,200′', credit: 'Palisades Tahoe', url: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_EIFC0000015B' }],
+        fixedCams: true } // always this cam, not the nearest ALERTCalifornia pick
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
@@ -547,7 +547,8 @@
   // the best camera that answers; the query changes once a minute so a fresh frame is fetched without
   // hammering the server.
   function showCam(node, k, n){
-    var cams = (camPicks[k] && camPicks[k].length) ? camPicks[k] : VIEWS[k].target.cams;
+    var t = VIEWS[k].target;
+    var cams = (!t.fixedCams && camPicks[k] && camPicks[k].length) ? camPicks[k] : t.cams;
     var box = node.querySelector('.target-cam');
     var img = box && box.querySelector('img');
     if(!img) return;
@@ -561,9 +562,11 @@
     box.classList.remove('is-offline');
     img.onerror = function(){ showCam(node, k, n + 1); };
     img.alt = 'Latest still from the ' + cam.name + ' camera';
-    img.src = CAM_IMG.replace('{id}', cam.id) + '?t=' + Math.floor(Date.now() / 60000);
+    var src = cam.url || CAM_IMG.replace('{id}', cam.id);
+    img.src = src + (src.indexOf('?') < 0 ? '?' : '&') + 't=' + Math.floor(Date.now() / 60000);
     box.querySelector('.target-cam-name').textContent = cam.name;
-    box.querySelector('.target-cam-dist').textContent = (cam.mi < 1 ? 'on the mountain' : cam.mi + ' mi away') + ' · ALERTCalifornia';
+    box.querySelector('.target-cam-dist').textContent = cam.credit ||
+      (cam.mi < 1 ? 'on the mountain' : cam.mi + ' mi away') + ' · ALERTCalifornia';
   }
   function refreshCams(){
     loadCamFeed().then(function(){

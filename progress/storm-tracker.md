@@ -96,7 +96,11 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Cards are now `div`s, since buttons can't hold buttons. One click listener on the rail handles arrows, the expand chevron (all cards together) and fly-to. Off-screen cards are `inert`.
   - The footer is sticky to the bottom of a card that scrolls (the tall region card). `.site-stats` lets clicks through below a short card.
 - In Tracker mode the map cursor is an inline-SVG ski pole: an old big strapped basket and a leather grip, with the tip as the hotspot (3, 29) and a white outline. It falls back to `grab`.
-- Still waiting on Ryan for the cam he meant ("use this cam"); no link came through.
+- The cam Ryan pointed to (OpenSnow cam 2627, "Siberia") is Palisades' own camera, but its only public stills are OpenSnow's copies on OpenSnow's servers, and Palisades' public webcam page doesn't list it. So it isn't used.
+- Ryan chose Palisades' official Scope 8,200' cam (High Camp) for the Siberia label instead.
+  - Its Ozolio live player only plays on palisadestahoe.com: embedded elsewhere it shows only its poster, and it refuses to open on its own.
+  - So the label shows that poster as a still: `pub.api?cmd=poster&oid=EMB_EIFC0000015B`, 1920x1080, cross-origin allowed, cached 15 min. The camera pans, so the view varies.
+  - Targets with `fixedCams: true` always use their listed cam (with `url` and `credit`) instead of the nearest ALERTCalifornia pick.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
