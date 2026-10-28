@@ -907,9 +907,8 @@
               '<span class="stat-val">' + formatPrecip(sum(h.precipitation, w[0])) + '</span>';
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
-            '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) +
-            '<span class="stat-elev">' + t.ft.toLocaleString() + ' ft</span></span>' +
-            '<span class="stat-target">' + t.name + ' &middot; ' + formatCoords(t) + '</span>' +
+            '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) + '</span>' +
+            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft &middot; ' + formatCoords(t) + '</span>' +
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +

@@ -171,6 +171,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Yellow (`--storm-mid`) means at least 1" of snow or 0.25" of precipitation.
   - White means anything less.
   - The Overview title takes the worst level across all sites. Screen readers get the level as hidden text.
+- The title stands alone on its line. Elevation moved to the line below (place, elevation, coordinates), with 10 px of space under the title on every card.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
