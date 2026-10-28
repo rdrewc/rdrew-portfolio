@@ -61,7 +61,7 @@
   var map = new maplibregl.Map({
     container: el,
     bounds: WEST_BOUNDS,
-    fitBoundsOptions: { padding: 40 },
+    fitBoundsOptions: { padding: framePadding() },
     attributionControl: false,
     // Straight down only. (3D terrain was tried: stray spikes in the elevation tiles stand up as needles.)
     maxPitch: 0,
@@ -138,17 +138,19 @@
   // A target over each zone's forecast point, labeled with its name, GPS position and elevation.
   // They're pinned to the map, so they move with it; labels hide when zoomed out to the whole coast.
   var LABEL_MIN_ZOOM = 7;
-  var markers = ZONES.map(function(k){
+  // The marker element itself is positioned by MapLibre's transform, so the enter animation goes on
+  // an inner .target-body; each target arrives after the cards and timeline (--i from 2).
+  var markers = ZONES.map(function(k, i){
     var t = VIEWS[k].target;
     var node = document.createElement('button');
     node.type = 'button';
     node.className = 'target-marker';
     node.setAttribute('data-zone', k);
     node.setAttribute('aria-label', VIEWS[k].label + ' forecast point: ' + t.name);
-    node.innerHTML =
+    node.innerHTML = '<span class="target-body enter" style="--i:' + (2 + i) + '">' +
       '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>' +
       '<span class="target-label"><span class="target-name">' + t.name + '</span>' +
-      formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>';
+      formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft</span></span>';
     node.addEventListener('click', function(){ select(k, true); });
     return new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat([t.lon, t.lat]).addTo(map);
   });
@@ -170,6 +172,7 @@
   function setTracking(on){
     tracking = on;
     document.body.classList.toggle('is-tracking', on);
+    document.body.classList.toggle('is-entered', on); // .enter items wait out the page's exit (--enter-wait)
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
@@ -435,6 +438,13 @@
   }
 
   // ---- view picker (footer) ----
+  // Framed views (the whole coast, Tahoe) keep clear of the top bar, the radar timeline and footer,
+  // and the totals card (left column on desktop, a band across the top on phones).
+  function framePadding(){
+    return window.innerWidth <= 860
+      ? { top: 230, bottom: 170, left: 24, right: 24 }
+      : { top: 90, bottom: 150, left: 340, right: 60 };
+  }
   var currentView = null;
   var buttons = document.querySelectorAll('[data-view]');
   function saved(){
@@ -446,7 +456,7 @@
     var v = VIEWS[key];
     var instant = !animate || reduceMotion;
     if(key === 'west' || v.bounds){
-      map.fitBounds(v.bounds || WEST_BOUNDS, { padding: 40, duration: instant ? 0 : 2400 });
+      map.fitBounds(v.bounds || WEST_BOUNDS, { padding: framePadding(), duration: instant ? 0 : 2400 });
     } else {
       var cam = { center: v.center, zoom: v.zoom };
       instant ? map.jumpTo(cam) : map.flyTo(Object.assign(cam, { duration: 3000, essential: true }));
@@ -466,7 +476,7 @@
   map.on('resize', function(){
     if(tracking || !currentView) return;
     if(currentView === 'west' || VIEWS[currentView].bounds){
-      map.fitBounds(VIEWS[currentView].bounds || WEST_BOUNDS, { padding: 40, duration: 0 });
+      map.fitBounds(VIEWS[currentView].bounds || WEST_BOUNDS, { padding: framePadding(), duration: 0 });
     }
   });
 })();

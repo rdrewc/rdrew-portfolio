@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="assets/site.css?v=21">
+<link rel="stylesheet" href="assets/site.css?v=22">
 <script>
   try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
 </script>
@@ -107,13 +107,16 @@
     pointer-events:none;
     transition:background-color 0.35s ease, opacity 0.5s ease;
   }
-  /* Opening the tracker slides the page up and out of view; closing it slides it back down. */
-  .page{transition:transform 0.7s cubic-bezier(.65,0,.35,1), visibility 0s linear 0s;}
+  /* Opening the tracker slides the page up and out of view, then the tracker's cards, timeline and
+     targets enter (.enter, waiting --dur-slow). Closing reverses it: they leave first, then the page
+     slides back down. */
+  .page{transition:transform var(--dur-slow) var(--ease-in-out) var(--dur-quick), visibility 0s linear var(--dur-quick);}
   body.is-tracking .page{
     transform:translateY(-100%);
     visibility:hidden;
-    transition:transform 0.7s cubic-bezier(.65,0,.35,1), visibility 0s linear 0.7s;
+    transition:transform var(--dur-slow) var(--ease-in-out), visibility 0s linear var(--dur-slow);
   }
+  .site-stats, .radar-panel, .target-body{--enter-wait:var(--dur-slow);}
   @media (prefers-reduced-motion: reduce){
     .page, body.is-tracking .page{transition:none;}
   }
@@ -172,7 +175,7 @@
   .tracker-toggle [data-tracker][aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
   .tracker-toggle [data-tracker] svg{
     width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-    transition:transform 0.6s cubic-bezier(.2,.75,.25,1);
+    transition:transform 0.6s var(--ease-out);
   }
   .tracker-toggle [data-tracker][aria-pressed="true"] svg{transform:rotate(90deg);}
 
@@ -180,12 +183,12 @@
     display:grid;
     grid-template-columns:0fr;
     visibility:hidden;
-    transition:grid-template-columns 0.45s cubic-bezier(.2,.75,.25,1), visibility 0s linear 0.45s;
+    transition:grid-template-columns 0.45s var(--ease-out), visibility 0s linear 0.45s;
   }
   body.is-tracking .view-tabs{
     grid-template-columns:1fr;
     visibility:visible;
-    transition:grid-template-columns 0.55s cubic-bezier(.2,.75,.25,1), visibility 0s;
+    transition:grid-template-columns 0.55s var(--ease-out), visibility 0s;
   }
   .view-tabs-inner{display:flex;align-items:center;min-width:0;overflow:hidden;padding-right:6px;} /* breathing room before the snowflake */
   .view-tabs button{
@@ -207,7 +210,7 @@
   body.is-tracking .view-tabs button{
     opacity:1;
     transform:none;
-    transition:opacity 0.3s ease, transform 0.45s cubic-bezier(.2,.75,.25,1), color 0.2s ease, background-color 0.2s ease;
+    transition:opacity 0.3s ease, transform 0.45s var(--ease-out), color 0.2s ease, background-color 0.2s ease;
   }
   body.is-tracking .view-tabs button:nth-last-child(1){transition-delay:0.08s, 0.08s, 0s, 0s;}
   body.is-tracking .view-tabs button:nth-last-child(2){transition-delay:0.14s, 0.14s, 0s, 0s;}
@@ -227,14 +230,13 @@
     top:calc(var(--bar-h) + 16px);
     left:max(60px, calc(50vw - 640px));
     z-index:40;
-    display:none;
+    display:flex;
     flex-direction:column;
     gap:8px;
     width:260px;
   }
-  body.is-tracking .site-stats{display:flex;}
   .stats-track{overflow:hidden;border-radius:12px;}
-  .stats-rail{display:flex;transition:transform 0.45s cubic-bezier(.2,.75,.25,1);}
+  .stats-rail{display:flex;transition:transform 0.45s var(--ease-out);}
   @media (prefers-reduced-motion: reduce){ .stats-rail, .stat-charts{transition:none !important;} }
   .stat-charts, .stat-charts-inner{display:block;}
   .stats-nav{
@@ -301,7 +303,8 @@
     color:var(--strong);
     cursor:pointer;
   }
-  body:not(.is-tracking) .target-marker{visibility:hidden;}
+  body:not(.is-entered) .target-marker{pointer-events:none;}
+  .target-body{position:relative;display:block;width:24px;height:24px;}
   .target-marker.is-current{color:var(--accent);}
   .target-icon{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;}
   .target-marker .target-icon circle:last-of-type{fill:currentColor;}
@@ -376,7 +379,7 @@
     left:50%;
     bottom:calc(var(--bar-h) + 16px);
     z-index:40;
-    display:none;
+    display:flex;
     align-items:center;
     gap:12px;
     width:min(640px, calc(100vw - 32px));
@@ -392,7 +395,6 @@
     letter-spacing:0.06em;
     color:var(--muted);
   }
-  body.is-tracking .radar-panel{display:flex;}
   .radar-panel button{
     flex-shrink:0;
     width:30px;
@@ -646,7 +648,7 @@
     .site-stats{top:calc(var(--bar-h) + 12px);left:16px;right:16px;width:auto;}
     /* Phones: cards collapse to name + totals; the chart button grows the bars back in. */
     .stats-nav .stats-expand{display:flex;}
-    .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s cubic-bezier(.2,.75,.25,1);}
+    .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s var(--ease-out);}
     .site-stats.is-expanded .stat-charts{grid-template-rows:1fr;}
     .stat-charts-inner{min-height:0;overflow:hidden;}
     .view-tabs button{padding:0 7px;font-size:10px;}
@@ -657,7 +659,7 @@
 
 <div id="storm-map"></div>
 <div class="terrain-scrim"></div>
-<div class="radar-panel" role="group" aria-label="Forecast radar timeline">
+<div class="radar-panel enter" style="--i:1" role="group" aria-label="Forecast radar timeline">
   <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
     <svg class="play-icon" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"></path></svg>
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
@@ -665,7 +667,7 @@
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
   <span class="radar-time" id="radar-time">Loading radar&hellip;</span>
 </div>
-<div class="site-stats" id="site-stats" role="region" aria-label="Forecast totals">
+<div class="site-stats enter" id="site-stats" style="--i:0" role="region" aria-label="Forecast totals">
   <div class="stats-track"><div class="stats-rail" id="stats-rail"></div></div>
   <div class="stats-nav">
     <button type="button" data-stats-step="-1" aria-label="Previous location">
@@ -824,7 +826,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=7"></script>
+<script src="assets/storm-map.js?v=8"></script>
 
 </body>
 </html>

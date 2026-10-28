@@ -7,6 +7,38 @@
   --bar-blur:blur(12px);
 }
 
+/* Motion: one set of curves and timings for the whole site. */
+:root{
+  --ease-out:cubic-bezier(.2,.75,.25,1);   /* arriving: quick start, soft landing */
+  --ease-in-out:cubic-bezier(.65,0,.35,1); /* travelling across the screen */
+  --ease-in:cubic-bezier(.5,0,.75,0);      /* leaving */
+  --dur-quick:0.2s;  /* exits, hovers */
+  --dur-base:0.55s;  /* arrivals */
+  --dur-slow:0.7s;   /* big moves, like the homepage sliding away */
+  --stagger:80ms;    /* gap between items arriving in sequence */
+  --enter-rise:10px; /* how far an arriving item travels up */
+}
+
+/* Enter pattern. Give an element .enter (and --i, its place in a sequence). It stays hidden until an
+   ancestor gets .is-entered, then rises and fades in after --enter-wait plus its stagger. Leaving is
+   quick and all at once. Uses `translate`, so it composes with any transform the element already has. */
+.enter{
+  opacity:0;
+  translate:0 var(--enter-rise);
+  visibility:hidden;
+  transition:opacity var(--dur-quick) var(--ease-in), translate var(--dur-quick) var(--ease-in), visibility 0s linear var(--dur-quick);
+}
+.is-entered .enter{
+  opacity:1;
+  translate:none;
+  visibility:visible;
+  transition:opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out), visibility 0s;
+  transition-delay:calc(var(--enter-wait, 0s) + var(--i, 0) * var(--stagger));
+}
+@media (prefers-reduced-motion: reduce){
+  .enter, .is-entered .enter{translate:none;transition-duration:0.01s;transition-delay:0s;}
+}
+
 /* Case study header: previous / next project, same type as the homepage top bar. */
 .site-header{
   position:fixed;

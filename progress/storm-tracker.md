@@ -45,6 +45,16 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Positions are OpenStreetMap's (Nominatim) for each named place. The old split between a top-bar spot and a card spot is gone.
 - Tracker mode puts a target marker at each point (MapLibre markers, so they move with the map). Each has a label with the name, GPS position and elevation. Labels hide below zoom 7 (the whole-coast view), the current zone's target is accent-colored, and clicking one flies there. The cards also show the target name and coordinates.
 
+## Motion system and entrance sequence (done)
+- `assets/site.css` now holds shared motion tokens for the whole site:
+  - Easing: `--ease-out`, `--ease-in-out`, `--ease-in`.
+  - Durations: `--dur-quick` 0.2s, `--dur-base` 0.55s, `--dur-slow` 0.7s.
+  - `--stagger` 80ms and `--enter-rise` 10px.
+  - The `.enter` pattern: it rises and fades in when an ancestor gets `.is-entered`, after `--enter-wait` plus `--i` times the stagger, and leaves quickly all at once. It uses `translate`, so existing transforms still work.
+  - The homepage's literal cubic-beziers now use the tokens. Ryan wants this system reused for future animation.
+- Opening the tracker: the page slides out over `--dur-slow`, then the totals card (`--i` 0), the radar timeline (1) and the four targets (2–5) enter in sequence. Everything has settled by about 2 s. Closing: those leave first (`--dur-quick`), then the page slides back.
+- Framed views (the whole coast, Tahoe) now pad around the top bar, timeline, footer and totals card, so the whole lake and Granite Chief show on desktop and phones.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
