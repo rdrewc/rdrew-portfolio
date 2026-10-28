@@ -66,6 +66,26 @@
       Math.abs(t.lon).toFixed(4) + '° ' + (t.lon >= 0 ? 'E' : 'W');
   }
   var ZONES = ['shasta', 'tahoe', 'mammoth', 'whitney']; // north to south
+  var CARDS = ['west'].concat(ZONES); // the carousel: the region card first, then the zones
+
+  // Region card (West view): the Pacific maritime snowpack, Cascades to Sierra. Its trend and charts
+  // average these sites; the four zone targets are added after them.
+  var REGION_SITES = [
+    { name: 'Mt. Baker', lat: 48.857, lon: -121.665, ft: 5000 },  // ski area
+    { name: 'Mt. Hood', lat: 45.331, lon: -121.711, ft: 6000 },   // Timberline
+    { name: 'Bachelor', lat: 43.979, lon: -121.688, ft: 7000 },
+    { name: 'Crater Lake', lat: 42.911, lon: -122.146, ft: 7100 } // Rim Village
+  ];
+  // El Niño summary. NOAA's ENSO data doesn't allow cross-origin requests, so this is written by hand
+  // until the Worker can fetch it. Sources: CPC ENSO discussion (Oct 8, 2026), CPC weekly Niño-3.4
+  // (week of Oct 21, 2026), NOAA winter outlook (Oct 15, 2026).
+  var ENSO = {
+    headline: 'El Niño Advisory · Niño-3.4 +3.4°C',
+    text: 'NOAA puts a strong-to-very-strong El Niño above an 83% chance through Jan–Mar, possibly the strongest since 1950. ' +
+      'Its winter outlook leans warm across the Pacific Northwest and northern California and wet along the southern storm track. ' +
+      'For the Cascades that usually means a milder, thinner snowpack; for the Sierra, the wettest odds come mid to late winter, with higher snow levels and rain-on-snow risk at lake level.',
+    source: 'NOAA CPC · updated Oct 28, 2026'
+  };
   var DEFAULT_VIEW = 'tahoe';
 
   // ---- map ----
@@ -303,7 +323,7 @@
   var statsPrev = document.querySelector('[data-stats-step="-1"]');
   var statsNext = document.querySelector('[data-stats-step="1"]');
   var statsState = 'idle'; // idle, loading, done
-  var statIndex = ZONES.indexOf(DEFAULT_VIEW);
+  var statIndex = CARDS.indexOf(DEFAULT_VIEW);
   var STAT_WINDOWS = [[24, 'Next 24h'], [72, '3 days'], [168, '7 days']];
   // Bar scales are shared by every card so they compare as you flip through, and never drop
   // below these, so a dusting stays a short bar.
@@ -324,13 +344,71 @@
     return new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' });
   }
   // One bar per day. Each slot is the full chart height so the hover target is bigger than the bar.
-  function barChart(cls, title, values, max, days, fmt){
+  // Bars before `split` (past days, on the region card) are drawn faded.
+  function barChart(cls, title, values, max, days, fmt, split){
     return '<span class="stat-chart ' + cls + '">' +
       '<span class="stat-chart-head"><span class="stat-swatch"></span>' + title + '<span class="stat-chart-max">' + fmt(max) + '</span></span>' +
       '<span class="stat-bars">' + values.map(function(v, i){
         var pct = v > 0 ? Math.max(6, v / max * 100) : 0;
-        return '<span class="stat-bar" data-label="' + days[i] + ' ' + fmt(v) + '"><span style="height:' + pct.toFixed(1) + '%"></span></span>';
+        return '<span class="stat-bar' + (i < (split || 0) ? ' is-past' : '') + (i === split ? ' is-today' : '') + '" data-label="' + days[i] + ' ' + fmt(v) + '">' +
+          '<span style="height:' + pct.toFixed(1) + '%"></span></span>';
       }).join('') + '</span></span>';
+  }
+  function average(lists){
+    return lists[0].map(function(_, i){
+      return lists.reduce(function(s, l){ return s + (Number(l[i]) || 0); }, 0) / lists.length;
+    });
+  }
+  function total(list, from, to){
+    return list.slice(from, to).reduce(function(s, v){ return s + v; }, 0);
+  }
+  // The region card: past 7 days and next 7 averaged over the Cascade and Sierra sites, a plain
+  // sentence on how the coming week compares, next week by site, and the El Niño summary.
+  function regionCard(sites, list){
+    var d = list.map(function(z){ return z.daily; });
+    var snow = average(d.map(function(x){ return x.snowfall_sum; }));
+    var precip = average(d.map(function(x){ return x.precipitation_sum; }));
+    var temp = average(d.map(function(x){ return x.temperature_2m_mean; }));
+    var TODAY = 7; // past_days=7, so index 7 is today
+    var pastP = total(precip, 0, TODAY), nextP = total(precip, TODAY, 14);
+    var pastS = total(snow, 0, TODAY), nextS = total(snow, TODAY, 14);
+    var dT = total(temp, TODAY, 14) / 7 - total(temp, 0, TODAY) / 7;
+    var mood = nextP > pastP * 1.25 + 0.05 ? 'Wetter week ahead' : nextP < pastP * 0.8 - 0.05 ? 'Drier week ahead' : 'A similar week ahead';
+    var tempNote = dT <= -3 ? ', about ' + Math.round(-dT) + '°F colder' : dT >= 3 ? ', about ' + Math.round(dT) + '°F warmer' : '';
+    var bySite = sites.map(function(s, i){
+      return { name: s.name, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
+    });
+    var top = bySite.slice().sort(function(a, b){ return b.snow - a.snow; })[0];
+    var trend = mood + tempNote + ': ' + formatPrecip(nextP) + ' of precip and ' + formatSnow(nextS) + ' of snow per site on average, ' +
+      'after ' + formatPrecip(pastP) + ' and ' + formatSnow(pastS) + ' this past week.' +
+      (top.snow >= 0.5 ? ' Most snow: ' + top.name + ', ' + formatSnow(top.snow) + '.' : '');
+    var dates = d[0].time;
+    var days = dates.map(function(t, i){ return i === TODAY ? 'Today' : dayName(t); });
+    var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+    var snowMax = Math.max.apply(null, [2].concat(snow)), precipMax = Math.max.apply(null, [0.2].concat(precip));
+    return '<button type="button" class="stat-card stat-card-region" data-stat-view="west">' +
+      '<span class="stat-head"><span class="stat-name">Pacific Maritime Snowpack</span></span>' +
+      '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
+      '<span class="stat-trend">' + trend + '</span>' +
+      '<span class="stat-charts"><span class="stat-charts-inner">' +
+      barChart('snow', 'Snow, past &amp; next week', snow, snowMax, days, function(x){ return x.toFixed(1) + '"'; }, TODAY) +
+      barChart('precip', 'Precip, past &amp; next week', precip, precipMax, days, formatPrecip, TODAY) +
+      '<span class="stat-days stat-days-range"><span>' + label(dates[0]) + '</span><span>Today</span><span>' + label(dates[13]) + '</span></span>' +
+      '<span class="stat-chart-head stat-sites-head">Next 7 days by site</span>' +
+      '<span class="stat-grid stat-sites"><span></span>' +
+      '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
+      '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' +
+      bySite.map(function(s){
+        return '<span>' + s.name + '</span><span class="stat-val">' + formatSnow(s.snow) + '</span><span class="stat-val">' + formatPrecip(s.precip) + '</span>';
+      }).join('') + '</span>' +
+      '<span class="stat-enso">' +
+      '<span class="stat-chart-head">El Ni&ntilde;o 2026&ndash;27</span>' +
+      '<span class="stat-enso-headline">' + ENSO.headline + '</span>' +
+      '<span class="stat-enso-text">' + ENSO.text + '</span>' +
+      '<span class="stat-enso-source">' + ENSO.source + '</span>' +
+      '</span>' +
+      '</span></span>' +
+      '</button>';
   }
   function loadStats(){
     if(!statsRail || statsState !== 'idle') return;
@@ -344,16 +422,27 @@
       '&hourly=precipitation,snowfall&forecast_hours=168' +
       '&daily=snowfall_sum,precipitation_sum&forecast_days=7' +
       '&precipitation_unit=inch&timezone=America%2FLos_Angeles';
-    fetch(url)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
+    var sites = REGION_SITES.concat(ZONES.map(function(k){
+      var t = VIEWS[k].target;
+      return { name: VIEWS[k].label, lat: t.lat, lon: t.lon, ft: t.ft };
+    }));
+    var regionUrl = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + sites.map(function(p){ return p.lat; }).join(',') +
+      '&longitude=' + sites.map(function(p){ return p.lon; }).join(',') +
+      '&elevation=' + sites.map(function(p){ return Math.round(p.ft / 3.28084); }).join(',') +
+      '&daily=snowfall_sum,precipitation_sum,temperature_2m_mean&past_days=7&forecast_days=7' +
+      '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles';
+    function getJSON(u){ return fetch(u).then(function(r){ return r.json(); }); }
+    Promise.all([getJSON(url), getJSON(regionUrl)])
+      .then(function(both){
+        var data = both[0];
         var list = Array.isArray(data) ? data : [data];
         var snowMax = SNOW_FLOOR, precipMax = PRECIP_FLOOR;
         list.forEach(function(z){
           snowMax = Math.max.apply(null, [snowMax].concat(z.daily.snowfall_sum.map(Number)));
           precipMax = Math.max.apply(null, [precipMax].concat(z.daily.precipitation_sum.map(Number)));
         });
-        statsRail.innerHTML = ZONES.map(function(k, i){
+        statsRail.innerHTML = regionCard(sites, both[1]) + ZONES.map(function(k, i){
           var v = VIEWS[k], h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var rows = STAT_WINDOWS.map(function(w){
@@ -459,15 +548,15 @@
 
   function updateCarousel(){
     if(!statsRail) return;
-    if(ZONES.indexOf(currentView) >= 0) statIndex = ZONES.indexOf(currentView);
+    if(CARDS.indexOf(currentView) >= 0) statIndex = CARDS.indexOf(currentView);
     if(statsState === 'done') statsRail.style.transform = 'translateX(' + (-100 * statIndex) + '%)';
     statsRail.querySelectorAll('[data-stat-view]').forEach(function(card, i){
       card.classList.toggle('is-current', card.getAttribute('data-stat-view') === currentView);
       card.tabIndex = i === statIndex ? 0 : -1; // only the card in view takes focus
     });
-    if(statsCount) statsCount.textContent = (statIndex + 1) + ' / ' + ZONES.length;
+    if(statsCount) statsCount.textContent = (statIndex + 1) + ' / ' + CARDS.length;
     if(statsPrev) statsPrev.disabled = statIndex <= 0;
-    if(statsNext) statsNext.disabled = statIndex >= ZONES.length - 1;
+    if(statsNext) statsNext.disabled = statIndex >= CARDS.length - 1;
   }
   // On phones the cards start collapsed to the name and totals; the chart button opens the bars.
   var statsEl = document.getElementById('site-stats');
@@ -481,8 +570,8 @@
   [statsPrev, statsNext].forEach(function(btn){
     if(!btn) return;
     btn.addEventListener('click', function(){
-      var i = Math.max(0, Math.min(ZONES.length - 1, statIndex + parseInt(btn.getAttribute('data-stats-step'), 10)));
-      select(ZONES[i], true);
+      var i = Math.max(0, Math.min(CARDS.length - 1, statIndex + parseInt(btn.getAttribute('data-stats-step'), 10)));
+      select(CARDS[i], true);
     });
   });
 

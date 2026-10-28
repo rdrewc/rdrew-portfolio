@@ -73,6 +73,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - The cam caption is two lines, so the camera name isn't cut to one letter.
   - `.stats-track` is `overflow: clip`. With `hidden`, focusing the expand chevron scrolled the track 20 px and knocked the carousel sideways.
 
+## Pacific Maritime Snowpack card (done)
+- The carousel now opens with a region card for the West view: `CARDS` is `['west']` plus the zones, so it counts "1 / 5" and the West tab or the back arrow lands on it. It covers the Cascades to the Sierra, 8 sites: Mt. Baker 5,000 ft, Mt. Hood/Timberline 6,000, Bachelor 7,000, Crater Lake 7,100, plus the four zone targets.
+- The data is one Open-Meteo request: past 7 days plus next 7, daily snow, precip and mean temperature, averaged across the sites.
+  - A generated trend sentence compares next week with last week: wetter or drier, warmer or colder by 3°F or more, totals, and the snowiest site.
+  - Two 14-day bar charts, with past days faded and today outlined.
+  - A next-7-days table by site.
+- The El Niño summary is hand-written in `ENSO` in `storm-map.js`, because NOAA's CPC files don't allow cross-origin requests. It cites the CPC discussion of Oct 8, weekly Niño-3.4 +3.4°C for the week of Oct 21, and NOAA's winter outlook of Oct 15. It needs updating after each monthly CPC discussion (2nd Thursday) until the Worker fetches it.
+- Cards cap their height to the window and scroll inside, and the footer is now solid so content doesn't show through it. On phones the region card collapses to its trend sentence.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

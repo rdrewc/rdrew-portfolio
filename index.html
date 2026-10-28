@@ -254,6 +254,8 @@
     align-items:center;
     justify-content:space-between;
     border-top:1px solid var(--divider);
+    border-radius:0 0 11px 11px;
+    background:var(--bg); /* solid, so a tall card scrolling underneath doesn't show through */
     font-family:'IBM Plex Mono',monospace;
     font-size:10px;
     letter-spacing:0.08em;
@@ -406,6 +408,20 @@
     pointer-events:none;
     z-index:1;
   }
+  /* Region card (West view): past and next week averaged across the Cascades and Sierra. Past days are
+     faded and today is outlined, so the split reads without a legend. The card scrolls inside itself
+     if it's taller than the window allows. */
+  .stat-card{max-height:calc(100vh - 2 * var(--bar-h) - 150px);overflow-y:auto;scrollbar-width:none;}
+  .stat-trend{display:block;margin-bottom:4px;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);white-space:normal;}
+  .stat-bar.is-past > span{opacity:0.4;}
+  .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
+  .stat-days.stat-days-range span{flex:none;max-width:none;white-space:nowrap;}
+  .stat-sites-head{margin-top:14px;}
+  .stat-sites{row-gap:3px;}
+  .stat-enso{display:block;margin-top:14px;padding-top:12px;border-top:1px solid var(--divider);white-space:normal;}
+  .stat-enso-headline{display:block;margin-bottom:4px;font-size:11px;font-weight:600;color:var(--strong);}
+  .stat-enso-text{display:block;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);}
+  .stat-enso-source{display:block;margin-top:6px;font-size:9px;color:var(--label);}
   .stat-days{display:flex;justify-content:space-between;gap:2px;margin-top:4px;}
   .stat-days span{flex:1;max-width:24px;text-align:center;font-size:8px;letter-spacing:0;color:var(--label);}
   .stat-note{padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
@@ -869,7 +885,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=12"></script>
+<script src="assets/storm-map.js?v=13"></script>
 
 </body>
 </html>
