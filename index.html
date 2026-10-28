@@ -289,6 +289,44 @@
   .stat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
   .stat-name{font-size:13px;font-weight:600;color:var(--strong);}
   .stat-elev{font-size:10px;color:var(--label);}
+  .stat-target{display:block;margin:-4px 0 10px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* Target over each zone's forecast point (Tracker mode only), pinned to the map. */
+  .target-marker{
+    width:24px;
+    height:24px;
+    padding:0;
+    border:none;
+    background:transparent;
+    color:var(--strong);
+    cursor:pointer;
+  }
+  body:not(.is-tracking) .target-marker{visibility:hidden;}
+  .target-marker.is-current{color:var(--accent);}
+  .target-icon{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;}
+  .target-marker .target-icon circle:last-of-type{fill:currentColor;}
+  .target-label{
+    position:absolute;
+    left:28px;
+    top:50%;
+    transform:translateY(-50%);
+    display:none;
+    padding:4px 8px;
+    border:1px solid var(--glass-border);
+    border-radius:6px;
+    background:var(--bar-bg);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.04em;
+    line-height:1.5;
+    color:var(--muted);
+    text-align:left;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  .show-target-labels .target-label{display:block;}
+  .target-name{display:block;font-size:10px;font-weight:600;color:var(--strong);}
+  .target-marker.is-current .target-label{border-color:var(--accent);}
   .stat-grid{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;}
   .stat-col{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);text-align:right;white-space:nowrap;}
   .stat-val{text-align:right;color:var(--strong);font-variant-numeric:tabular-nums;}
@@ -647,7 +685,7 @@
   <button type="button" class="tracker-home" data-tracker-home aria-label="Back to the homepage">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h4.5v-6h4v6h4.5V9"/></svg>
   </button>
-  <div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
+  <div class="geo-coords">39.1829&deg; N, 120.2417&deg; W</div>
 </header>
 
 <div class="page">
@@ -786,7 +824,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=5"></script>
+<script src="assets/storm-map.js?v=6"></script>
 
 </body>
 </html>

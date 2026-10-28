@@ -20,32 +20,32 @@
   var RADAR_OPACITY = { page: 0.45, tracker: 0.85 };
 
   var WEST_BOUNDS = [[-125.6, 31.8], [-114.2, 49.1]];
-  // lat / lon is the spot the top bar reports on, and `ft` its published elevation. `forecast` is a
-  // point up on the mountain for the totals cards, so snow totals mean something (lake level at Tahoe
-  // mostly sees rain); its `ft` is read off the z13 terrain tiles at that spot.
+  // Each zone forecasts for one named target: the top bar's weather, elevation and coordinates, the
+  // totals card and the map's target marker all use it. Positions are OpenStreetMap's for each named
+  // place; `ft` is the published elevation, or read off the z13 terrain tiles where none is published.
   var VIEWS = {
     west: { label: 'West Coast' },
     shasta: {
-      label: 'Shasta', center: [-122.195, 41.409], zoom: 10.3,
-      coords: '41.4092&deg; N, 122.1949&deg; W', lat: 41.4092, lon: -122.1949, ft: 14179,
-      forecast: { lat: 41.354, lon: -122.233, ft: 6930 }   // Bunny Flat
+      label: 'Shasta', center: [-122.212, 41.399], zoom: 10.6,
+      target: { name: 'Hidden Valley', lat: 41.3878, lon: -122.2333, ft: 9200 }      // west side, below Shastina
     },
     tahoe: {
-      label: 'Tahoe', center: [-120.04, 39.09], zoom: 9.7,
-      coords: '39.0968&deg; N, 120.0324&deg; W', lat: 39.1657, lon: -120.1400, ft: 6225, // lake surface
-      forecast: { lat: 39.148, lon: -120.246, ft: 8630 }   // Ward Peak
+      label: 'Tahoe', center: [-120.09, 39.12], zoom: 9.6,
+      target: { name: 'Palisades, KT-22', lat: 39.1829, lon: -120.2417, ft: 8050 }   // terrain tiles
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
-      coords: '37.6305&deg; N, 119.0323&deg; W', lat: 37.6305, lon: -119.0323, ft: 11053,
-      forecast: { lat: 37.6513, lon: -119.0268, ft: 8790 } // Main Lodge
+      target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053 }  // summit
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
-      coords: '36.5785&deg; N, 118.2923&deg; W', lat: 36.5785, lon: -118.2923, ft: 14505,
-      forecast: { lat: 36.578, lon: -118.27, ft: 11630 }   // below Trail Camp
+      target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505 }
     }
   };
+  function formatCoords(t){
+    return Math.abs(t.lat).toFixed(4) + '° ' + (t.lat >= 0 ? 'N' : 'S') + ', ' +
+      Math.abs(t.lon).toFixed(4) + '° ' + (t.lon >= 0 ? 'E' : 'W');
+  }
   var ZONES = ['shasta', 'tahoe', 'mammoth', 'whitney']; // north to south
   var DEFAULT_VIEW = 'tahoe';
 
@@ -132,6 +132,33 @@
   });
   new MutationObserver(function(){ if(map.isStyleLoaded()) applyColors(); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---- target markers (tracker mode) ----
+  // A target over each zone's forecast point, labeled with its name, GPS position and elevation.
+  // They're pinned to the map, so they move with it; labels hide when zoomed out to the whole coast.
+  var LABEL_MIN_ZOOM = 7;
+  var markers = ZONES.map(function(k){
+    var t = VIEWS[k].target;
+    var node = document.createElement('button');
+    node.type = 'button';
+    node.className = 'target-marker';
+    node.setAttribute('data-zone', k);
+    node.setAttribute('aria-label', VIEWS[k].label + ' forecast point: ' + t.name);
+    node.innerHTML =
+      '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>' +
+      '<span class="target-label"><span class="target-name">' + t.name + '</span>' +
+      formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>';
+    node.addEventListener('click', function(){ select(k, true); });
+    return new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat([t.lon, t.lat]).addTo(map);
+  });
+  function updateMarkers(){
+    el.classList.toggle('show-target-labels', map.getZoom() >= LABEL_MIN_ZOOM);
+    markers.forEach(function(m){
+      var node = m.getElement();
+      node.classList.toggle('is-current', node.getAttribute('data-zone') === currentView);
+    });
+  }
+  map.on('zoom', updateMarkers);
 
   // ---- tracker mode ----
   // Outside tracker mode the map is a still background: the page scrolls over it and nothing on it
@@ -281,7 +308,7 @@
     if(!statsRail || statsState !== 'idle') return;
     statsState = 'loading';
     statsRail.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
-    var pts = ZONES.map(function(k){ return VIEWS[k].forecast; });
+    var pts = ZONES.map(function(k){ return VIEWS[k].target; });
     var url = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=' + pts.map(function(p){ return p.lat; }).join(',') +
       '&longitude=' + pts.map(function(p){ return p.lon; }).join(',') +
@@ -308,7 +335,8 @@
           }).join('');
           return '<button type="button" class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head"><span class="stat-name">' + v.label + '</span>' +
-            '<span class="stat-elev">' + v.forecast.ft.toLocaleString() + ' ft</span></span>' +
+            '<span class="stat-elev">' + v.target.ft.toLocaleString() + ' ft</span></span>' +
+            '<span class="stat-target">' + v.target.name + ' &middot; ' + formatCoords(v.target) + '</span>' +
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
@@ -389,11 +417,13 @@
     }
     if(readoutFor === v) return;
     readoutFor = v;
-    if(coordsEl) coordsEl.innerHTML = v.coords;
+    var t = v.target;
+    if(coordsEl) coordsEl.textContent = formatCoords(t);
     weatherLine.innerHTML = '&hellip;';
     // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
-    elevLine.textContent = 'ELEV ' + v.ft.toLocaleString() + ' FT';
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + v.lat + '&longitude=' + v.lon + '&current_weather=true&temperature_unit=fahrenheit')
+    elevLine.textContent = 'ELEV ' + t.ft.toLocaleString() + ' FT';
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
+      '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
       .then(function(r){ return r.json(); })
       .then(function(data){
         if(readoutFor !== v) return;
@@ -423,6 +453,7 @@
     updateReadout(v);
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
     updateCarousel();
+    updateMarkers();
     if(animate){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){
