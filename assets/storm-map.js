@@ -312,9 +312,11 @@
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
+            '<span class="stat-charts"><span class="stat-charts-inner">' +
             barChart('snow', 'Snow by day', d.snowfall_sum.map(Number), snowMax, days, function(x){ return x.toFixed(1) + '"'; }) +
             barChart('precip', 'Precip by day', d.precipitation_sum.map(Number), precipMax, days, formatPrecip) +
             '<span class="stat-days">' + days.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
+            '</span></span>' +
             '</button>';
         }).join('');
         statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
@@ -340,6 +342,15 @@
     if(statsPrev) statsPrev.disabled = statIndex <= 0;
     if(statsNext) statsNext.disabled = statIndex >= ZONES.length - 1;
   }
+  // On phones the cards start collapsed to the name and totals; the chart button opens the bars.
+  var statsEl = document.getElementById('site-stats');
+  var statsExpand = document.querySelector('[data-stats-expand]');
+  if(statsEl && statsExpand) statsExpand.addEventListener('click', function(){
+    var open = statsExpand.getAttribute('aria-expanded') !== 'true';
+    statsEl.classList.toggle('is-expanded', open);
+    statsExpand.setAttribute('aria-expanded', String(open));
+    statsExpand.setAttribute('aria-label', open ? 'Hide daily charts' : 'Show daily charts');
+  });
   [statsPrev, statsNext].forEach(function(btn){
     if(!btn) return;
     btn.addEventListener('click', function(){

@@ -34,8 +34,9 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The selected location tab is accent text only (no pill), with 6 px of space before the snowflake.
 - Each card has two daily bar charts for the next 7 days, snow and precip. They're separate charts because the measures don't share a scale, and each scale is shared across all cards, with floors of 4" snow and 0.40" precip. Hovering a bar shows its day and amount. Colors are violet `--snow-bar` and green `--precip-bar`, validated as a pair in both themes with the dataviz palette script.
 
+- On phones the cards start collapsed to the name and totals (118 px tall instead of 255). A chart button beside the carets grows the bar charts in (grid rows 0fr→1fr) and hides them again. Desktop always shows the charts.
+
 ## Not done yet
-- On phones the taller card now covers the top half of Lake Tahoe. It could collapse to just the totals, or the Tahoe view could sit lower.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
 - On phones the totals cards cover the north end of the lake.
 - The radar uses IEM's built-in colors; recoloring it to match the site comes later. HRRR only covers the lower 48, so BC is blank.
