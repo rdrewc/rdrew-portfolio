@@ -819,11 +819,11 @@
   }
 
   // ---- view picker (footer) ----
-  // Framed views (the whole coast, Tahoe) keep clear of the top bar, the radar timeline and footer,
-  // and the totals card (left column on desktop, a band across the top on phones).
+  // Framed views (the whole coast, Tahoe) keep clear of the top bar, the radar timeline, location tabs
+  // and footer, and the totals card (left column on desktop, a band across the top on phones).
   function framePadding(){
     return window.innerWidth <= 860
-      ? { top: 230, bottom: 170, left: 24, right: 24 }
+      ? { top: 230, bottom: 210, left: 24, right: 24 } // phones: radar and tabs stack above the footer
       : { top: 90, bottom: 150, left: 340, right: 60 };
   }
   var currentView = null;

@@ -109,6 +109,11 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - **Wind tab:** the next 24 h's peak gust and direction in words, daily peak gust bars (neutral ink, darker past 40 mph) with a lift-hold line at 40 mph, and daily direction arrows (vector-averaged, pointing where the wind blows).
 - **Odds tab:** NOAA's days 1–3 chance of 4", 8" and 12"+ as WPC categories (no polygon at the point means "<10%"), then the share of ensemble runs with 6"+ for each of the 10 days.
 
+## Bottom controls (done)
+- The location tabs left the footer. They're their own pill above it, aligned right (`#view-tabs`, `.enter` with `--i` 1, waiting `--dur-slow` like the rest of the tracker). The radar timeline is aligned left on the same row and narrows (clamp 280–520 px) to leave room. The snowflake stays in the footer and still opens the tracker, and the tabs with it.
+- The snowflake circle is transparent when off and fills (`--glass-indicator`, accent icon) when on.
+- Phones: the footer wraps to 82 px, so the tabs sit full width at `bottom: 94px` with the radar above them at 150 px. The map framing's phone bottom padding went from 170 to 210.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
