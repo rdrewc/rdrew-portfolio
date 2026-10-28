@@ -30,14 +30,14 @@
     // Landmarks: `landmark` makes the cam picker want a camera aimed at the target, not merely near it
     // (the Mt. Lee cams sit on the Hollywood Sign and look away from it).
     sf: {
-      label: 'SF', center: [-122.47, 37.80], zoom: 11.2,
+      label: 'SF', title: 'San Francisco', center: [-122.47, 37.80], zoom: 11.2, // label: tabs; title: its card
       target: { name: 'Golden Gate Bridge', lat: 37.8183, lon: -122.4784, ft: 220, landmark: true, cams: [ // roadway above the water
         { id: 'sutrotower-cam02', name: 'Sutro Tower 2', mi: 4.7 },
         { id: 'mttam-cam01', name: 'Mt. Tamalpais East', mi: 9.2 }
       ] }
     },
     la: {
-      label: 'LA', center: [-118.32, 34.12], zoom: 11.2,
+      label: 'LA', title: 'Los Angeles', center: [-118.32, 34.12], zoom: 11.2,
       target: { name: 'Hollywood Sign', lat: 34.1341, lon: -118.3217, ft: 1575, landmark: true, cams: [ // terrain tiles
         { id: 'briar-cam02', name: 'Star Mtn. 2', mi: 4.2 },
         { id: 'belairridge-cam01', name: 'Bel Air Ridge 1', mi: 7.0 }
@@ -686,7 +686,7 @@
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
     var snowMax = Math.max.apply(null, [2].concat(snow)), precipMax = Math.max.apply(null, [0.2].concat(precip));
     return '<div class="stat-card stat-card-region" data-stat-view="west">' +
-      '<span class="stat-head"><span class="stat-name">Pacific Maritime Snowpack</span></span>' +
+      '<span class="stat-head"><span class="stat-name">Pacific Maritime El Ni&ntilde;o</span></span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
       '<span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow, next 7 days</span>' +
       '<span class="stat-hero-row">' + hero + '</span></span>' +
@@ -885,7 +885,7 @@
               '<span class="stat-val">' + formatPrecip(sum(h.precipitation, w[0])) + '</span>';
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
-            '<span class="stat-head"><span class="stat-name">' + v.label + '</span>' +
+            '<span class="stat-head"><span class="stat-name">' + (v.title || v.label) + '</span>' +
             '<span class="stat-elev">' + t.ft.toLocaleString() + ' ft</span></span>' +
             '<span class="stat-target">' + t.name + ' &middot; ' + formatCoords(t) + '</span>' +
             '<span class="stat-grid"><span></span>' +

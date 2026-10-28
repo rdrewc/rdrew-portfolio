@@ -159,6 +159,10 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - The note is framed like a card.
   - The real fix for traffic is still the Worker cache (step 3+).
 
+## Names (done)
+- Cards use full names where the tabs use short ones: `VIEWS[k].title` (San Francisco, Los Angeles) beats `label` (SF, LA) on cards. The region card is "Pacific Maritime El Niño", and the West tab reads "Overview".
+- Phone tabs went to 5 px side padding so all seven fit on 375 px.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
