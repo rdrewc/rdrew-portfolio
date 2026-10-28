@@ -126,6 +126,10 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - `site.css` is now ?v=23 and `case-study.css` ?v=25 on every page.
 - To confirm: self-hosting a commercial font on a public site needs ARS Type's webfont license, not just the desktop one.
 
+## rdrew.com/elnino (done)
+- The Worker serves the homepage at `/elnino` (the address stays), and `/elnino/` redirects to `/elnino` because the homepage's asset paths are relative. `storm-map.js` opens the tracker when the path is `/elnino`. Opening or closing the tracker by hand switches the address between `/elnino` and `/` with `replaceState`, so the link can be copied from inside.
+- Locally `serve.py` has no Worker, so `/elnino` 404s there; test it on the preview URL.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

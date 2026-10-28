@@ -212,8 +212,15 @@
   var HANDLERS = ['dragPan', 'scrollZoom', 'boxZoom', 'keyboard', 'doubleClickZoom', 'touchZoomRotate'];
   var trackerBtn = document.querySelector('[data-tracker]');
   var tracking = false;
-  function setTracking(on){
+  // rdrew.com/elnino opens straight into the tracker (the Worker serves the homepage there), and
+  // opening or closing it by hand keeps the address in step, so the link can be shared from inside.
+  var TRACKER_PATH = '/elnino';
+  var startTracking = location.pathname.replace(/\/+$/, '') === TRACKER_PATH;
+  function setTracking(on, syncUrl){
     tracking = on;
+    if(syncUrl && window.history && history.replaceState){
+      history.replaceState(null, '', on ? TRACKER_PATH : '/');
+    }
     document.body.classList.toggle('is-tracking', on);
     document.body.classList.toggle('is-entered', on); // .enter items wait out the page's exit (--enter-wait)
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
@@ -224,10 +231,10 @@
     else stop();
   }
   setTracking(false);
-  if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking); });
+  if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking, true); });
   var homeBtn = document.querySelector('[data-tracker-home]');
-  if(homeBtn) homeBtn.addEventListener('click', function(){ setTracking(false); });
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && tracking) setTracking(false); });
+  if(homeBtn) homeBtn.addEventListener('click', function(){ setTracking(false, true); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && tracking) setTracking(false, true); });
 
   // ---- forecast radar ----
   var frames = [];   // forecast minutes, 0..FRAME_LAST
@@ -852,6 +859,7 @@
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
   map.on('load', function(){ select(saved() || DEFAULT_VIEW, false); });
+  if(startTracking) setTracking(true);
   // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
   // steering the map.
   map.on('resize', function(){

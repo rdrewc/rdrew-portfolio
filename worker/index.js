@@ -10,6 +10,9 @@ const PASSWORD_SHA256 = '3ff74a580f8b39f039822455e92c2ef25658229622f16dc0f991822
 const SESSION_TOKEN = '219f22e2cc1c1344d4ea4ba1cdbc59e4a24982bcc1afc1f7cc7e01dd4d756651';
 const COOKIE = 'rdrew_access';
 const UNLOCK_PATH = '/__unlock';
+// rdrew.com/elnino is the homepage opened straight into the storm tracker (assets/storm-map.js
+// reads the path). No trailing slash: the homepage's asset paths are relative.
+const TRACKER_PATH = '/elnino';
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
@@ -19,6 +22,8 @@ export default {
   async fetch(request, env){
     const url = new URL(request.url);
     if(url.pathname === UNLOCK_PATH) return unlock(request);
+    if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
+    if(url.pathname === TRACKER_PATH) return env.ASSETS.fetch(new Request(new URL('/', url), request));
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);
     if(readCookie(request, COOKIE) !== SESSION_TOKEN) return gate(request, env);
 
