@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="assets/site.css?v=22">
+<link rel="stylesheet" href="assets/site.css?v=23">
 <script>
   try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
 </script>
@@ -305,7 +305,7 @@
   }
   .stat-card:hover, .stat-card.is-current{border-color:var(--accent);}
   .stat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
-  .stat-name{font-size:13px;font-weight:600;color:var(--strong);}
+  .stat-name{font-family:var(--font-title);font-size:17px;font-weight:500;line-height:1.2;color:var(--strong);} /* 30% over the old 13px; long names wrap */
   .stat-elev{font-size:10px;color:var(--label);}
   .stat-target{display:block;margin:-4px 0 10px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -361,7 +361,7 @@
     pointer-events:none;
   }
   .show-target-labels .target-label{display:block;}
-  .target-name{display:block;font-size:10px;font-weight:600;color:var(--strong);}
+  .target-name{display:block;font-family:var(--font-title);font-size:10px;font-weight:500;color:var(--strong);}
   .target-marker.is-current .target-label{border-color:var(--accent);}
   /* The selected target's label carries the latest frame from its mountain camera
      (480 x 270, time stamped along the bottom). */
@@ -610,8 +610,8 @@
   }
 
   h1{
-    font-family:'DM Sans',sans-serif;
-    font-weight:600;
+    font-family:var(--font-title);
+    font-weight:500;
     font-size:clamp(28px,3vw,36px);
     color:var(--heading);
   }
@@ -714,8 +714,8 @@
   .project-name{
     display:block;
     margin-bottom:12px;
-    font-family:'IBM Plex Mono',monospace;
-    font-weight:600;
+    font-family:var(--font-title);
+    font-weight:500;
     font-size:15px;
     color:var(--strong);
     white-space:nowrap;

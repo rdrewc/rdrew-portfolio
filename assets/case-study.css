@@ -54,7 +54,8 @@ body{
 }
 
 h1{
-  font-weight:600;
+  font-family:var(--font-title);
+  font-weight:500;
   font-size:clamp(28px,3vw,36px);
   line-height:1.2;
   color:var(--heading);
@@ -88,7 +89,8 @@ h1{
 }
 .pinned-title-inner{min-height:0;}
 .pinned-title-text{
-  font-weight:600;
+  font-family:var(--font-title);
+  font-weight:500;
   font-size:clamp(28px,3vw,36px); /* same size as the h1 */
   line-height:1.2;
   color:var(--heading);

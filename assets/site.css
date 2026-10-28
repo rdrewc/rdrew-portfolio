@@ -19,6 +19,24 @@
   --enter-rise:10px; /* how far an arriving item travels up */
 }
 
+/* Title type: ARS Maquette Pro for page titles and card titles across the site. Labels, body and
+   small text keep their fonts (IBM Plex Mono, DM Sans). Self-hosted from the licensed files. */
+@font-face{
+  font-family:'ARS Maquette Pro';
+  src:url('fonts/ARSMaquettePro-Medium.woff2') format('woff2');
+  font-weight:500;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
+  font-family:'ARS Maquette Pro';
+  src:url('fonts/ARSMaquettePro-Bold.woff2') format('woff2');
+  font-weight:700;
+  font-style:normal;
+  font-display:swap;
+}
+:root{--font-title:'ARS Maquette Pro','DM Sans',sans-serif;}
+
 /* Enter pattern. Give an element .enter (and --i, its place in a sequence). It stays hidden until an
    ancestor gets .is-entered, then rises and fades in after --enter-wait plus its stagger. Leaving is
    quick and all at once. Uses `translate`, so it composes with any transform the element already has. */

@@ -119,6 +119,13 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Fix: `body.is-tracking #storm-map{z-index:1}`, above the hidden page and still under every tracker panel (z 40+). Outside Tracker mode it drops back behind the page, so the portfolio stays clickable.
 - Verified: a pointer on the map hits the canvas with the pole cursor, a drag pans, the wheel zooms, and the cards are still on top.
 
+## Title font: ARS Maquette Pro (done)
+- Ryan's licensed ARS Maquette Pro, converted from his OTFs to WOFF2: Medium 500 (used) and Bold 700 (declared, only downloads if used), about 88 KB each, in `assets/fonts/`.
+- `@font-face` and `--font-title` live in `site.css`, so every page that loads it gets the font.
+- Applied to page titles (homepage h1, case study h1 and its pinned copy), project card names, location card titles (`.stat-name`, now 17 px, 30% over 13 px, wrapping with line-height 1.2), and map label titles. Section labels, body, mono lists and small text are unchanged.
+- `site.css` is now ?v=23 and `case-study.css` ?v=25 on every page.
+- To confirm: self-hosting a commercial font on a public site needs ARS Type's webfont license, not just the desktop one.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
