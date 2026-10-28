@@ -138,7 +138,8 @@
   .tracker-home:hover{color:var(--accent);}
   .tracker-home svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
-  /* Snowflake in the footer that opens the tracker, styled like the theme toggle. */
+  /* Snowflake in the footer, styled like the theme toggle. Opening the tracker grows the pill to the
+     left and the location tabs slide out of the snowflake one after another, nearest first. */
   .tracker-toggle{
     display:flex;
     align-items:center;
@@ -147,7 +148,8 @@
     border:1px solid var(--divider);
     transition:border-color 0.35s ease;
   }
-  .tracker-toggle button{
+  .tracker-toggle [data-tracker]{
+    flex-shrink:0;
     width:28px;
     height:28px;
     border:none;
@@ -160,9 +162,57 @@
     cursor:pointer;
     transition:color 0.2s ease, background-color 0.2s ease;
   }
-  .tracker-toggle button:hover{color:var(--strong);}
-  .tracker-toggle button[aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
-  .tracker-toggle svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .tracker-toggle [data-tracker]:hover{color:var(--strong);}
+  .tracker-toggle [data-tracker][aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
+  .tracker-toggle [data-tracker] svg{
+    width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+    transition:transform 0.6s cubic-bezier(.2,.75,.25,1);
+  }
+  .tracker-toggle [data-tracker][aria-pressed="true"] svg{transform:rotate(90deg);}
+
+  .view-tabs{
+    display:grid;
+    grid-template-columns:0fr;
+    visibility:hidden;
+    transition:grid-template-columns 0.45s cubic-bezier(.2,.75,.25,1), visibility 0s linear 0.45s;
+  }
+  body.is-tracking .view-tabs{
+    grid-template-columns:1fr;
+    visibility:visible;
+    transition:grid-template-columns 0.55s cubic-bezier(.2,.75,.25,1), visibility 0s;
+  }
+  .view-tabs-inner{display:flex;align-items:center;min-width:0;overflow:hidden;}
+  .view-tabs button{
+    height:28px;
+    padding:0 11px;
+    border:none;
+    border-radius:999px;
+    background:transparent;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    white-space:nowrap;
+    color:var(--muted);
+    cursor:pointer;
+    opacity:0;
+    transform:translateX(12px);
+    transition:opacity 0.2s ease, transform 0.3s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+  body.is-tracking .view-tabs button{
+    opacity:1;
+    transform:none;
+    transition:opacity 0.3s ease, transform 0.45s cubic-bezier(.2,.75,.25,1), color 0.2s ease, background-color 0.2s ease;
+  }
+  body.is-tracking .view-tabs button:nth-last-child(1){transition-delay:0.08s, 0.08s, 0s, 0s;}
+  body.is-tracking .view-tabs button:nth-last-child(2){transition-delay:0.14s, 0.14s, 0s, 0s;}
+  body.is-tracking .view-tabs button:nth-last-child(3){transition-delay:0.2s, 0.2s, 0s, 0s;}
+  body.is-tracking .view-tabs button:nth-last-child(4){transition-delay:0.26s, 0.26s, 0s, 0s;}
+  body.is-tracking .view-tabs button:nth-last-child(5){transition-delay:0.32s, 0.32s, 0s, 0s;}
+  .view-tabs button:hover{color:var(--strong);}
+  .view-tabs button[aria-pressed="true"]{color:var(--accent);background:var(--glass-indicator);}
+  @media (prefers-reduced-motion: reduce){
+    .view-tabs, .view-tabs button, .tracker-toggle [data-tracker] svg{transition:none !important;}
+  }
 
   /* Forecast totals for each zone, shown in Tracker mode. Clicking a card flies there. */
   .site-stats{
@@ -174,6 +224,9 @@
     flex-direction:column;
     gap:10px;
     width:236px;
+    max-height:calc(100vh - 2 * var(--bar-h) - 110px); /* stays clear of the radar timeline */
+    overflow-y:auto;
+    scrollbar-width:none;
   }
   body.is-tracking .site-stats{display:flex;}
   .stat-card{
@@ -487,6 +540,7 @@
       scrollbar-width:none;
     }
     .site-stats .stat-card{flex:0 0 210px;}
+    .view-tabs button{padding:0 7px;font-size:10px;}
   }
 </style>
 </head>
@@ -617,14 +671,17 @@
     <li><a href="assets/ryan-casey-cv.pdf" target="_blank" rel="noopener">CV</a></li>
   </ul>
   <div class="footer-controls">
-  <div class="terrain-picker" role="group" aria-label="Map view">
-    <button type="button" data-view="west" aria-pressed="true">West</button>
-    <button type="button" data-view="tahoe" aria-pressed="false">Tahoe</button>
-    <button type="button" data-view="shasta" aria-pressed="false">Shasta</button>
-    <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
-  </div>
   <div class="tracker-toggle">
-    <button type="button" data-tracker aria-pressed="false" aria-label="Storm tracker">
+    <div class="view-tabs" id="view-tabs" role="group" aria-label="Map view">
+      <div class="view-tabs-inner">
+        <button type="button" data-view="west" aria-pressed="false">West</button>
+        <button type="button" data-view="shasta" aria-pressed="false">Shasta</button>
+        <button type="button" data-view="tahoe" aria-pressed="true">Tahoe</button>
+        <button type="button" data-view="mammoth" aria-pressed="false">Mammoth</button>
+        <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
+      </div>
+    </div>
+    <button type="button" data-tracker aria-pressed="false" aria-label="Storm tracker" aria-controls="view-tabs">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/></svg>
     </button>
   </div>
@@ -644,7 +701,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=2"></script>
+<script src="assets/storm-map.js?v=3"></script>
 
 </body>
 </html>

@@ -20,7 +20,17 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - A home icon (the one from the case study header) sits centered in the top bar while tracking and closes the tracker. The footer's "Tracker" text is now a snowflake button styled like the theme toggle.
 - Totals cards for Tahoe, Shasta and Whitney show snow and liquid precip for the next 24 h, 3 days and 7 days. It's one Open-Meteo request for all three, at mid-mountain points: Ward Peak 8,000 ft, Bunny Flat 7,000 ft, Outpost Camp 10,000 ft. Clicking a card flies there. They sit in a column on desktop and a swipeable row on phones.
 
+## Locations, elevations, Tahoe shore (done)
+- Mammoth added. Zones now run north to south (Shasta, Tahoe, Mammoth, Whitney), and Tahoe is the default view.
+- Elevations fixed:
+  - Top bar: shows each spot's published elevation instead of an elevation-service lookup, which had smoothed Shasta down to 14,108. Values: lake surface 6,225, Shasta 14,179, Mammoth 11,053, Whitney 14,505.
+  - Totals cards: the old labels were round guesses (Tahoe said 8,000 ft at a 6,900 ft spot). Each card now uses a named point, with its elevation read off the z13 terrain tiles: Ward Peak 8,630, Bunny Flat 6,930, Mammoth Main Lodge 8,790, below Trail Camp 11,630.
+- Location tabs live inside the snowflake pill and only appear in Tracker mode. The pill grows to the left (grid 0fr→1fr), the tabs slide out one after another nearest-first, and the snowflake turns 90°. People with reduced motion turned on get no animation.
+- Lake Tahoe's shoreline is traced from z13 Terrarium tiles (~15 m per pixel, the contour 0.5 m above the 1,897.55 m lake surface), 1,425 points. It replaces Natural Earth's coarse outline in `west-outlines.geojson`. The scripts (`dem.py`, `tahoe_shore.py`, `clip_west.py`) are in the session scratchpad, not the repo.
+
 ## Not done yet
+- A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
+- On phones the totals cards cover the north end of the lake.
 - The radar uses IEM's built-in colors; recoloring it to match the site comes later. HRRR only covers the lower 48, so BC is blank.
 - Some of the terrain tiles' sources (Canada's elevation data, for one) ask for credit, which still needs a home, e.g. a Sources link.
 - No forecast past 18 h yet. Open-Meteo days 2–7 come in step 2.

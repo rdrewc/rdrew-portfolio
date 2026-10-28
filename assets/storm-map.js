@@ -1,9 +1,10 @@
 // Homepage background: a top-down topo map of the West Coast with the HRRR forecast radar on top.
 // Contour lines are drawn in the browser from AWS terrain tiles (maplibre-contour); the coast, lakes
 // and borders come from assets/storm/west-outlines.geojson (Natural Earth, clipped to the West Coast).
-// The footer picker flies to Tahoe / Shasta / Whitney or back out to the whole coast. The snowflake
-// opens Tracker mode: the page slides away, the map can be dragged and zoomed, the radar scrubbed
-// through the next 18 hours, and a card per zone shows its forecast snow and precip totals.
+// The snowflake in the footer opens Tracker mode: the page slides away, location tabs expand out of
+// the snowflake (whole coast, Shasta, Tahoe, Mammoth, Whitney), the map can be dragged and zoomed,
+// the radar scrubbed through the next 18 hours, and a card per zone shows its forecast totals.
+// Tahoe is the default view.
 (function(){
   var el = document.getElementById('storm-map');
   if(!el || !window.maplibregl || !window.mlcontour) return;
@@ -19,27 +20,34 @@
   var RADAR_OPACITY = { page: 0.45, tracker: 0.85 };
 
   var WEST_BOUNDS = [[-125.6, 31.8], [-114.2, 49.1]];
-  // lat / lon is the spot the top bar reports on. `forecast` is a mid-mountain point for the
-  // totals cards, so snow totals mean something (lake level at Tahoe mostly sees rain).
+  // lat / lon is the spot the top bar reports on, and `ft` its published elevation. `forecast` is a
+  // point up on the mountain for the totals cards, so snow totals mean something (lake level at Tahoe
+  // mostly sees rain); its `ft` is read off the z13 terrain tiles at that spot.
   var VIEWS = {
     west: { label: 'West Coast' },
-    tahoe: {
-      label: 'Tahoe', center: [-120.04, 39.09], zoom: 9.7,
-      coords: '39.0968&deg; N, 120.0324&deg; W', lat: 39.1657, lon: -120.1400,
-      forecast: { lat: 39.17, lon: -120.24, ft: 8000 }    // west-shore crest, Ward Peak
-    },
     shasta: {
       label: 'Shasta', center: [-122.195, 41.409], zoom: 10.3,
-      coords: '41.4092&deg; N, 122.1949&deg; W', lat: 41.4092, lon: -122.1949,
-      forecast: { lat: 41.354, lon: -122.233, ft: 7000 }  // Bunny Flat
+      coords: '41.4092&deg; N, 122.1949&deg; W', lat: 41.4092, lon: -122.1949, ft: 14179,
+      forecast: { lat: 41.354, lon: -122.233, ft: 6930 }   // Bunny Flat
+    },
+    tahoe: {
+      label: 'Tahoe', center: [-120.04, 39.09], zoom: 9.7,
+      coords: '39.0968&deg; N, 120.0324&deg; W', lat: 39.1657, lon: -120.1400, ft: 6225, // lake surface
+      forecast: { lat: 39.148, lon: -120.246, ft: 8630 }   // Ward Peak
+    },
+    mammoth: {
+      label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
+      coords: '37.6305&deg; N, 119.0323&deg; W', lat: 37.6305, lon: -119.0323, ft: 11053,
+      forecast: { lat: 37.6513, lon: -119.0268, ft: 8790 } // Main Lodge
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
-      coords: '36.5785&deg; N, 118.2923&deg; W', lat: 36.5785, lon: -118.2923,
-      forecast: { lat: 36.578, lon: -118.27, ft: 10000 }  // Outpost Camp
+      coords: '36.5785&deg; N, 118.2923&deg; W', lat: 36.5785, lon: -118.2923, ft: 14505,
+      forecast: { lat: 36.578, lon: -118.27, ft: 11630 }   // below Trail Camp
     }
   };
-  var ZONES = ['tahoe', 'shasta', 'whitney'];
+  var ZONES = ['shasta', 'tahoe', 'mammoth', 'whitney']; // north to south
+  var DEFAULT_VIEW = 'tahoe';
 
   // ---- map ----
   var demSource = new mlcontour.DemSource({ url: DEM_TILES, encoding: 'terrarium', maxzoom: 12, worker: true });
@@ -317,7 +325,8 @@
     readoutFor = v;
     if(coordsEl) coordsEl.innerHTML = v.coords;
     weatherLine.innerHTML = '&hellip;';
-    elevLine.innerHTML = '&hellip;';
+    // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
+    elevLine.textContent = 'ELEV ' + v.ft.toLocaleString() + ' FT';
     fetch('https://api.open-meteo.com/v1/forecast?latitude=' + v.lat + '&longitude=' + v.lon + '&current_weather=true&temperature_unit=fahrenheit')
       .then(function(r){ return r.json(); })
       .then(function(data){
@@ -326,14 +335,6 @@
         weatherLine.textContent = Math.round(cw.temperature) + '°F, ' + (WEATHER_CODES[cw.weathercode] || 'Unknown');
       })
       .catch(function(){ if(readoutFor === v) weatherLine.textContent = ''; });
-    fetch('https://api.open-meteo.com/v1/elevation?latitude=' + v.lat + '&longitude=' + v.lon)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(readoutFor !== v) return;
-        var meters = data.elevation && data.elevation[0];
-        elevLine.textContent = typeof meters === 'number' ? 'ELEV ' + Math.round(meters * 3.28084).toLocaleString() + ' FT' : '';
-      })
-      .catch(function(){ if(readoutFor === v) elevLine.textContent = ''; });
   }
 
   // ---- view picker (footer) ----
@@ -343,7 +344,7 @@
     try { return localStorage.getItem('map-view'); } catch(e){ return null; }
   }
   function select(key, animate){
-    if(!VIEWS[key]) key = 'west';
+    if(!VIEWS[key]) key = DEFAULT_VIEW;
     currentView = key;
     var v = VIEWS[key];
     var instant = !animate || reduceMotion;
@@ -361,7 +362,7 @@
   buttons.forEach(function(b){
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
-  map.on('load', function(){ select(saved() || 'west', false); });
+  map.on('load', function(){ select(saved() || DEFAULT_VIEW, false); });
   // Keep the whole coast in frame when the window changes shape, unless you're steering the map.
   map.on('resize', function(){
     if(currentView === 'west' && !tracking) map.fitBounds(WEST_BOUNDS, { padding: 40, duration: 0 });
