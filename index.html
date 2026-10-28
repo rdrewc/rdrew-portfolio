@@ -18,7 +18,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@1,900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="assets/site.css?v=23">
 <script>
@@ -43,6 +43,8 @@
     --snow-bar:#9085e9;   /* chart series, validated as a pair on --bg (dataviz palette) */
     --precip-bar:#199e70;
     --temp-line:#d95926;  /* validated with the two bars above */
+    --storm-big:#ff3b2f;  /* tracker card titles: big storm in the next 24 h */
+    --storm-mid:#ffc93c;  /* moderate */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
   }
@@ -64,6 +66,8 @@
     --snow-bar:#6250d6;
     --precip-bar:#1baf7a;
     --temp-line:#eb6834;
+    --storm-big:#d42a1c;
+    --storm-mid:#b07d00;  /* yellow darkened so it reads on the light page */
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
   }
@@ -305,7 +309,21 @@
   }
   .stat-card:hover, .stat-card.is-current{border-color:var(--accent);}
   .stat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
-  .stat-name{font-family:var(--font-title);font-size:17px;font-weight:500;line-height:1.2;color:var(--strong);} /* 30% over the old 13px; long names wrap */
+  /* Tracker card titles: heavy, condensed, slanted caps, colored by the storm in the next 24 hours.
+     Condensed, so set larger than the 17px they replaced. Other titles keep ARS Maquette Pro. */
+  .stat-name{
+    font-family:'Barlow Condensed',var(--font-title);
+    font-style:italic;
+    font-weight:900;
+    font-size:24px;
+    line-height:0.95;
+    letter-spacing:0.01em;
+    text-transform:uppercase;
+    color:var(--strong);
+  }
+  .stat-name.storm-big{color:var(--storm-big);}
+  .stat-name.storm-mid{color:var(--storm-mid);}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
   .stat-elev{font-size:10px;color:var(--label);}
   .stat-target{display:block;margin:-4px 0 10px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -970,7 +988,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=32"></script>
+<script src="assets/storm-map.js?v=33"></script>
 
 </body>
 </html>

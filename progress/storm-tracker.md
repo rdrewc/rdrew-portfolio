@@ -163,6 +163,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Cards use full names where the tabs use short ones: `VIEWS[k].title` (San Francisco, Los Angeles) beats `label` (SF, LA) on cards. The region card is "Pacific Maritime El Niño", and the West tab reads "Overview".
 - Phone tabs went to 5 px side padding so all seven fit on 375 px.
 
+## Opens on Overview, storm-colored titles (done)
+- The tracker now opens on the Overview card every time. The homepage keeps its saved view (Tahoe by default), because `select(key, animate, keepSaved)` skips saving when the tracker switches to West on its own.
+- Card titles use Barlow Condensed italic 900 in caps at 24 px. That's the one new font; nothing else changed.
+- The title color comes from the next 24 hours of Open-Meteo hourly snowfall and precipitation (`stormLevel`):
+  - Red (`--storm-big`) means at least 6" of snow or 1" of precipitation.
+  - Yellow (`--storm-mid`) means at least 1" of snow or 0.25" of precipitation.
+  - White means anything less.
+  - The Overview title takes the worst level across all sites. Screen readers get the level as hidden text.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

@@ -256,6 +256,8 @@
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     refreshReadout();
+    // The tracker always opens on the Overview (the whole coast); the saved view stays the homepage's.
+    if(on && currentView && currentView !== 'west') select('west', true, true);
     if(on){ loadStats(); refreshCams(); }
     else stop();
   }
@@ -658,7 +660,7 @@
   }
   // The region card: past 7 days and next 7 averaged over the Cascade and Sierra sites, a plain
   // sentence on how the coming week compares, next week by site, and the El Niño summary.
-  function regionCard(sites, list){
+  function regionCard(sites, list, storm){
     var d = list.map(function(z){ return z.daily; });
     var snow = average(d.map(function(x){ return x.snowfall_sum; }));
     var precip = average(d.map(function(x){ return x.precipitation_sum; }));
@@ -686,7 +688,7 @@
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
     var snowMax = Math.max.apply(null, [2].concat(snow)), precipMax = Math.max.apply(null, [0.2].concat(precip));
     return '<div class="stat-card stat-card-region" data-stat-view="west">' +
-      '<span class="stat-head"><span class="stat-name">Pacific Maritime El Ni&ntilde;o</span></span>' +
+      '<span class="stat-head">' + stormTitle('Pacific Maritime El Ni&ntilde;o', storm) + '</span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
       '<span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow, next 7 days</span>' +
       '<span class="stat-hero-row">' + hero + '</span></span>' +
@@ -829,6 +831,22 @@
     }).join('') + '</span>';
   }
 
+  // Card titles take their color from the storm coming in the next 24 hours at the target: red for a
+  // big one, yellow for a moderate one, plain ink for none. The Overview takes the biggest of them.
+  var STORM = { big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } }; // inches in 24 h
+  var STORM_ORDER = ['none', 'mid', 'big'];
+  var STORM_LABEL = { big: 'Big storm in the next 24 hours', mid: 'Some snow or rain in the next 24 hours', none: 'No storm in the next 24 hours' };
+  function stormLevel(snow24, precip24){
+    if(snow24 >= STORM.big.snow || precip24 >= STORM.big.precip) return 'big';
+    if(snow24 >= STORM.mid.snow || precip24 >= STORM.mid.precip) return 'mid';
+    return 'none';
+  }
+  // The label rides along as a tooltip and for screen readers, so the color isn't the only signal.
+  function stormTitle(text, level){
+    return '<span class="stat-name storm-' + level + '" title="' + STORM_LABEL[level] + '">' + text +
+      '<span class="sr-only"> (' + STORM_LABEL[level].toLowerCase() + ')</span></span>';
+  }
+
   function loadStats(){
     if(!statsRail || statsState !== 'idle') return;
     statsState = 'loading';
@@ -870,7 +888,11 @@
           snowMax = Math.max.apply(null, [snowMax].concat(z.daily.snowfall_sum.map(Number)));
           precipMax = Math.max.apply(null, [precipMax].concat(z.daily.precipitation_sum.map(Number)));
         });
-        statsRail.innerHTML = regionCard(sites, all[1]) + ZONES.map(function(k, i){
+        var storms = ZONES.map(function(_, i){
+          return stormLevel(sum(list[i].hourly.snowfall, 24), sum(list[i].hourly.precipitation, 24));
+        });
+        var worst = storms.reduce(function(a, b){ return STORM_ORDER.indexOf(b) > STORM_ORDER.indexOf(a) ? b : a; }, 'none');
+        statsRail.innerHTML = regionCard(sites, all[1], worst) + ZONES.map(function(k, i){
           var v = VIEWS[k], t = v.target, h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var snow = d.snowfall_sum.map(Number);
@@ -885,7 +907,7 @@
               '<span class="stat-val">' + formatPrecip(sum(h.precipitation, w[0])) + '</span>';
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
-            '<span class="stat-head"><span class="stat-name">' + (v.title || v.label) + '</span>' +
+            '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) +
             '<span class="stat-elev">' + t.ft.toLocaleString() + ' ft</span></span>' +
             '<span class="stat-target">' + t.name + ' &middot; ' + formatCoords(t) + '</span>' +
             '<span class="stat-grid"><span></span>' +
@@ -1113,7 +1135,7 @@
   function saved(){
     try { return localStorage.getItem('map-view'); } catch(e){ return null; }
   }
-  function select(key, animate){
+  function select(key, animate, keepSaved){
     if(!VIEWS[key]) key = DEFAULT_VIEW;
     currentView = key;
     var v = VIEWS[key];
@@ -1128,12 +1150,12 @@
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
     updateCarousel();
     updateMarkers();
-    if(animate){ try { localStorage.setItem('map-view', key); } catch(e){} }
+    if(animate && !keepSaved){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
-  map.on('load', function(){ select(saved() || DEFAULT_VIEW, false); });
+  map.on('load', function(){ select(tracking ? 'west' : (saved() || DEFAULT_VIEW), false); }); // /elnino opens on the Overview
   if(startTracking) setTracking(true);
   // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
   // steering the map.
