@@ -471,28 +471,12 @@
   [data-tab="odds"] .stat-panel[data-panel="odds"]{display:block;}
   .stat-split{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:10px;color:var(--muted);}
   .stat-split b{font-size:14px;font-weight:600;color:var(--strong);margin-right:3px;}
-  .stat-chart-key{display:flex;align-items:center;gap:4px;margin-left:8px;letter-spacing:0.04em;text-transform:none;}
   .stat-note-inline{display:block;margin-top:6px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:normal;}
   .stat-bars-10{position:relative;}
 
-  /* Snow: the ensemble's likely range (10th-90th percentile) as a capped line through each bar. */
-  .stat-range, .stat-range-key{position:absolute;left:50%;width:1.5px;background:var(--strong);transform:translateX(-50%);}
-  .stat-bar > .stat-range{display:block;width:1.5px;border-radius:0;background:var(--strong);opacity:0.85;} /* not a bar */
-  .stat-range::before, .stat-range::after, .stat-range-key::before, .stat-range-key::after{
-    content:"";position:absolute;left:50%;width:7px;height:1.5px;background:var(--strong);transform:translateX(-50%);
-  }
-  .stat-range::before, .stat-range-key::before{top:0;}
-  .stat-range::after, .stat-range-key::after{bottom:0;}
-  .stat-range-key{position:relative;left:auto;display:inline-block;height:9px;margin:0 4px;transform:none;}
-  .stat-range-key::before, .stat-range-key::after{left:0.75px;}
-
-  /* Snow level: line in the warm color, with dashed reference lines for the base and the target. */
-  .level .stat-swatch{background:var(--temp-line);}
-  .stat-line.stat-level{height:58px;}
+  /* Wind: peak gusts in neutral ink, darker past the dashed lift-hold line; arrows show where it blows. */
   .stat-ref{position:absolute;left:0;right:0;border-top:1px dashed var(--divider);pointer-events:none;}
   .stat-ref span{position:absolute;right:0;bottom:1px;font-size:8px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;}
-
-  /* Wind: peak gusts in neutral ink, darker past the lift-hold line; arrows show where it blows. */
   .wind .stat-swatch{background:var(--muted);}
   .wind .stat-bar > span{background:var(--muted);opacity:0.55;}
   .wind .stat-bar.is-high > span{background:var(--strong);opacity:1;}
@@ -961,7 +945,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=20"></script>
+<script src="assets/storm-map.js?v=21"></script>
 
 </body>
 </html>

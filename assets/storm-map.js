@@ -23,14 +23,13 @@
   // Each zone forecasts for one named target: the top bar's weather, elevation and coordinates (in
   // Tracker mode), the totals card and the map's target marker all use it. Positions are OpenStreetMap's
   // for each named place; `ft` is the published elevation, or read off the z13 terrain tiles where none
-  // is published. `base` is the bottom of the terrain below it, for comparing against the snow level.
-  // `cams` is a fallback list of nearby ALERTCalifornia mountain cameras, used only if
+  // is published. `cams` is a fallback list of nearby ALERTCalifornia mountain cameras, used only if
   // the live camera feed (see "mountain cams" below) doesn't load.
   var VIEWS = {
     west: { label: 'West Coast' },
     shasta: {
       label: 'Shasta', center: [-122.208, 41.405], zoom: 10.6,
-      target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330, base: { name: 'Bunny Flat', ft: 6930 }, cams: [ // Shasta's west-side peak
+      target: { name: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330, cams: [ // Shasta's west-side peak
         { id: 'weed-cam02', name: 'Weed 2', mi: 9.2 },
         { id: 'hammondranch-cam01', name: 'Hammond Ranch 1', mi: 12.1 },
         { id: 'shastaskipark-cam01', name: 'Shasta Ski Park', mi: 6.0 }
@@ -39,7 +38,7 @@
     tahoe: {
       // framed to the lake plus Granite Chief, so both fit on any screen
       label: 'Tahoe', bounds: [[-120.31, 38.92], [-119.92, 39.26]],
-      target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, base: { name: 'Base', ft: 6200 }, // top of Siberia Express
+      target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, // top of Siberia Express
         // Palisades' own Scope cam at High Camp, 8,200 ft, next to Siberia. Its live player only plays
         // on Palisades' site, but the player's poster is a public still (refreshed about every 15 min).
         cams: [{ name: 'Palisades Scope 8,200′', credit: 'Palisades Tahoe', url: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_EIFC0000015B' }],
@@ -47,14 +46,14 @@
     },
     mammoth: {
       label: 'Mammoth', center: [-119.0, 37.63], zoom: 10.5,
-      target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053, base: { name: 'Main Lodge', ft: 8790 }, cams: [ // summit
+      target: { name: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053, cams: [ // summit
         { id: 'mammothmtn-cam01', name: 'Mammoth Mtn. 1', mi: 0 },
         { id: 'mammothmtn-cam02', name: 'Mammoth Mtn. 2', mi: 0 }
       ] }
     },
     whitney: {
       label: 'Whitney', center: [-118.29, 36.58], zoom: 10.3,
-      target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505, base: { name: 'Portal', ft: 8360 }, cams: [
+      target: { name: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505, cams: [
         { id: 'whitneyportal-cam01', name: 'Whitney Portal 1', mi: 8.3 },
         { id: 'lonepine-cam02', name: 'Lone Pine 2', mi: 13.1 }
       ] }
@@ -447,7 +446,6 @@
   // wind, then likelihood. The tab choice is shared by every card so paging keeps it.
   var TABS = [['snow', 'Snow'], ['wind', 'Wind'], ['odds', 'Odds']];
   var LIFT_HOLD_MPH = 40;    // gusts around here start holding exposed lifts
-  var SNOW_LEVEL_DROP = 1000; // snow usually falls about this far below the freezing level, in ft
   // NOAA WPC winter odds, days 1-3: map layer -> [day index, inches]
   var WPC_LAYERS = { 1: [0, 4], 2: [0, 8], 3: [0, 12], 6: [1, 4], 7: [1, 8], 8: [1, 12], 11: [2, 4], 12: [2, 8], 13: [2, 12] };
   var WPC_URL = 'https://mapservices.weather.noaa.gov/vector/rest/services/precip/wpc_prob_winter_precip/MapServer/identify' +
@@ -464,7 +462,6 @@
     return dates.map(function(d){ return groups[d] ? fn(groups[d], d) : null; });
   }
   function maxOf(list){ return Math.max.apply(null, list); }
-  function minOf(list){ return Math.min.apply(null, list); }
   // Mean wind direction for a day: average the hourly vectors so 350 and 10 make 0, not 180.
   function meanDirection(dirs){
     var x = 0, y = 0;
@@ -474,18 +471,13 @@
   function compass(deg){
     return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
   }
-  function percentile(sorted, p){
-    var i = (sorted.length - 1) * p, lo = Math.floor(i), hi = Math.ceil(i);
-    return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
-  }
-  // ECMWF ensemble (control + 50 members): per day, the 10th-90th percentile snowfall and the share
-  // of runs with 6" or more.
+  // ECMWF ensemble (control + 50 members): per day, the share of runs with 6" or more.
   function ensembleDays(z){
     if(!z || !z.daily) return null;
     var keys = Object.keys(z.daily).filter(function(k){ return k.indexOf('snowfall_sum') === 0; });
     return z.daily.time.map(function(_, i){
-      var v = keys.map(function(k){ return Number(z.daily[k][i]) || 0; }).sort(function(a, b){ return a - b; });
-      return { p10: percentile(v, 0.1), p90: percentile(v, 0.9), chance6: v.filter(function(x){ return x >= 6; }).length / v.length };
+      var v = keys.map(function(k){ return Number(z.daily[k][i]) || 0; });
+      return { chance6: v.filter(function(x){ return x >= 6; }).length / v.length };
     });
   }
   // WPC identify result -> grid[day][inches] = "10–39%" etc. No polygon at the point means under 10%.
@@ -500,51 +492,15 @@
     return grid;
   }
 
-  // Snow tab: 10-day bars with the ensemble's likely range drawn through each, totals for days 1-5
-  // and 6-10, and the snow level against the base and the target.
-  function snowPanel(t, days, snow, ens, snowMax, levels){
-    var first5 = total(snow, 0, 5), next5 = total(snow, 5, 10);
-    var bars = '<span class="stat-bars stat-bars-10">' + snow.map(function(v, i){
-      var pct = v > 0 ? Math.max(6, v / snowMax * 100) : 0;
-      var r = ens && ens[i];
-      var range = r && r.p90 > 0.2
-        ? '<span class="stat-range" style="bottom:' + (r.p10 / snowMax * 100).toFixed(1) + '%;height:' + (Math.max(r.p90 - r.p10, 0.05) / snowMax * 100).toFixed(1) + '%"></span>'
-        : '';
-      var label = days[i] + ' ' + v.toFixed(1) + '"' + (r ? ' (likely ' + Math.round(r.p10) + '–' + Math.round(r.p90) + '")' : '');
-      return '<span class="stat-bar" data-label="' + label + '"><span style="height:' + pct.toFixed(1) + '%"></span>' + range + '</span>';
-    }).join('') + '</span>';
+  // Snow tab: totals for days 1-5 and 6-10, then the snow and precip bars by day.
+  function snowPanel(days, snow, precip, snowMax, precipMax){
+    var letters = days.map(function(n){ return n.charAt(0); });
     return '<span class="stat-panel" data-panel="snow">' +
-      '<span class="stat-split"><span><b>' + formatSnow(first5) + '</b> days 1–5</span><span><b>' + formatSnow(next5) + '</b> days 6–10</span></span>' +
-      '<span class="stat-chart snow"><span class="stat-chart-head"><span class="stat-swatch"></span>Snow by day' +
-      (ens ? '<span class="stat-chart-key"><span class="stat-range-key"></span>likely range</span>' : '') +
-      '<span class="stat-chart-max">' + snowMax.toFixed(1) + '"</span></span>' + bars + '</span>' +
-      '<span class="stat-days">' + days.map(function(n){ return '<span>' + n.charAt(0) + '</span>'; }).join('') + '</span>' +
-      levelChart(levels, days, [t.base, { name: t.name.split(',')[0], ft: t.ft }]) +
+      '<span class="stat-split"><span><b>' + formatSnow(total(snow, 0, 5)) + '</b> days 1\u20135</span><span><b>' + formatSnow(total(snow, 5, 10)) + '</b> days 6\u201310</span></span>' +
+      barChart('snow', 'Snow by day', snow, snowMax, days, function(x){ return x.toFixed(1) + '"'; }) +
+      barChart('precip', 'Precip by day', precip, precipMax, days, formatPrecip) +
+      '<span class="stat-days">' + letters.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
       '</span>';
-  }
-  // Daily lowest snow level as a line, with dashed reference lines for the base and the target.
-  // Under the target line it snows up top; above it, it rains there too.
-  function levelChart(levels, days, refs){
-    var vals = levels.filter(function(v){ return v != null; });
-    if(!vals.length) return '';
-    var lo = refs[0].ft, hi = refs[refs.length - 1].ft;
-    // Frame the base and target with room around them; levels far outside are pinned to the edges
-    // (way above the summit reads the same as a little above it here).
-    var top = Math.min(maxOf(vals) + 600, hi + 4000), bottom = Math.max(minOf(vals) - 600, lo - 3000);
-    top = Math.max(top, hi + 800); bottom = Math.min(bottom, lo - 800);
-    var y = function(ft){ return ((top - Math.max(bottom, Math.min(top, ft))) / (top - bottom) * 100).toFixed(2); };
-    var pts = levels.map(function(v, i){ return v == null ? null : [((i + 0.5) / levels.length * 100).toFixed(2), y(v)]; }).filter(Boolean);
-    return '<span class="stat-chart level"><span class="stat-chart-head"><span class="stat-swatch"></span>Snow level, lowest each day</span>' +
-      '<span class="stat-line stat-level">' +
-      refs.map(function(r){
-        return '<span class="stat-ref" style="top:' + y(r.ft) + '%"><span>' + r.name + ' ' + r.ft.toLocaleString() + '</span></span>';
-      }).join('') +
-      '<svg class="stat-line-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M' +
-      pts.map(function(p){ return p.join(' '); }).join('L') + '"/></svg>' +
-      '<span class="stat-bars">' + levels.map(function(v, i){
-        return '<span class="stat-bar" data-label="' + days[i] + (v == null ? '' : ' ' + Math.round(v / 100) * 100 + ' ft') + '"></span>';
-      }).join('') + '</span>' +
-      '</span><span class="stat-note-inline">Line under a dashed level: snow there; over it: rain. Set about ' + SNOW_LEVEL_DROP.toLocaleString() + ' ft below the freezing level.</span></span>';
   }
   // Wind tab: the next 24 hours in words, then each day's peak gust with its direction, and a line
   // where lifts start to hold.
@@ -609,7 +565,7 @@
       '&longitude=' + pts.map(function(p){ return p.lon; }).join(',') +
       '&elevation=' + pts.map(function(p){ return Math.round(p.ft / 3.28084); }).join(',');
     var url = 'https://api.open-meteo.com/v1/forecast' + where +
-      '&hourly=precipitation,snowfall,freezing_level_height,wind_gusts_10m,wind_direction_10m&forecast_hours=240' +
+      '&hourly=precipitation,snowfall,wind_gusts_10m,wind_direction_10m&forecast_hours=240' +
       '&daily=snowfall_sum,precipitation_sum&forecast_days=10' +
       '&precipitation_unit=inch&wind_speed_unit=mph&timezone=America%2FLos_Angeles';
     var ensembleUrl = 'https://ensemble-api.open-meteo.com/v1/ensemble' + where +
@@ -635,18 +591,16 @@
         var list = Array.isArray(all[0]) ? all[0] : [all[0]];
         var ensList = all[2] ? (Array.isArray(all[2]) ? all[2] : [all[2]]) : [];
         var ens = ZONES.map(function(_, i){ return ensembleDays(ensList[i]); });
-        // one snow scale for every zone card (deterministic and the top of the likely range)
-        var snowMax = SNOW_FLOOR;
-        list.forEach(function(z, i){
-          snowMax = Math.max.apply(null, [snowMax].concat(z.daily.snowfall_sum.map(Number), (ens[i] || []).map(function(r){ return r.p90; })));
+        // one snow scale and one precip scale for every zone card, so they compare as you page
+        var snowMax = SNOW_FLOOR, precipMax = PRECIP_FLOOR;
+        list.forEach(function(z){
+          snowMax = Math.max.apply(null, [snowMax].concat(z.daily.snowfall_sum.map(Number)));
+          precipMax = Math.max.apply(null, [precipMax].concat(z.daily.precipitation_sum.map(Number)));
         });
         statsRail.innerHTML = regionCard(sites, all[1]) + ZONES.map(function(k, i){
           var v = VIEWS[k], t = v.target, h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var snow = d.snowfall_sum.map(Number);
-          // freezing level comes back in feet when inch units are asked for, meters otherwise
-          var toFt = list[i].hourly_units && list[i].hourly_units.freezing_level_height === 'm' ? 3.28084 : 1;
-          var levels = byDay(d.time, h, 'freezing_level_height', function(m){ return minOf(m) * toFt - SNOW_LEVEL_DROP; });
           var gusts = byDay(d.time, h, 'wind_gusts_10m', maxOf);
           var dirs = byDay(d.time, h, 'wind_direction_10m', meanDirection);
           var next24 = h.wind_gusts_10m.slice(0, 24).map(Number);
@@ -666,7 +620,7 @@
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
             '<span class="stat-charts"><span class="stat-charts-inner">' +
             tabBar() +
-            snowPanel(t, days, snow, ens[i], snowMax, levels) +
+            snowPanel(days, snow, d.precipitation_sum.map(Number), snowMax, precipMax) +
             windPanel(days, gusts, dirs, nextGust, nextDir) +
             oddsPanel(days, all[3][i] ? wpcGrid(all[3][i]) : null, ens[i]) +
             '</span></span>' +
