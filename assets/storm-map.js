@@ -167,6 +167,8 @@
     node.setAttribute('aria-label', VIEWS[k].label + ' forecast point: ' + t.name);
     node.innerHTML = '<span class="target-body enter" style="--i:' + (2 + i) + '">' +
       '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>' +
+      // leader, in a box that starts 18px above the target: from the ring at 45 degrees, then flat into the label
+      '<svg class="target-leader" viewBox="0 0 44 30" aria-hidden="true"><path d="M17 25 30 12h14"/></svg>' +
       '<span class="target-label"><span class="target-name">' + t.name + '</span>' +
       formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft' +
       '<span class="target-cam"><span class="target-cam-frame"><img alt="" decoding="async"></span>' +
