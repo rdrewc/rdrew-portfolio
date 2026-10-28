@@ -331,21 +331,21 @@
   .show-target-labels .target-label{display:block;}
   .target-name{display:block;font-size:10px;font-weight:600;color:var(--strong);}
   .target-marker.is-current .target-label{border-color:var(--accent);}
+  /* The selected target's label carries the latest frame from its mountain camera
+     (480 x 270, time stamped along the bottom). */
+  .target-cam{display:none;width:240px;margin:8px 0 2px;}
+  .target-marker.is-current .target-cam{display:block;}
+  .target-cam-frame{display:block;aspect-ratio:16 / 9;border-radius:4px;overflow:hidden;background:var(--tile-bg);}
+  .target-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
+  .target-cam.is-offline img{visibility:hidden;}
+  .target-cam-caption{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:9px;letter-spacing:0.02em;color:var(--label);}
+  .target-cam-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;}
   .stat-grid{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;}
   .stat-col{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);text-align:right;white-space:nowrap;}
   .stat-val{text-align:right;color:var(--strong);font-variant-numeric:tabular-nums;}
   .stat-swatch{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:2px;vertical-align:0;}
   .snow .stat-swatch{background:var(--snow-bar);}
   .precip .stat-swatch{background:var(--precip-bar);}
-
-  /* Latest frame from the best mountain camera (480 x 270, time stamped along the bottom). */
-  .stat-cam{display:block;margin-top:12px;}
-  .stat-cam-frame{display:block;aspect-ratio:16 / 9;border-radius:8px;overflow:hidden;background:var(--tile-bg);}
-  .stat-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
-  .stat-cam.is-offline img{visibility:hidden;}
-  .stat-cam-caption{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:9px;letter-spacing:0.02em;color:var(--label);}
-  .stat-cam-name{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .stat-cam-dist{white-space:nowrap;}
 
   /* Daily bars: one chart per measure (they don't share a scale), both scaled the same on every card. */
   .stat-chart{display:block;margin-top:12px;}
@@ -662,6 +662,7 @@
     .site-stats.is-expanded .stat-charts{grid-template-rows:1fr;}
     .stat-charts-inner{min-height:0;overflow:hidden;}
     .view-tabs button{padding:0 7px;font-size:10px;}
+    .target-cam{width:180px;}
   }
 </style>
 </head>
@@ -836,7 +837,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=10"></script>
+<script src="assets/storm-map.js?v=11"></script>
 
 </body>
 </html>

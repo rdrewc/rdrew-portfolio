@@ -168,7 +168,10 @@
     node.innerHTML = '<span class="target-body enter" style="--i:' + (2 + i) + '">' +
       '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>' +
       '<span class="target-label"><span class="target-name">' + t.name + '</span>' +
-      formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft</span></span>';
+      formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft' +
+      '<span class="target-cam"><span class="target-cam-frame"><img alt="" decoding="async"></span>' +
+      '<span class="target-cam-caption"><span class="target-cam-name"></span><span class="target-cam-dist"></span></span></span>' +
+      '</span></span>';
     node.addEventListener('click', function(){ select(k, true); });
     return new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat([t.lon, t.lat]).addTo(map);
   });
@@ -364,8 +367,6 @@
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
             '<span class="stat-charts"><span class="stat-charts-inner">' +
-            '<span class="stat-cam"><span class="stat-cam-frame"><img alt="" decoding="async"></span>' +
-            '<span class="stat-cam-caption"><span class="stat-cam-name"></span><span class="stat-cam-dist"></span></span></span>' +
             barChart('snow', 'Snow by day', d.snowfall_sum.map(Number), snowMax, days, function(x){ return x.toFixed(1) + '"'; }) +
             barChart('precip', 'Precip by day', d.precipitation_sum.map(Number), precipMax, days, formatPrecip) +
             '<span class="stat-days">' + days.map(function(n){ return '<span>' + n + '</span>'; }).join('') + '</span>' +
@@ -377,7 +378,6 @@
         });
         statsState = 'done';
         updateCarousel();
-        refreshCams();
       })
       .catch(function(){
         statsRail.innerHTML = '<p class="stat-note">Forecast unavailable</p>';
@@ -423,32 +423,33 @@
     return camFeed;
   }
 
-  // Latest frame from the best camera that answers; the query changes once a minute so a fresh
-  // frame is fetched without hammering the server.
-  function showCam(card, k, n){
+  // The still sits in the target's map label (shown on the selected target only). Latest frame from
+  // the best camera that answers; the query changes once a minute so a fresh frame is fetched without
+  // hammering the server.
+  function showCam(node, k, n){
     var cams = (camPicks[k] && camPicks[k].length) ? camPicks[k] : VIEWS[k].target.cams;
-    var box = card.querySelector('.stat-cam');
+    var box = node.querySelector('.target-cam');
     var img = box && box.querySelector('img');
     if(!img) return;
     if(n >= cams.length){
       box.classList.add('is-offline');
-      box.querySelector('.stat-cam-name').textContent = 'Cams offline';
-      box.querySelector('.stat-cam-dist').textContent = '';
+      box.querySelector('.target-cam-name').textContent = 'Cams offline';
+      box.querySelector('.target-cam-dist').textContent = '';
       return;
     }
     var cam = cams[n];
     box.classList.remove('is-offline');
-    img.onerror = function(){ showCam(card, k, n + 1); };
+    img.onerror = function(){ showCam(node, k, n + 1); };
     img.alt = 'Latest still from the ' + cam.name + ' camera';
     img.src = CAM_IMG.replace('{id}', cam.id) + '?t=' + Math.floor(Date.now() / 60000);
-    box.querySelector('.stat-cam-name').textContent = cam.name;
-    box.querySelector('.stat-cam-dist').textContent = (cam.mi < 1 ? 'on the mountain' : cam.mi + ' mi away') + ' · ALERTCalifornia';
+    box.querySelector('.target-cam-name').textContent = cam.name;
+    box.querySelector('.target-cam-dist').textContent = (cam.mi < 1 ? 'on the mountain' : cam.mi + ' mi away') + ' · ALERTCalifornia';
   }
   function refreshCams(){
-    if(!statsRail || statsState !== 'done') return;
     loadCamFeed().then(function(){
-      statsRail.querySelectorAll('[data-stat-view]').forEach(function(card){
-        showCam(card, card.getAttribute('data-stat-view'), 0);
+      markers.forEach(function(m){
+        var node = m.getElement();
+        showCam(node, node.getAttribute('data-zone'), 0);
       });
     });
   }

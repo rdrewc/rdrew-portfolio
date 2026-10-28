@@ -56,7 +56,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Framed views (the whole coast, Tahoe) now pad around the top bar, timeline, footer and totals card, so the whole lake and Granite Chief show on desktop and phones.
 
 ## Live cams, header, snowflake (done)
-- Each totals card shows the latest frame from a mountain camera, not a highway camera. The cameras are ALERTCalifornia's (UC San Diego) pan-tilt units on peaks and lookouts.
+- The selected target's map label (not the weather card) shows the latest frame from a mountain camera, not a highway camera. Other targets' labels stay text-only, and the cam is 240 px wide (180 on phones). The cameras are ALERTCalifornia's (UC San Diego) pan-tilt units on peaks and lookouts.
   - On first tracker open, the public feed (`all_cameras-v3.json`, about 137 KB gzipped, cross-origin allowed) gives every camera's position, current heading and field of view. Per target, the card picks the nearest camera within 25 mi that's pointed at it (or sits on it, under 1 mi), then the nearest of the rest. It keeps the top 3 to fall back through if one fails to load.
   - Images are `/{id}/latest-thumb.jpg`, 480x270 at about 22 KB, time stamped and watermarked by ALERTCalifornia. They reload every minute while the tracker is open.
   - `cams` in VIEWS is the fallback if the feed doesn't load: Weed 2 for Shastina, Duncan Peak Lookout for Granite Chief, the Mammoth Mtn. summit cams, and Whitney Portal 1.
