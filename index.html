@@ -42,6 +42,7 @@
     --terrain-line-strong:rgba(255,255,255,0.55); /* map lines in Tracker mode */
     --snow-bar:#9085e9;   /* chart series, validated as a pair on --bg (dataviz palette) */
     --precip-bar:#199e70;
+    --temp-line:#d95926;  /* validated with the two bars above */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
   }
@@ -62,6 +63,7 @@
     --terrain-line-strong:rgba(90,74,140,0.45);
     --snow-bar:#6250d6;
     --precip-bar:#1baf7a;
+    --temp-line:#eb6834;
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
   }
@@ -416,6 +418,24 @@
   .stat-bar.is-past > span{opacity:0.4;}
   .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
   .stat-days.stat-days-range span{flex:none;max-width:none;white-space:nowrap;}
+  .stat-section-head{margin-top:14px;margin-bottom:-4px;}
+
+  /* Snowiest site callout: the number wears text color; the swatch carries "snow". */
+  .stat-hero{display:block;margin:10px 0 12px;padding:10px 12px;border:1px solid var(--divider);border-radius:8px;}
+  .stat-hero-label{display:flex;align-items:center;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
+  .stat-hero-row{display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .stat-hero-num{font-family:'DM Sans',sans-serif;font-size:36px;font-weight:600;line-height:1;letter-spacing:-0.01em;color:var(--strong);font-variant-numeric:tabular-nums;}
+  .stat-hero-site{display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .stat-hero-name{font-size:12px;font-weight:600;color:var(--strong);}
+
+  /* Temperature line: its own chart above the precip bars, on the same day columns. */
+  .temp .stat-swatch{background:var(--temp-line);}
+  .stat-line{position:relative;display:block;height:34px;border-bottom:1px solid var(--divider);}
+  .stat-line-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:var(--temp-line);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;}
+  .stat-line-svg path{vector-effect:non-scaling-stroke;}
+  .stat-line-svg path.is-past{stroke-dasharray:3 3;opacity:0.55;}
+  .stat-line-dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--temp-line);box-shadow:0 0 0 2px var(--bg);}
+  .stat-line .stat-bars{position:absolute;inset:0;height:auto;border:none;}
   .stat-sites-head{margin-top:14px;}
   .stat-sites{row-gap:3px;}
   .stat-enso{display:block;margin-top:14px;padding-top:12px;border-top:1px solid var(--divider);white-space:normal;}
@@ -885,7 +905,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=13"></script>
+<script src="assets/storm-map.js?v=14"></script>
 
 </body>
 </html>

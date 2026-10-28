@@ -354,6 +354,30 @@
           '<span style="height:' + pct.toFixed(1) + '%"></span></span>';
       }).join('') + '</span></span>';
   }
+  // A daily line for a measure that isn't a total (temperature). It gets its own chart rather than a
+  // second axis, and uses the bars' day columns so it lines up with the precip bars under it. Past
+  // days are dashed and today gets a dot; hovering a column shows its value, like the bars.
+  function lineChart(cls, title, values, days, fmt, split){
+    var lo = Math.min.apply(null, values), hi = Math.max.apply(null, values);
+    var pad = Math.max(2, (hi - lo) * 0.2), top = hi + pad, bottom = lo - pad;
+    var pts = values.map(function(v, i){
+      return [((i + 0.5) / values.length * 100).toFixed(2), ((top - v) / (top - bottom) * 100).toFixed(2)];
+    });
+    function path(from, to){
+      return 'M' + pts.slice(from, to).map(function(p){ return p.join(' '); }).join('L');
+    }
+    return '<span class="stat-chart ' + cls + '">' +
+      '<span class="stat-chart-head"><span class="stat-swatch"></span>' + title +
+      '<span class="stat-chart-max">' + fmt(lo) + '–' + fmt(hi) + '</span></span>' +
+      '<span class="stat-line">' +
+      '<svg class="stat-line-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="is-past" d="' + path(0, split + 1) + '"/><path d="' + path(split, values.length) + '"/></svg>' +
+      '<span class="stat-line-dot" style="left:' + pts[split][0] + '%;top:' + pts[split][1] + '%"></span>' +
+      '<span class="stat-bars">' + values.map(function(v, i){
+        return '<span class="stat-bar" data-label="' + days[i] + ' ' + fmt(v) + '"></span>';
+      }).join('') + '</span>' +
+      '</span></span>';
+  }
   function average(lists){
     return lists[0].map(function(_, i){
       return lists.reduce(function(s, l){ return s + (Number(l[i]) || 0); }, 0) / lists.length;
@@ -376,12 +400,17 @@
     var mood = nextP > pastP * 1.25 + 0.05 ? 'Wetter week ahead' : nextP < pastP * 0.8 - 0.05 ? 'Drier week ahead' : 'A similar week ahead';
     var tempNote = dT <= -3 ? ', about ' + Math.round(-dT) + '°F colder' : dT >= 3 ? ', about ' + Math.round(dT) + '°F warmer' : '';
     var bySite = sites.map(function(s, i){
-      return { name: s.name, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
+      return { name: s.name, ft: s.ft, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
     });
     var top = bySite.slice().sort(function(a, b){ return b.snow - a.snow; })[0];
     var trend = mood + tempNote + ': ' + formatPrecip(nextP) + ' of precip and ' + formatSnow(nextS) + ' of snow per site on average, ' +
-      'after ' + formatPrecip(pastP) + ' and ' + formatSnow(pastS) + ' this past week.' +
-      (top.snow >= 0.5 ? ' Most snow: ' + top.name + ', ' + formatSnow(top.snow) + '.' : '');
+      'after ' + formatPrecip(pastP) + ' and ' + formatSnow(pastS) + ' this past week.';
+    // The snowiest site gets its own callout, a big number apart from the sentence.
+    var hero = top.snow >= 0.5
+      ? '<span class="stat-hero-num">' + formatSnow(top.snow) + '</span>' +
+        '<span class="stat-hero-site"><span class="stat-hero-name">' + top.name + '</span>' +
+        formatPrecip(top.precip) + ' precip &middot; ' + top.ft.toLocaleString() + ' ft</span>'
+      : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No snow ahead</span>at any of the ' + sites.length + ' sites</span>';
     var dates = d[0].time;
     var days = dates.map(function(t, i){ return i === TODAY ? 'Today' : dayName(t); });
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
@@ -389,10 +418,14 @@
     return '<button type="button" class="stat-card stat-card-region" data-stat-view="west">' +
       '<span class="stat-head"><span class="stat-name">Pacific Maritime Snowpack</span></span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
+      '<span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow, next 7 days</span>' +
+      '<span class="stat-hero-row">' + hero + '</span></span>' +
       '<span class="stat-trend">' + trend + '</span>' +
       '<span class="stat-charts"><span class="stat-charts-inner">' +
-      barChart('snow', 'Snow, past &amp; next week', snow, snowMax, days, function(x){ return x.toFixed(1) + '"'; }, TODAY) +
-      barChart('precip', 'Precip, past &amp; next week', precip, precipMax, days, formatPrecip, TODAY) +
+      '<span class="stat-chart-head stat-section-head">Past week &middot; next week</span>' +
+      lineChart('temp', 'Avg temp', temp, days, function(x){ return Math.round(x) + '°'; }, TODAY) +
+      barChart('precip', 'Precip', precip, precipMax, days, formatPrecip, TODAY) +
+      barChart('snow', 'Snow', snow, snowMax, days, function(x){ return x.toFixed(1) + '"'; }, TODAY) +
       '<span class="stat-days stat-days-range"><span>' + label(dates[0]) + '</span><span>Today</span><span>' + label(dates[13]) + '</span></span>' +
       '<span class="stat-chart-head stat-sites-head">Next 7 days by site</span>' +
       '<span class="stat-grid stat-sites"><span></span>' +
