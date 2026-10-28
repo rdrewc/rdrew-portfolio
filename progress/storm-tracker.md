@@ -165,7 +165,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 
 ## Opens on Overview, storm-colored titles (done)
 - The tracker now opens on the Overview card every time. The homepage keeps its saved view (Tahoe by default), because `select(key, animate, keepSaved)` skips saving when the tracker switches to West on its own.
-- Card titles use Barlow Condensed italic 900 in caps at 24 px. That's the one new font; nothing else changed.
+- Card titles use Barlow Condensed italic 900 in caps at 32 px. That's the one new font; nothing else changed.
 - The title color comes from the next 24 hours of Open-Meteo hourly snowfall and precipitation (`stormLevel`):
   - Red (`--storm-big`) means at least 6" of snow or 1" of precipitation.
   - Yellow (`--storm-mid`) means at least 1" of snow or 0.25" of precipitation.
