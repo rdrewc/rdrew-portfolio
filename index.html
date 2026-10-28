@@ -236,7 +236,8 @@
     gap:8px;
     width:260px;
   }
-  .stats-track{position:relative;overflow:hidden;border-radius:12px;}
+  /* clip, not hidden: a hidden overflow can still be scrolled by focus, which knocked the cards sideways */
+  .stats-track{position:relative;overflow:hidden;overflow:clip;border-radius:12px;}
   .stats-rail{display:flex;transition:transform 0.45s var(--ease-out);}
   @media (prefers-reduced-motion: reduce){ .stats-rail, .stat-charts{transition:none !important;} }
   .stat-charts, .stat-charts-inner{display:block;}
@@ -320,7 +321,8 @@
   .target-icon{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;}
   .target-marker .target-icon circle:last-of-type{fill:currentColor;}
   /* Leader: an elbow from the target's ring up and out to the label, so the label reads as pointing
-     at the spot. The label sits at the leader's end, centered on it. */
+     at the spot. The label hangs down from the leader's end, which meets it at the name line, so a
+     tall label (with its cam) grows downward instead of up under the totals card. */
   .target-leader{
     position:absolute;
     left:0;
@@ -339,8 +341,7 @@
   .target-label{
     position:absolute;
     left:44px;
-    top:-6px;
-    transform:translateY(-50%);
+    top:-17px;
     display:none;
     padding:4px 8px;
     border:1px solid var(--glass-border);
@@ -365,7 +366,7 @@
   .target-cam-frame{display:block;aspect-ratio:16 / 9;border-radius:4px;overflow:hidden;background:var(--tile-bg);}
   .target-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
   .target-cam.is-offline img{visibility:hidden;}
-  .target-cam-caption{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:9px;letter-spacing:0.02em;color:var(--label);}
+  .target-cam-caption{display:flex;flex-direction:column;margin-top:5px;font-size:9px;letter-spacing:0.02em;line-height:1.5;color:var(--label);}
   .target-cam-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;}
   .stat-grid{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;}
   .stat-col{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);text-align:right;white-space:nowrap;}

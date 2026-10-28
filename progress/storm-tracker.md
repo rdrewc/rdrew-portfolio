@@ -65,10 +65,13 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The top bar outside Tracker mode always shows home, as before: Lake Tahoe at 39.0968° N, 120.0324° W, 6,225 ft, with Tahoe City weather. Inside Tracker mode it shows the selected target.
 - The snowflake is always a filled circle, like the theme toggle's indicator, and turns accent-colored when on. Closed, the pill is a 34 px circle; the space before the snowflake is a margin on the last tab, so it folds away with the tabs.
 
-## Leader lines, card footer (done, not yet checked on screen)
-- Each target label hangs off a leader line: an elbow from the crosshair's ring at 45°, then flat into the label. The label sits at the leader's end, 44 px right and 6 px up. The leader is accent-colored on the selected target and hides with the labels at whole-coast zoom.
+## Leader lines, card footer (done, checked on screen)
+- Each target label hangs off a leader line: an elbow from the crosshair's ring at 45°, then flat into the label. The label hangs down from the leader's end (44 px right, top at -17 px) so the leader meets it at the name line. A tall label with its cam grows downward instead of up under the totals card. The leader is accent-colored on the selected target and hides with the labels at whole-coast zoom.
 - The carousel arrows moved into a footer inside the card's stroke: back and next in the bottom corners, the count between them. The footer stays fixed while the cards slide under it, and cards got 50 px of bottom padding for it. On phones a chevron next to the count replaces the chart icon for opening the bars, and turns over when open.
-- Layout was checked by measurement (footer inset 1 px inside the card, arrows 7 px from the corners). The session's window wasn't showing, so the browser preview wasn't drawing and there's no screenshot yet.
+- Checked on screen at phone and desktop sizes. Fixes from that check:
+  - The label now hangs down rather than centering on the leader.
+  - The cam caption is two lines, so the camera name isn't cut to one letter.
+  - `.stats-track` is `overflow: clip`. With `hidden`, focusing the expand chevron scrolled the track 20 px and knocked the carousel sideways.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
