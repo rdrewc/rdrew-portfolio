@@ -550,6 +550,10 @@
   }
   .overlay-switch button:hover{color:var(--strong);}
   .overlay-switch button[aria-pressed="true"]{color:var(--accent);}
+  /* Wind flow canvas: drawn by storm-map.js above the map and under the target markers. It hides while
+     the map moves (trails would smear) and fades back in once it settles. */
+  .wind-canvas{position:absolute;left:0;top:0;pointer-events:none;transition:opacity var(--dur-quick) ease;}
+  .wind-canvas.is-moving, .wind-canvas.is-hidden{opacity:0;}
   .radar-panel:not([data-active="radar"]) #radar-play,
   .radar-panel:not([data-active="radar"]) input[type="range"]{display:none;}
   /* Fixed top bar: opaque, with a rule across the full window. */
@@ -962,7 +966,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=27"></script>
+<script src="assets/storm-map.js?v=29"></script>
 
 </body>
 </html>

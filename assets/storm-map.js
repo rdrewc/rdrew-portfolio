@@ -180,7 +180,6 @@
       map.setPaintProperty(id, 'line-opacity', opacity[id]);
     });
     map.setPaintProperty('outline-coast', 'line-width', tracking ? 1.2 : 1);
-    if(map.getLayer('wind')) map.setPaintProperty('wind', 'line-color', cssVar('--strong', '#eef0f6'));
     if(map.getLayer('temp-seam')) map.setPaintProperty('temp-seam', 'fill-color', cssVar('--bg', '#12131c'));
   }
   map.on('load', function(){
@@ -311,7 +310,7 @@
   function updateTimeLabel(){
     if(!timeLabel) return;
     if(overlay === 'temp'){ timeLabel.textContent = 'Temperature \u00b7 NOAA forecast'; return; }
-    if(overlay === 'wind'){ timeLabel.textContent = 'Wind now \u00b7 arrows grow with speed'; return; }
+    if(overlay === 'wind'){ timeLabel.textContent = 'Wind now'; return; }
     var d = validAt(frame);
     if(!d){ timeLabel.textContent = 'Loading radar…'; return; }
     timeLabel.textContent = formatTime(d);
@@ -354,16 +353,12 @@
 
   // ---- overlays: forecast radar, wind, temperature ----
   // Radar is the default and the only one with a timeline. Temperature is NOAA's NDFD forecast as map
-  // tiles, under the contour lines. Wind is Open-Meteo's current wind sampled on a grid over the part
-  // of the map in view, drawn as arrows that lengthen and thicken with speed; it's refetched when the
-  // map stops moving.
+  // tiles, under the contour lines. Wind is a particle flow: see "wind flow" below.
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
-  var WIND_GRID = [9, 11]; // columns, rows
   var overlay = 'radar';
   var radarPanel = document.querySelector('.radar-panel');
   var overlayBtns = document.querySelectorAll('[data-overlay]');
-  var windKey = null;
   function ensureOverlays(){
     if(map.getSource('temp')) return;
     map.addSource('temp', { type: 'raster', tileSize: 256, tiles: [TEMP_TILES] });
@@ -376,11 +371,6 @@
       geometry: { type: 'Polygon', coordinates: [[[-133, 10], [-128.5, 10], [-128.5, 60], [-133, 60], [-133, 10]]] } } });
     map.addLayer({ id: 'temp-seam', type: 'fill', source: 'temp-seam', layout: { visibility: 'none' },
       paint: { 'fill-color': cssVar('--bg', '#12131c') } }, 'contour-minor');
-    map.addSource('wind', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({ id: 'wind', type: 'line', source: 'wind',
-      layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': cssVar('--strong', '#eef0f6'), 'line-opacity': 0.85,
-        'line-width': ['interpolate', ['linear'], ['get', 'mph'], 0, 1, 40, 3] } });
   }
   function setOverlay(name){
     overlay = name;
@@ -392,23 +382,165 @@
     ensureOverlays();
     map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
     map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
-    map.setLayoutProperty('wind', 'visibility', name === 'wind' ? 'visible' : 'none');
     showFrame(frame);
-    loadWind();
+    if(name === 'wind') startWind();
+    else stopWind();
   }
   overlayBtns.forEach(function(b){
     b.addEventListener('click', function(){ setOverlay(b.getAttribute('data-overlay')); });
   });
+
+  // ---- wind flow ----
+  // Thousands of fine particles drift with the current wind, each leaving a short trail that fades,
+  // so the flow reads like a weather app's wind map rather than a field of arrows. Open-Meteo's
+  // current wind is sampled on a grid over the view (refetched when the map settles), turned into a
+  // screen-space flow field, and the particles ride it on a canvas above the map, under the targets.
+  // Faster air moves faster, and its trails are brighter and a touch thicker. They're drawn in the
+  // accent color so they separate from the white contour lines, and zoomed in (light winds over a
+  // small area) the motion is scaled up a little so it still reads.
+  var WIND_GRID = [14, 18];   // columns, rows of wind samples over the view
+  var FIELD_CELL = 16;        // px between flow-field points on screen
+  var PX_PER_MPH = 0.055;     // particle speed, px per frame per mph
+  var MAX_AGE = 90;           // frames before a particle is respawned
+  var PARTICLE_AREA = 520;    // one particle per this many square px
+  var FADE = 0.94;            // share of each trail kept from frame to frame
+  var SPEED_STEPS = [[8, 0.38, 1], [16, 0.58, 1.1], [28, 0.78, 1.3], [Infinity, 0.98, 1.6]]; // mph up to, alpha, width
+  var windCanvas = null, windCtx = null, windData = null, windField = null, windKey = null;
+  var particles = [], windRAF = null, windTimer = null;
+
+  function ensureWindCanvas(){
+    if(windCanvas) return;
+    windCanvas = document.createElement('canvas');
+    windCanvas.className = 'wind-canvas';
+    windCanvas.setAttribute('aria-hidden', 'true');
+    map.getCanvasContainer().insertBefore(windCanvas, map.getCanvas().nextSibling); // under the target markers
+    windCtx = windCanvas.getContext('2d');
+    sizeWindCanvas();
+  }
+  function sizeWindCanvas(){
+    if(!windCanvas) return;
+    var r = Math.min(window.devicePixelRatio || 1, 2), w = el.clientWidth, h = el.clientHeight;
+    windCanvas.width = w * r;
+    windCanvas.height = h * r;
+    windCanvas.style.width = w + 'px';
+    windCanvas.style.height = h + 'px';
+    windCtx.setTransform(r, 0, 0, r, 0, 0);
+  }
+  // Wind at a point, bilinear between the sampled grid (east and north components, mph).
+  function sampleWind(lon, lat){
+    var d = windData;
+    var gx = Math.max(0, Math.min(d.cols - 1, (lon - d.w) / (d.e - d.w) * d.cols - 0.5));
+    var gy = Math.max(0, Math.min(d.rows - 1, (lat - d.s) / (d.n - d.s) * d.rows - 0.5));
+    var x0 = Math.floor(gx), y0 = Math.floor(gy), x1 = Math.min(d.cols - 1, x0 + 1), y1 = Math.min(d.rows - 1, y0 + 1);
+    var fx = gx - x0, fy = gy - y0;
+    function at(arr, x, y){ return arr[y * d.cols + x]; }
+    function lerp(arr){
+      var top = at(arr, x0, y0) * (1 - fx) + at(arr, x1, y0) * fx;
+      var bottom = at(arr, x0, y1) * (1 - fx) + at(arr, x1, y1) * fx;
+      return top * (1 - fy) + bottom * fy;
+    }
+    return [lerp(d.east), lerp(d.north)];
+  }
+  // Screen-space flow field: px per frame at every FIELD_CELL, plus the speed for brightness.
+  // Mercator keeps angles true, so east/north map straight onto x/-y.
+  function buildField(){
+    if(!windData) return;
+    var w = el.clientWidth, h = el.clientHeight;
+    var cols = Math.ceil(w / FIELD_CELL) + 1, rows = Math.ceil(h / FIELD_CELL) + 1;
+    var f = new Float32Array(cols * rows * 3);
+    var pxPerMph = PX_PER_MPH * (1 + Math.max(0, map.getZoom() - 6) * 0.15);
+    for(var r = 0; r < rows; r++){
+      for(var c = 0; c < cols; c++){
+        var ll = map.unproject([c * FIELD_CELL, r * FIELD_CELL]);
+        var v = sampleWind(ll.lng, ll.lat), i = (r * cols + c) * 3;
+        f[i] = v[0] * pxPerMph;
+        f[i + 1] = -v[1] * pxPerMph;
+        f[i + 2] = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+      }
+    }
+    windField = { cols: cols, rows: rows, f: f };
+  }
+  function fieldAt(x, y){
+    var F = windField, gx = x / FIELD_CELL, gy = y / FIELD_CELL;
+    var x0 = Math.floor(gx), y0 = Math.floor(gy);
+    if(x0 < 0 || y0 < 0 || x0 >= F.cols - 1 || y0 >= F.rows - 1) return null;
+    var fx = gx - x0, fy = gy - y0, out = [0, 0, 0];
+    for(var k = 0; k < 3; k++){
+      var a = F.f[(y0 * F.cols + x0) * 3 + k], b = F.f[(y0 * F.cols + x0 + 1) * 3 + k];
+      var cc = F.f[((y0 + 1) * F.cols + x0) * 3 + k], dd = F.f[((y0 + 1) * F.cols + x0 + 1) * 3 + k];
+      out[k] = (a * (1 - fx) + b * fx) * (1 - fy) + (cc * (1 - fx) + dd * fx) * fy;
+    }
+    return out;
+  }
+  function spawn(p, anyAge){
+    p.x = Math.random() * el.clientWidth;
+    p.y = Math.random() * el.clientHeight;
+    p.age = anyAge ? Math.floor(Math.random() * MAX_AGE) : 0;
+  }
+  function resetParticles(){
+    var n = Math.round(el.clientWidth * el.clientHeight / PARTICLE_AREA);
+    particles = [];
+    for(var i = 0; i < n; i++){ var p = {}; spawn(p, true); particles.push(p); }
+    if(windCtx) windCtx.clearRect(0, 0, el.clientWidth, el.clientHeight);
+  }
+  function stepWind(){
+    var w = el.clientWidth, h = el.clientHeight, ctx = windCtx;
+    // fade what's there, so each particle leaves a short trail
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.fillStyle = 'rgba(0,0,0,' + FADE + ')';
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-over';
+    var buckets = SPEED_STEPS.map(function(){ return []; });
+    particles.forEach(function(p){
+      var v = fieldAt(p.x, p.y);
+      if(!v || ++p.age > MAX_AGE){ spawn(p, false); return; }
+      var nx = p.x + v[0], ny = p.y + v[1];
+      for(var b = 0; v[2] > SPEED_STEPS[b][0]; b++);
+      buckets[b].push(p.x, p.y, nx, ny);
+      p.x = nx; p.y = ny;
+    });
+    var ink = cssVar('--accent', '#9b7bff');
+    ctx.lineCap = 'round';
+    buckets.forEach(function(seg, b){
+      if(!seg.length) return;
+      ctx.beginPath();
+      for(var i = 0; i < seg.length; i += 4){ ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
+      ctx.globalAlpha = SPEED_STEPS[b][1];
+      ctx.lineWidth = SPEED_STEPS[b][2];
+      ctx.strokeStyle = ink;
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
+  function runWind(){
+    cancelAnimationFrame(windRAF);
+    if(overlay !== 'wind' || !windField) return;
+    if(reduceMotion){ // no motion: draw the settled trails once
+      for(var i = 0; i < 60; i++) stepWind();
+      return;
+    }
+    (function frameLoop(){ stepWind(); windRAF = requestAnimationFrame(frameLoop); })();
+  }
+  function startWind(){
+    ensureWindCanvas();
+    windCanvas.classList.remove('is-hidden');
+    loadWind();
+    runWind();
+  }
+  function stopWind(){
+    cancelAnimationFrame(windRAF);
+    if(windCanvas){ windCanvas.classList.add('is-hidden'); windCtx.clearRect(0, 0, el.clientWidth, el.clientHeight); }
+  }
   function loadWind(){
     if(overlay !== 'wind') return;
     var b = map.getBounds(), w = b.getWest(), e = b.getEast(), so = b.getSouth(), n = b.getNorth();
     var key = [w, so, e, n].map(function(v){ return v.toFixed(2); }).join(',');
-    if(key === windKey) return;
+    if(key === windKey){ buildField(); resetParticles(); runWind(); return; }
     windKey = key;
-    var pts = [];
-    for(var r = 0; r < WIND_GRID[1]; r++){
-      for(var c = 0; c < WIND_GRID[0]; c++){
-        pts.push([w + (c + 0.5) / WIND_GRID[0] * (e - w), so + (r + 0.5) / WIND_GRID[1] * (n - so)]);
+    var cols = WIND_GRID[0], rows = WIND_GRID[1], pts = [];
+    for(var r = 0; r < rows; r++){
+      for(var c = 0; c < cols; c++){
+        pts.push([w + (c + 0.5) / cols * (e - w), so + (r + 0.5) / rows * (n - so)]);
       }
     }
     var url = 'https://api.open-meteo.com/v1/forecast' +
@@ -416,25 +548,34 @@
       '&longitude=' + pts.map(function(p){ return p[0].toFixed(3); }).join(',') +
       '&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=mph';
     fetch(url).then(function(res){ return res.json(); }).then(function(data){
-      if(key !== windKey || !map.getSource('wind')) return;
+      if(key !== windKey) return;
       var list = Array.isArray(data) ? data : [data];
-      var cell = Math.min((e - w) / WIND_GRID[0], (n - so) / WIND_GRID[1]); // arrow scale, in degrees
-      map.getSource('wind').setData({ type: 'FeatureCollection', features: list.map(function(z, i){
-        var mph = z.current.wind_speed_10m;
+      var east = new Float32Array(list.length), north = new Float32Array(list.length);
+      list.forEach(function(z, i){
+        var mph = z.current.wind_speed_10m || 0;
         var to = ((z.current.wind_direction_10m + 180) % 360) * Math.PI / 180; // where it's blowing
-        var len = cell * (0.25 + 0.55 * Math.min(1, mph / 35));
-        var k = 1 / Math.cos(pts[i][1] * Math.PI / 180); // a degree of longitude is shorter up north
-        function step(from, ang, d){ return [from[0] + Math.sin(ang) * d * k, from[1] + Math.cos(ang) * d]; }
-        var tail = step(pts[i], to + Math.PI, len / 2), tip = step(pts[i], to, len / 2);
-        var head = len * 0.35;
-        return { type: 'Feature', properties: { mph: mph }, geometry: { type: 'MultiLineString', coordinates: [
-          [tail, tip], [step(tip, to + Math.PI * 0.8, head), tip, step(tip, to - Math.PI * 0.8, head)]
-        ] } };
-      }) });
+        east[i] = Math.sin(to) * mph;
+        north[i] = Math.cos(to) * mph;
+      });
+      windData = { w: w, e: e, s: so, n: n, cols: cols, rows: rows, east: east, north: north };
+      buildField();
+      resetParticles();
+      runWind();
     }).catch(function(){ windKey = null; });
   }
-  var windTimer = null;
-  map.on('moveend', function(){ clearTimeout(windTimer); windTimer = setTimeout(loadWind, 300); });
+  // While the map moves, the trails would smear, so they hide and pick up again once it settles.
+  map.on('movestart', function(){
+    if(overlay !== 'wind' || !windCanvas) return;
+    cancelAnimationFrame(windRAF);
+    windCanvas.classList.add('is-moving');
+  });
+  map.on('moveend', function(){
+    if(overlay !== 'wind' || !windCanvas) return;
+    windCanvas.classList.remove('is-moving');
+    clearTimeout(windTimer);
+    windTimer = setTimeout(loadWind, 250);
+  });
+  map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(overlay === 'wind') loadWind(); } });
   map.on('load', function(){ setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
