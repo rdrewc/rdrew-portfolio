@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="assets/site.css?v=21">
 <script>
   try { if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch(e){}
@@ -67,17 +68,7 @@
     font-family:'DM Sans',sans-serif;
     -webkit-font-smoothing:antialiased;
     transition:background-color 0.35s ease, color 0.35s ease;
-    cursor:grab;
   }
-  body.bg-dragging{
-    cursor:grabbing;
-    -webkit-user-select:none;
-    user-select:none;
-  }
-  /* While turning the terrain, nothing on the page reacts to the pointer. */
-  body.bg-dragging .page,
-  body.bg-dragging .site-footer,
-  body.bg-dragging .top-bar{pointer-events:none !important;}
   h1, .section-label, .section-rule, .dot-row, .dot-row .name, .dot-row .dots::after,
   .dot-row .date, .plain-list, .plain-list a{
     transition:color 0.35s ease, border-color 0.35s ease;
@@ -94,13 +85,13 @@
     gap:67px 8vw; /* row gap: the space above Case Studies (96px less one line of bio text) */
   }
 
-  #terrain-bg{
+  /* Storm map (assets/storm-map.js): a still background behind the page until Tracker mode
+     hides the page and hands the pointer to the map. */
+  #storm-map{
     position:fixed;
     inset:0;
-    width:100%;
-    height:100%;
     z-index:-2;
-    display:block;
+    pointer-events:none;
   }
   .terrain-scrim{
     position:fixed;
@@ -110,8 +101,66 @@
     pointer-events:none;
     transition:background-color 0.35s ease, opacity 0.5s ease;
   }
-  /* The terrain brightens while you turn it, so the drag color reads clearly. */
-  body.bg-dragging .terrain-scrim{opacity:0.35;}
+  .page{transition:opacity 0.4s ease, visibility 0s linear 0s;}
+  body.is-tracking .page{opacity:0;visibility:hidden;transition:opacity 0.4s ease, visibility 0s linear 0.4s;}
+  body.is-tracking #storm-map{pointer-events:auto;}
+  body.is-tracking .terrain-scrim{opacity:0;}
+
+  /* Radar timeline, shown in Tracker mode just above the footer. */
+  .radar-panel{
+    position:fixed;
+    left:50%;
+    bottom:calc(var(--bar-h) + 16px);
+    z-index:40;
+    display:none;
+    align-items:center;
+    gap:12px;
+    width:min(640px, calc(100vw - 32px));
+    padding:8px 14px 8px 8px;
+    transform:translateX(-50%);
+    border:1px solid var(--glass-border);
+    border-radius:999px;
+    background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);
+    backdrop-filter:var(--bar-blur);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:var(--muted);
+  }
+  body.is-tracking .radar-panel{display:flex;}
+  .radar-panel button{
+    flex-shrink:0;
+    width:30px;
+    height:30px;
+    border:none;
+    border-radius:50%;
+    background:var(--glass-indicator);
+    color:var(--accent);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .radar-panel button svg{width:13px;height:13px;fill:currentColor;}
+  .radar-panel button .pause-icon{display:none;}
+  .radar-panel button[aria-pressed="true"] .play-icon{display:none;}
+  .radar-panel button[aria-pressed="true"] .pause-icon{display:block;}
+  .radar-panel input[type="range"]{flex:1;min-width:80px;accent-color:var(--accent);}
+  .radar-panel .radar-time{white-space:nowrap;color:var(--strong);}
+  .radar-panel .radar-run{color:var(--muted);}
+  .radar-credit{
+    position:fixed;
+    right:max(60px, calc(50vw - 640px));
+    top:calc(var(--bar-h) + 10px);
+    z-index:40;
+    display:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.06em;
+    color:var(--label);
+  }
+  body.is-tracking .radar-credit{display:block;}
   /* Fixed top bar: opaque, with a rule across the full window. */
   .top-bar{
     position:fixed;
@@ -339,13 +388,26 @@
     .top-bar{padding:0 28px;font-size:9px;}
     .geo-coords, .weather-info{white-space:normal;max-width:44vw;}
     .geo-coords .geo-label{font-size:8px;}
+    .site-footer .footer-controls{flex-wrap:wrap;justify-content:flex-end;}
+    .radar-panel{bottom:calc(var(--bar-h) + 64px);font-size:10px;}
+    .radar-panel .radar-run{display:none;}
+    .radar-credit{left:16px;right:16px;text-align:right;}
   }
 </style>
 </head>
 <body>
 
-<canvas id="terrain-bg"></canvas>
+<div id="storm-map"></div>
 <div class="terrain-scrim"></div>
+<div class="radar-panel" role="group" aria-label="Forecast radar timeline">
+  <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
+    <svg class="play-icon" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"></path></svg>
+    <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
+  </button>
+  <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
+  <span class="radar-time" id="radar-time">Loading radar&hellip;</span>
+</div>
+<div class="radar-credit">Radar: NOAA HRRR via Iowa Environmental Mesonet &middot; Terrain: AWS Terrain Tiles &middot; Outlines: Natural Earth</div>
 <header class="top-bar">
   <div class="weather-info" id="weather-info"><span id="weather-line">&hellip;</span> &middot; <span id="elev-line">&hellip;</span></div>
   <div class="geo-coords">39.0968&deg; N, 120.0324&deg; W</div>
@@ -457,10 +519,14 @@
     <li><a href="assets/ryan-casey-cv.pdf" target="_blank" rel="noopener">CV</a></li>
   </ul>
   <div class="footer-controls">
-  <div class="terrain-picker" role="group" aria-label="Background terrain">
-    <button type="button" data-terrain="tahoe" aria-pressed="true">Tahoe</button>
-    <button type="button" data-terrain="shasta" aria-pressed="false">Shasta</button>
-    <button type="button" data-terrain="whitney" aria-pressed="false">Whitney</button>
+  <div class="terrain-picker" role="group" aria-label="Map view">
+    <button type="button" data-view="west" aria-pressed="true">West</button>
+    <button type="button" data-view="tahoe" aria-pressed="false">Tahoe</button>
+    <button type="button" data-view="shasta" aria-pressed="false">Shasta</button>
+    <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
+  </div>
+  <div class="terrain-picker">
+    <button type="button" data-tracker aria-pressed="false">Tracker</button>
   </div>
   <div class="theme-toggle" role="group" aria-label="Color theme">
     <div class="indicator"></div>
@@ -476,7 +542,9 @@
 
 <script src="assets/site.js?v=27"></script>
 
-<script src="assets/terrain.js?v=11"></script>
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
+<script src="assets/storm-map.js?v=1"></script>
 
 </body>
 </html>
