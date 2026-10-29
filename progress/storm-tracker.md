@@ -187,6 +187,8 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 ## Snow-globe snowflake (done)
 - Once the snowflake lands by the tabs (`--dur-slow`), the simple icon fades and a full six-armed crystal draws out from the middle: hexagon, then arms, then branches. It's a little wider (about 17 px vs 15 px) at the same line weight, not scaled up.
 - Then a one-shot snow-globe storm: 18 flakes (random each load, made in `storm-map.js`) fall quickly and settle on a mound that rises at the bottom of the circle, then everything stops. The settled scene is the base style, so the animations only play the fall and the rise.
+- It spins two and a quarter turns on the way in (1.8 s, `--ease-in-out`), fastest while the crystal draws out, and spins back the other way on close (1 s).
+- `setTracking` moves the button before pressing it, with a style flush in between. Moving an element resets its styles, so pressing it in the same step skipped the spin and the draw-in.
 - Turning it off retracts the crystal, fades the scene, and brings the simple icon back. With reduced motion, the settled scene and the crystal just appear.
 - The svg box is 22 px with a wider viewBox, so the simple icon still draws at 15 px.
 

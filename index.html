@@ -219,9 +219,11 @@
   .tracker-toggle [data-tracker] svg{
     position:relative;
     width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;overflow:visible;
-    transition:transform 0.6s var(--ease-out);
+    transition:transform 1s var(--ease-in-out); /* spins back out on close */
   }
-  .tracker-toggle [data-tracker][aria-pressed="true"] svg{transform:rotate(90deg);}
+  /* Two and a quarter turns as it opens, picking up speed through the flight and spinning hardest as
+     the crystal draws out; closing spins it back the other way. */
+  .tracker-toggle [data-tracker][aria-pressed="true"] svg{transform:rotate(810deg);transition:transform 1.8s var(--ease-in-out);}
   /* Active, once the snowflake has landed by the tabs (--dur-slow): the simple icon gives way to a full
      six-armed crystal drawn out from the middle (hexagon, arms, then branches), a little wider than
      the icon but the same line weight, not scaled up. Then a quick snow-globe storm: flakes fall,
@@ -1078,7 +1080,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=38"></script>
+<script src="assets/storm-map.js?v=39"></script>
 
 </body>
 </html>

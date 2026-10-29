@@ -270,8 +270,10 @@
     }
     document.body.classList.toggle('is-tracking', on);
     document.body.classList.toggle('is-entered', on); // .enter items wait out the page's exit (--enter-wait)
-    if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
+    // Move the button first and let it settle in its new spot, then press it: moving an element
+    // resets its styles, so pressing it in the same step would skip the spin and the crystal drawing out.
     dockTrackerButton(on, syncUrl);
+    if(trackerBtn){ void trackerBtn.offsetWidth; trackerBtn.setAttribute('aria-pressed', String(on)); }
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     refreshReadout();
