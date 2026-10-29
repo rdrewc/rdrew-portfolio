@@ -617,7 +617,10 @@
     display:flex;
     align-items:center;
     gap:12px;
-    width:clamp(420px, calc(100vw - 2 * max(60px, 50vw - 640px) - 480px), 640px);
+    /* Shares the bottom row with the tabs and snowflake (--tabs-cluster wide, 16px apart): the
+       scrubber gives up width first, and below ~1010px the panel steps up a row (see below). */
+    --tabs-cluster:500px;
+    width:clamp(430px, calc(100vw - 2 * max(60px, 50vw - 640px) - var(--tabs-cluster) - 16px), 640px);
     padding:8px 14px 8px 8px;
     border:1px solid var(--glass-border);
     border-radius:999px;
@@ -877,6 +880,16 @@
     outline-offset:3px;
   }
 
+  /* Narrower desktops: first the tabs tighten, then the radar panel moves up above them so the two
+     never overlap. The cards end above it. Phones (below) stack the same way. */
+  @media (max-width:1080px){
+    .radar-panel{--tabs-cluster:444px;}
+    .view-tabs button{padding:0 7px;}
+  }
+  @media (min-width:861px) and (max-width:1010px){
+    .radar-panel{bottom:74px;width:min(640px, calc(100vw - 120px));}
+    .stat-card{max-height:calc(100vh - var(--bar-h) - 154px);}
+  }
   @media (max-width:860px){
     .page{
       grid-template-columns:1fr;
@@ -1092,7 +1105,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=43"></script>
+<script src="assets/storm-map.js?v=44"></script>
 
 </body>
 </html>

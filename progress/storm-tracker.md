@@ -208,6 +208,12 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - It's three Open-Meteo requests per rebuild. The place lists mirror `storm-map.js`, so change both together.
 - Public forecast data only.
 
+## Bottom row never overlaps (done)
+- The radar panel's width leaves room for the tabs and snowflake (`--tabs-cluster`, 16 px gap), so the scrubber gives up width first.
+- Below 1080 px the tabs tighten (7 px padding). From 861 to 1010 px the radar panel steps up a row above the tabs, and the cards end above it. Phones already stacked.
+- Checked at 870, 1000, 1011, 1081, 1280 and 1440 px. The gap is never under 23 px when they share a row.
+- Fixed "MOST SNOW,NEXT7 DAYS": the label is a flex row, which dropped the spaces around the hidden "next" span. The text now sits in one span.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

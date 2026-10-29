@@ -757,7 +757,7 @@
     if(rainList){
       var wet = RAIN_SITES.map(function(s, i){ return { site: s, ft: rainList[i].elevation * 3.28084, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
         .sort(function(a, b){ return b.rain - a.rain; })[0];
-      rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span>' +
+      rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span><span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
         '<span class="stat-hero-row">' + (wet.rain >= 0.05
           ? '<span class="stat-hero-num">' + wet.rain.toFixed(1) + '"</span>' +
             '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span><span>' + wet.site.where + '</span>' +
@@ -772,7 +772,7 @@
     return '<div class="stat-card stat-card-region" data-stat-view="west">' +
       '<span class="stat-head">' + stormTitle('Pacific Maritime El Ni&ntilde;o', storm) + '</span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
-      '<span class="stat-heroes"><span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span>Most snow,<span class="stat-hero-next"> next</span> 7 days</span>' +
+      '<span class="stat-heroes"><span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span><span>Most snow,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
       '<span class="stat-hero-row">' + hero + '</span></span>' + rainHero + '</span>' +
       '<span class="stat-trend">' + trend + '</span>' +
       '<span class="stat-charts"><span class="stat-charts-inner">' +
