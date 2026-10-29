@@ -13,15 +13,20 @@ const UNLOCK_PATH = '/__unlock';
 // rdrew.com/elnino is the homepage opened straight into the storm tracker (assets/storm-map.js
 // reads the path). No trailing slash: the homepage's asset paths are relative.
 const TRACKER_PATH = '/elnino';
+// The tracker's headline numbers as JSON, for the iOS widget (see elnino.js).
+const SUMMARY_PATH = '/elnino.json';
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
 const PROTECTED_PATHS = [];
 
+import { elninoJSON } from './elnino.js';
+
 export default {
-  async fetch(request, env){
+  async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === UNLOCK_PATH) return unlock(request);
+    if(url.pathname === SUMMARY_PATH) return elninoJSON(request, ctx);
     if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
     if(url.pathname === TRACKER_PATH) return env.ASSETS.fetch(new Request(new URL('/', url), request));
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);

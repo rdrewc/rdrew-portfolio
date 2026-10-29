@@ -199,6 +199,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Under 860 px the cards fill the width up to 400 px and stop there (left-aligned), so a tablet gets the same narrow card as a phone, not one stretched across the screen.
   - Desktop (260 px card): stacked as before.
 
+## /elnino.json for the iOS widget (done, not deployed)
+- `worker/elnino.js` builds the tracker's headline numbers as one JSON answer at `rdrew.com/elnino.json`, cached 30 minutes in the Worker's cache, with CORS open:
+  - each mountain zone's storm level, 24 h snow and precip, and 7-day snow
+  - the worst storm level
+  - most snow (region sites) and most rain (western lower-48 towns, with elevation)
+  - the week's mood and averages
+- It's three Open-Meteo requests per rebuild. The place lists mirror `storm-map.js`, so change both together.
+- Public forecast data only.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
