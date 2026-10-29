@@ -194,7 +194,8 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 
 ## Snow and rain callouts side by side (done)
 - The two callouts sit in `.stat-heroes`. That's a grid that goes to two columns through a container query on `.site-stats` (`container: stats`) once the cards are 320 px or wider, so it follows card width, not screen width.
-  - Phones (343 px card): side by side, each number above its place, and the label shortens to "Most snow, 7 days".
+  - Phones (343 px card): side by side, and both always stack the same way (number, then place, detail and elevation), so their lines align. The label shortens to "Most snow, 7 days".
+- The rain callout shows elevation too, from the elevation Open-Meteo returns for each town (feet).
   - Tablets: side by side, number beside place, full label.
   - Desktop (260 px card): stacked as before.
 

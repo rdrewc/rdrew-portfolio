@@ -521,17 +521,23 @@
 
   /* Snowiest and rainiest site callouts: the number wears text color; the swatch carries snow or rain. */
   /* Stacked in the 260px desktop card; side by side once the cards are 320px or wider (phones,
-     tablets). In a narrow half, each callout's number sits above its place instead of beside it. */
+     tablets). */
   .stat-heroes{display:grid;gap:8px;margin:10px 0 12px;}
   @container stats (min-width:320px){ .stat-heroes{grid-template-columns:1fr 1fr;} }
-  @container stats (min-width:320px) and (max-width:480px){ .stat-hero-next{display:none;} } /* "Most snow, 7 days" fits a narrow half on one line */
   .stat-hero{display:block;min-width:0;padding:10px 12px;border:1px solid var(--divider);border-radius:8px;}
   .stat-hero-label{display:flex;align-items:baseline;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
-  .stat-hero-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:6px;}
+  .stat-hero-row{display:flex;align-items:center;gap:6px 12px;margin-top:6px;}
   .stat-hero-num{font-family:'DM Sans',sans-serif;font-size:36px;font-weight:600;line-height:1;letter-spacing:-0.01em;color:var(--strong);font-variant-numeric:tabular-nums;}
   .stat-hero-site{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:10px;color:var(--muted);white-space:nowrap;}
   .stat-hero-site > span{overflow:hidden;text-overflow:ellipsis;}
   .stat-hero-name{font-size:12px;font-weight:600;color:var(--strong);}
+  /* Narrow halves (phones): both callouts stack the same way, number over place, so their lines align;
+     "Most snow, 7 days" fits on one line. */
+  @container stats (min-width:320px) and (max-width:480px){
+    .stat-hero-row{flex-direction:column;align-items:flex-start;}
+    .stat-hero-site{max-width:100%;}
+    .stat-hero-next{display:none;}
+  }
 
   /* Temperature line: its own chart above the precip bars, on the same day columns. */
   .temp .stat-swatch{background:var(--temp-line);}
@@ -1085,7 +1091,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=42"></script>
+<script src="assets/storm-map.js?v=43"></script>
 
 </body>
 </html>

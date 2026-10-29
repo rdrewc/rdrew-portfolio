@@ -755,12 +755,13 @@
     // The rainiest spot, Alaska to San Diego. Its own request, so the card still shows if it fails.
     var rainHero = '';
     if(rainList){
-      var wet = RAIN_SITES.map(function(s, i){ return { site: s, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
+      var wet = RAIN_SITES.map(function(s, i){ return { site: s, ft: rainList[i].elevation * 3.28084, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
         .sort(function(a, b){ return b.rain - a.rain; })[0];
       rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span>' +
         '<span class="stat-hero-row">' + (wet.rain >= 0.05
           ? '<span class="stat-hero-num">' + wet.rain.toFixed(1) + '"</span>' +
-            '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span>' + wet.site.where + '</span>'
+            '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span><span>' + wet.site.where + '</span>' +
+            '<span>' + Math.round(wet.ft).toLocaleString() + ' ft</span></span>'
           : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No rain ahead</span>Western US</span>') +
         '</span></span>';
     }
