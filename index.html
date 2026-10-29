@@ -520,10 +520,9 @@
   .stat-section-head{margin-top:14px;margin-bottom:-4px;}
 
   /* Snowiest and rainiest site callouts: the number wears text color; the swatch carries snow or rain. */
-  /* Stacked in the 260px desktop card; side by side once the cards are 320px or wider (phones,
-     tablets). */
+  /* Stacked in the 260px desktop card; side by side in the phone card (320 to 400px wide, see
+     .site-stats under 860px). */
   .stat-heroes{display:grid;gap:8px;margin:10px 0 12px;}
-  @container stats (min-width:320px){ .stat-heroes{grid-template-columns:1fr 1fr;} }
   .stat-hero{display:block;min-width:0;padding:10px 12px;border:1px solid var(--divider);border-radius:8px;}
   .stat-hero-label{display:flex;align-items:baseline;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
   .stat-hero-row{display:flex;align-items:center;gap:6px 12px;margin-top:6px;}
@@ -531,9 +530,10 @@
   .stat-hero-site{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:10px;color:var(--muted);white-space:nowrap;}
   .stat-hero-site > span{overflow:hidden;text-overflow:ellipsis;}
   .stat-hero-name{font-size:12px;font-weight:600;color:var(--strong);}
-  /* Narrow halves (phones): both callouts stack the same way, number over place, so their lines align;
-     "Most snow, 7 days" fits on one line. */
-  @container stats (min-width:320px) and (max-width:480px){
+  /* Side by side, both callouts stack the same way, number over place, so their lines align;
+     "Most snow, 7 days" fits a half on one line. */
+  @container stats (min-width:320px){
+    .stat-heroes{grid-template-columns:1fr 1fr;}
     .stat-hero-row{flex-direction:column;align-items:flex-start;}
     .stat-hero-site{max-width:100%;}
     .stat-hero-next{display:none;}
@@ -897,7 +897,8 @@
     .view-tabs{left:16px;right:70px;bottom:16px;justify-content:space-between;}
     .radar-panel{left:16px;right:16px;width:auto;bottom:72px;font-size:10px;flex-wrap:wrap;row-gap:4px;border-radius:22px;}
     .overlay-switch{width:100%;justify-content:center;border-right:none;border-bottom:1px solid var(--divider);padding:0 0 4px;margin:0;}
-    .site-stats{top:calc(var(--bar-h) + 12px);left:16px;right:16px;width:auto;}
+    /* Phones fill the width; past that the cards stop at 400px, so they never spread across a tablet. */
+    .site-stats{top:calc(var(--bar-h) + 12px);left:16px;right:auto;width:min(calc(100vw - 32px), 400px);}
     /* Phones: cards collapse to name + totals; the chart button grows the bars back in. */
     .stats-nav .stats-expand{display:flex;}
     .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s var(--ease-out);}
