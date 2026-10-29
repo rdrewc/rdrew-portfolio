@@ -92,11 +92,9 @@
     { name: 'Bachelor', spot: 'Mt. Bachelor', lat: 43.979, lon: -121.688, ft: 7000 },
     { name: 'Crater Lake', spot: 'Rim Village', lat: 42.911, lon: -122.146, ft: 7100 }
   ];
-  // Most-rain callout on the region card: the wettest low-elevation spots in the western US states,
-  // Southeast Alaska to San Diego. Rain only (Open-Meteo's rain_sum), so a snowy week up high doesn't count here.
+  // Most-rain callout on the region card: the wettest of these towns across the eleven western states
+  // in the lower 48, the wet coast plus a town or two per interior state. Rain only (Open-Meteo's rain_sum), so a snowy week up high doesn't count here.
   var RAIN_SITES = [
-    { name: 'Ketchikan', where: 'Alaska', lat: 55.342, lon: -131.646 },
-    { name: 'Juneau', where: 'Alaska', lat: 58.302, lon: -134.420 },
     { name: 'Forks', where: 'Washington', lat: 47.950, lon: -124.385 },
     { name: 'Seattle', where: 'Washington', lat: 47.606, lon: -122.332 },
     { name: 'Astoria', where: 'Oregon', lat: 46.188, lon: -123.831 },
@@ -108,7 +106,22 @@
     { name: 'San Francisco', where: 'California', lat: 37.775, lon: -122.419 },
     { name: 'Big Sur', where: 'California', lat: 36.270, lon: -121.807 },
     { name: 'Los Angeles', where: 'California', lat: 34.052, lon: -118.244 },
-    { name: 'San Diego', where: 'California', lat: 32.716, lon: -117.161 }
+    { name: 'San Diego', where: 'California', lat: 32.716, lon: -117.161 },
+    { name: 'Spokane', where: 'Washington', lat: 47.659, lon: -117.426 },
+    { name: 'Reno', where: 'Nevada', lat: 39.530, lon: -119.814 },
+    { name: 'Las Vegas', where: 'Nevada', lat: 36.170, lon: -115.140 },
+    { name: 'Salt Lake City', where: 'Utah', lat: 40.761, lon: -111.891 },
+    { name: 'Boise', where: 'Idaho', lat: 43.615, lon: -116.202 },
+    { name: "Coeur d'Alene", where: 'Idaho', lat: 47.677, lon: -116.780 },
+    { name: 'Missoula', where: 'Montana', lat: 46.872, lon: -113.994 },
+    { name: 'Kalispell', where: 'Montana', lat: 48.196, lon: -114.313 },
+    { name: 'Jackson', where: 'Wyoming', lat: 43.480, lon: -110.762 },
+    { name: 'Cheyenne', where: 'Wyoming', lat: 41.140, lon: -104.820 },
+    { name: 'Denver', where: 'Colorado', lat: 39.739, lon: -104.990 },
+    { name: 'Durango', where: 'Colorado', lat: 37.275, lon: -107.880 },
+    { name: 'Albuquerque', where: 'New Mexico', lat: 35.084, lon: -106.650 },
+    { name: 'Flagstaff', where: 'Arizona', lat: 35.198, lon: -111.651 },
+    { name: 'Phoenix', where: 'Arizona', lat: 33.448, lon: -112.074 }
   ];
   // El Niño summary. NOAA's ENSO data doesn't allow cross-origin requests, so this is written by hand
   // until the Worker can fetch it. Sources: CPC ENSO discussion (Oct 8, 2026), CPC weekly Niño-3.4

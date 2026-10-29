@@ -174,7 +174,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The title stands alone on its line. Elevation moved to the line below (place, elevation, coordinates), with 10 px of space under the title on every card.
 
 ## Most rain callout, taller Overview (done)
-- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 14 low-elevation spots in the western US states, from Ketchikan to San Diego (the two BC sites were dropped) (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
+- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 28 towns across the eleven western states in the lower 48 (WA, OR, CA, NV, UT, ID, MT, WY, CO, NM, AZ). That's the wet coast plus a town or two per interior state; Alaska and BC were dropped (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
 - On desktop the cards can grow 54 px taller (the max-height reserve went from 150 px to 96 px), which puts the Overview card's bottom 16 px above the radar panel.
 
 ## Rain to one decimal, snow spot, footer hides in the tracker (done)
