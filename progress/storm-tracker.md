@@ -184,6 +184,12 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - With the footer gone, the radar panel and tabs sit 16 px from the bottom, and cards can grow by one more bar height.
 - On phones the tabs tightened (3 px padding, 0.02em tracking) so all seven fit beside the snowflake.
 
+## Snow-globe snowflake (done)
+- While the tracker is on, the snowflake grows more detail instead of scaling up: arm tips with forks, then four diagonal arms, each drawing out in turn (`.flake-detail`, stroke-dashoffset, `--dur-base` / `--ease-out`, half-stagger).
+- A light flurry drifts inside the circle like a snow globe: two layers of box-shadow dots falling on a seamless 48 px loop, with a gentle sway.
+- Turning it off retracts the detail and fades the flurry (`--dur-quick` / `--ease-in`). With reduced motion there's no animation and no flurry.
+- The svg box is now 22 px with a wider viewBox, so the base flake still draws at 15 px.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
