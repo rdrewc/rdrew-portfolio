@@ -123,8 +123,16 @@
     transition:transform var(--dur-slow) var(--ease-in-out), visibility 0s linear var(--dur-slow);
   }
   .site-stats, .radar-panel, .view-tabs, .target-body{--enter-wait:var(--dur-slow);}
+  /* The footer slides down and out with the page (the snowflake leaves it first, see .is-docked) and
+     comes back up with it. */
+  .site-footer{transition:background-color 0.35s ease, border-color 0.35s ease, transform var(--dur-slow) var(--ease-in-out) var(--dur-quick), visibility 0s linear var(--dur-quick);}
+  body.is-tracking .site-footer{
+    transform:translateY(100%);
+    visibility:hidden;
+    transition:background-color 0.35s ease, border-color 0.35s ease, transform var(--dur-slow) var(--ease-in-out), visibility 0s linear var(--dur-slow);
+  }
   @media (prefers-reduced-motion: reduce){
-    .page, body.is-tracking .page{transition:none;}
+    .page, body.is-tracking .page, .site-footer, body.is-tracking .site-footer{transition:none;}
   }
   /* In Tracker mode the map comes up out of the background (z -2 sits under the body, which would
      catch the pointer) to just above the page, still under every tracker panel (z 40+). */
@@ -169,7 +177,21 @@
     padding:2px;
     border-radius:999px;
     border:1px solid var(--divider);
-    transition:border-color 0.35s ease;
+    transform-origin:0 0; /* the fly between footer and dock scales from the corner it measures from */
+    visibility:visible;   /* stays visible while flying back into the still-hidden footer */
+    transition:border-color 0.35s ease, background-color 0.35s ease;
+  }
+  /* Tracking: the snowflake sits right of the location tabs, a glass circle as tall as their pill. */
+  .tracker-toggle.is-docked{
+    position:fixed;
+    right:max(60px, calc(50vw - 640px));
+    bottom:16px;
+    z-index:40;
+    padding:9px;
+    border-color:var(--glass-border);
+    background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);
+    backdrop-filter:var(--bar-blur);
   }
   .tracker-toggle [data-tracker]{
     flex-shrink:0;
@@ -198,8 +220,8 @@
      They enter with the rest of the tracker (.enter). The selected one is accent text, no pill. */
   .view-tabs{
     position:fixed;
-    right:max(60px, calc(50vw - 640px));
-    bottom:calc(var(--bar-h) + 16px);
+    right:calc(max(60px, calc(50vw - 640px)) + 56px); /* clear of the snowflake: 48px circle, 8px gap */
+    bottom:16px;
     z-index:40;
     display:flex;
     align-items:center;
@@ -438,7 +460,7 @@
   /* Region card (West view): past and next week averaged across the Cascades and Sierra. Past days are
      faded and today is outlined, so the split reads without a legend. The card scrolls inside itself
      if it's taller than the window allows. */
-  .stat-card{max-height:calc(100vh - 2 * var(--bar-h) - 96px);overflow-y:auto;scrollbar-width:none;}
+  .stat-card{max-height:calc(100vh - var(--bar-h) - 96px);overflow-y:auto;scrollbar-width:none;}
   .stat-trend{display:block;margin-bottom:4px;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);white-space:normal;}
   .stat-bar.is-past > span{opacity:0.4;}
   .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
@@ -451,7 +473,8 @@
   .stat-hero-label{display:flex;align-items:center;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
   .stat-hero-row{display:flex;align-items:center;gap:12px;margin-top:6px;}
   .stat-hero-num{font-family:'DM Sans',sans-serif;font-size:36px;font-weight:600;line-height:1;letter-spacing:-0.01em;color:var(--strong);font-variant-numeric:tabular-nums;}
-  .stat-hero-site{display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .stat-hero-site{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .stat-hero-site > span{overflow:hidden;text-overflow:ellipsis;}
   .stat-hero-name{font-size:12px;font-weight:600;color:var(--strong);}
 
   /* Temperature line: its own chart above the precip bars, on the same day columns. */
@@ -527,7 +550,7 @@
   .radar-panel{
     position:fixed;
     left:max(60px, calc(50vw - 640px));
-    bottom:calc(var(--bar-h) + 16px);
+    bottom:16px;
     z-index:40;
     display:flex;
     align-items:center;
@@ -806,10 +829,11 @@
     .geo-coords, .weather-info{white-space:normal;max-width:calc(50vw - 52px);} /* clear of the centered home button */
     .geo-coords .geo-label{font-size:8px;}
     .site-footer .footer-controls{flex-wrap:wrap;justify-content:flex-end;}
-    /* Phones: the footer wraps to two rows (82px), so the tabs sit full width just above it and the
-       radar timeline above them. */
-    .view-tabs{left:16px;right:16px;bottom:94px;justify-content:space-between;}
-    .radar-panel{left:16px;right:16px;width:auto;bottom:150px;font-size:10px;flex-wrap:wrap;row-gap:4px;border-radius:22px;}
+    /* Phones: the tabs sit along the bottom with the snowflake at their right, and the radar timeline
+       above them. (The footer is gone while tracking.) */
+    .tracker-toggle.is-docked{right:16px;}
+    .view-tabs{left:16px;right:70px;bottom:16px;justify-content:space-between;}
+    .radar-panel{left:16px;right:16px;width:auto;bottom:72px;font-size:10px;flex-wrap:wrap;row-gap:4px;border-radius:22px;}
     .overlay-switch{width:100%;justify-content:center;border-right:none;border-bottom:1px solid var(--divider);padding:0 0 4px;margin:0;}
     .site-stats{top:calc(var(--bar-h) + 12px);left:16px;right:16px;width:auto;}
     /* Phones: cards collapse to name + totals; the chart button grows the bars back in. */
@@ -817,7 +841,8 @@
     .stat-charts{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.4s var(--ease-out);}
     .site-stats.is-expanded .stat-charts{grid-template-rows:1fr;}
     .stat-charts-inner{min-height:0;overflow:hidden;}
-    .view-tabs button{padding:0 5px;font-size:10px;} /* seven tabs, Overview the longest, on a 375px phone */
+    .view-tabs{padding:8px 4px;}
+    .view-tabs button{padding:0 3px;font-size:10px;letter-spacing:0.02em;} /* seven tabs beside the snowflake on a 375px phone */
     .target-cam{width:180px;}
   }
 </style>
@@ -988,7 +1013,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=35"></script>
+<script src="assets/storm-map.js?v=37"></script>
 
 </body>
 </html>

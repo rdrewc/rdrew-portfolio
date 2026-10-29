@@ -174,8 +174,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The title stands alone on its line. Elevation moved to the line below (place, elevation, coordinates), with 10 px of space under the title on every card.
 
 ## Most rain callout, taller Overview (done)
-- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 16 low-elevation spots from Ketchikan to San Diego (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
+- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 14 low-elevation spots in the western US states, from Ketchikan to San Diego (the two BC sites were dropped) (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
 - On desktop the cards can grow 54 px taller (the max-height reserve went from 150 px to 96 px), which puts the Overview card's bottom 16 px above the radar panel.
+
+## Rain to one decimal, snow spot, footer hides in the tracker (done)
+- The most-rain callout shows one decimal place.
+- The most-snow callout names the exact forecast point (Siberia, Palisades; Timberline Lodge; and so on) and its elevation, in place of the precip line.
+- Opening the tracker slides the whole footer (contacts, theme toggle) down and out with the page. The snowflake flies (FLIP, `dockTrackerButton`) to a 48 px glass circle right of the location tabs, on the motion tokens: `--dur-slow` and `--ease-in-out` on the way out, and on close it waits `--dur-quick` and flies back with the footer.
+- With the footer gone, the radar panel and tabs sit 16 px from the bottom, and cards can grow by one more bar height.
+- On phones the tabs tightened (3 px padding, 0.02em tracking) so all seven fit beside the snowflake.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

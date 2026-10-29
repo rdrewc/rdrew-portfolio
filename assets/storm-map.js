@@ -87,18 +87,16 @@
   // Region card (West view): the Pacific maritime snowpack, Cascades to Sierra. Its trend and charts
   // average these sites; the mountain targets (not the city landmarks) are added after them.
   var REGION_SITES = [
-    { name: 'Mt. Baker', lat: 48.857, lon: -121.665, ft: 5000 },  // ski area
-    { name: 'Mt. Hood', lat: 45.331, lon: -121.711, ft: 6000 },   // Timberline
-    { name: 'Bachelor', lat: 43.979, lon: -121.688, ft: 7000 },
-    { name: 'Crater Lake', lat: 42.911, lon: -122.146, ft: 7100 } // Rim Village
+    { name: 'Mt. Baker', spot: 'Mt. Baker Ski Area', lat: 48.857, lon: -121.665, ft: 5000 },
+    { name: 'Mt. Hood', spot: 'Timberline Lodge', lat: 45.331, lon: -121.711, ft: 6000 },
+    { name: 'Bachelor', spot: 'Mt. Bachelor', lat: 43.979, lon: -121.688, ft: 7000 },
+    { name: 'Crater Lake', spot: 'Rim Village', lat: 42.911, lon: -122.146, ft: 7100 }
   ];
-  // Most-rain callout on the region card: the wettest low-elevation spots from Southeast Alaska to
-  // San Diego. Rain only (Open-Meteo's rain_sum), so a snowy week up high doesn't count here.
+  // Most-rain callout on the region card: the wettest low-elevation spots in the western US states,
+  // Southeast Alaska to San Diego. Rain only (Open-Meteo's rain_sum), so a snowy week up high doesn't count here.
   var RAIN_SITES = [
     { name: 'Ketchikan', where: 'Alaska', lat: 55.342, lon: -131.646 },
     { name: 'Juneau', where: 'Alaska', lat: 58.302, lon: -134.420 },
-    { name: 'Prince Rupert', where: 'British Columbia', lat: 54.315, lon: -130.321 },
-    { name: 'Tofino', where: 'British Columbia', lat: 49.153, lon: -125.907 },
     { name: 'Forks', where: 'Washington', lat: 47.950, lon: -124.385 },
     { name: 'Seattle', where: 'Washington', lat: 47.606, lon: -122.332 },
     { name: 'Astoria', where: 'Oregon', lat: 46.188, lon: -123.831 },
@@ -273,6 +271,7 @@
     document.body.classList.toggle('is-tracking', on);
     document.body.classList.toggle('is-entered', on); // .enter items wait out the page's exit (--enter-wait)
     if(trackerBtn) trackerBtn.setAttribute('aria-pressed', String(on));
+    dockTrackerButton(on, syncUrl);
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     refreshReadout();
@@ -280,6 +279,28 @@
     if(on && currentView && currentView !== 'west') select('west', true, true);
     if(on){ loadStats(); refreshCams(); }
     else stop();
+  }
+  // The footer slides away while tracking, so the snowflake moves out of it to sit beside the location
+  // tabs, flying between the two spots (FLIP) on the page's own timing: out with the page, back in
+  // once the tracker's panels have left (--dur-quick), the same as the page sliding back down.
+  var trackerDock = trackerBtn && trackerBtn.parentNode;
+  var dockHome = trackerDock && trackerDock.parentNode, dockNext = trackerDock && trackerDock.nextElementSibling;
+  function dockTrackerButton(on, animate){
+    if(!trackerDock || trackerDock.classList.contains('is-docked') === on) return;
+    var first = trackerDock.getBoundingClientRect();
+    var hadFocus = document.activeElement === trackerBtn;
+    if(on) document.body.appendChild(trackerDock);
+    else dockHome.insertBefore(trackerDock, dockNext);
+    trackerDock.classList.toggle('is-docked', on);
+    if(hadFocus) trackerBtn.focus({ preventScroll: true });
+    if(!animate || reduceMotion || !trackerDock.animate) return;
+    var last = trackerDock.getBoundingClientRect();
+    var css = getComputedStyle(document.documentElement);
+    var seconds = function(name){ return parseFloat(css.getPropertyValue(name)) * 1000; };
+    trackerDock.animate([
+      { transform: 'translate(' + (first.left - last.left) + 'px,' + (first.top - last.top) + 'px) scale(' + first.width / last.width + ')' },
+      { transform: 'none' }
+    ], { duration: seconds('--dur-slow'), delay: on ? 0 : seconds('--dur-quick'), easing: css.getPropertyValue('--ease-in-out').trim(), fill: 'backwards' });
   }
   setTracking(false);
   if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking, true); });
@@ -692,7 +713,7 @@
     var mood = nextP > pastP * 1.25 + 0.05 ? 'Wetter week ahead' : nextP < pastP * 0.8 - 0.05 ? 'Drier week ahead' : 'A similar week ahead';
     var tempNote = dT <= -3 ? ', about ' + Math.round(-dT) + '°F colder' : dT >= 3 ? ', about ' + Math.round(dT) + '°F warmer' : '';
     var bySite = sites.map(function(s, i){
-      return { name: s.name, ft: s.ft, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
+      return { name: s.name, spot: s.spot, ft: s.ft, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
     });
     var top = bySite.slice().sort(function(a, b){ return b.snow - a.snow; })[0];
     var trend = mood + tempNote + ': ' + formatPrecip(nextP) + ' of precip and ' + formatSnow(nextS) + ' of snow per site on average, ' +
@@ -701,7 +722,7 @@
     var hero = top.snow >= 0.5
       ? '<span class="stat-hero-num">' + formatSnow(top.snow) + '</span>' +
         '<span class="stat-hero-site"><span class="stat-hero-name">' + top.name + '</span>' +
-        formatPrecip(top.precip) + ' precip &middot; ' + top.ft.toLocaleString() + ' ft</span>'
+        '<span>' + top.spot + '</span><span>' + top.ft.toLocaleString() + ' ft</span></span>'
       : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No snow ahead</span>at any of the ' + sites.length + ' sites</span>';
     // The rainiest spot, Alaska to San Diego. Its own request, so the card still shows if it fails.
     var rainHero = '';
@@ -710,9 +731,9 @@
         .sort(function(a, b){ return b.rain - a.rain; })[0];
       rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span>Most rain, next 7 days</span>' +
         '<span class="stat-hero-row">' + (wet.rain >= 0.05
-          ? '<span class="stat-hero-num">' + formatPrecip(wet.rain) + '</span>' +
+          ? '<span class="stat-hero-num">' + wet.rain.toFixed(1) + '"</span>' +
             '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span>' + wet.site.where + '</span>'
-          : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No rain ahead</span>Alaska to San Diego</span>') +
+          : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No rain ahead</span>Western US</span>') +
         '</span></span>';
     }
     var dates = d[0].time;
@@ -895,7 +916,7 @@
       '&models=ecmwf_ifs025&daily=snowfall_sum&forecast_days=10&precipitation_unit=inch&timezone=America%2FLos_Angeles';
     var sites = REGION_SITES.concat(ZONES.filter(function(k){ return !VIEWS[k].target.landmark; }).map(function(k){
       var t = VIEWS[k].target;
-      return { name: VIEWS[k].label, lat: t.lat, lon: t.lon, ft: t.ft };
+      return { name: VIEWS[k].label, spot: t.name, lat: t.lat, lon: t.lon, ft: t.ft };
     }));
     var regionUrl = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=' + sites.map(function(p){ return p.lat; }).join(',') +
