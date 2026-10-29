@@ -181,15 +181,21 @@
     visibility:visible;   /* stays visible while flying back into the still-hidden footer */
     transition:border-color 0.35s ease, background-color 0.35s ease;
   }
-  /* Tracking: the snowflake sits right of the location tabs, a glass circle as tall as their pill. */
+  /* Tracking: the snowflake sits right of the location tabs as one filled glass circle, as tall as
+     their pill (no outer ring). */
   .tracker-toggle.is-docked{
     position:fixed;
     right:max(60px, calc(50vw - 640px));
     bottom:16px;
     z-index:40;
-    padding:9px;
-    border-color:var(--glass-border);
-    background:var(--bar-bg);
+    padding:0;
+    border:none;
+  }
+  .tracker-toggle.is-docked [data-tracker]{
+    width:48px;
+    height:48px;
+    border:1px solid var(--glass-border);
+    background:linear-gradient(var(--glass-indicator), var(--glass-indicator)), var(--bar-bg);
     -webkit-backdrop-filter:var(--bar-blur);
     backdrop-filter:var(--bar-blur);
   }

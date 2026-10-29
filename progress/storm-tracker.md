@@ -180,7 +180,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 ## Rain to one decimal, snow spot, footer hides in the tracker (done)
 - The most-rain callout shows one decimal place.
 - The most-snow callout names the exact forecast point (Siberia, Palisades; Timberline Lodge; and so on) and its elevation, in place of the precip line.
-- Opening the tracker slides the whole footer (contacts, theme toggle) down and out with the page. The snowflake flies (FLIP, `dockTrackerButton`) to a 48 px glass circle right of the location tabs, on the motion tokens: `--dur-slow` and `--ease-in-out` on the way out, and on close it waits `--dur-quick` and flies back with the footer.
+- Opening the tracker slides the whole footer (contacts, theme toggle) down and out with the page. The snowflake flies (FLIP, `dockTrackerButton`) to the right of the location tabs, where the button itself becomes one filled 48 px glass circle (no outer ring), on the motion tokens: `--dur-slow` and `--ease-in-out` on the way out, and on close it waits `--dur-quick` and flies back with the footer.
 - With the footer gone, the radar panel and tabs sit 16 px from the bottom, and cards can grow by one more bar height.
 - On phones the tabs tightened (3 px padding, 0.02em tracking) so all seven fit beside the snowflake.
 
