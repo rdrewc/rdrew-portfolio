@@ -332,6 +332,15 @@
   }
   setTracking(false);
   if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking, true); });
+  // Links to /elnino on the page itself (the Personal Projects card) open the tracker in place, with
+  // the snowflake's animation, instead of reloading. Modified clicks still open the link in a new tab.
+  document.querySelectorAll('a[href="' + TRACKER_PATH + '"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      if(e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      if(!tracking) setTracking(true, true);
+    });
+  });
   var homeBtn = document.querySelector('[data-tracker-home]');
   if(homeBtn) homeBtn.addEventListener('click', function(){ setTracking(false, true); });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && tracking) setTracking(false, true); });
