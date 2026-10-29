@@ -133,7 +133,7 @@
       'For the Cascades that usually means a milder, thinner snowpack; for the Sierra, the wettest odds come mid to late winter, with higher snow levels and rain-on-snow risk at lake level.',
     source: 'NOAA CPC · updated Oct 28, 2026'
   };
-  var DEFAULT_VIEW = 'tahoe';
+  var DEFAULT_VIEW = 'shasta'; // the homepage background always opens here, topo only
 
   // ---- map ----
   var demSource = new mlcontour.DemSource({ url: DEM_TILES, encoding: 'terrarium', maxzoom: 12, worker: true });
@@ -290,8 +290,9 @@
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     refreshReadout();
-    // The tracker always opens on the Overview (the whole coast); the saved view stays the homepage's.
-    if(on && currentView && currentView !== 'west') select('west', true, true);
+    // The tracker always opens on the Overview (the whole coast).
+    if(on && currentView && currentView !== 'west') select('west', true);
+    if(mapReady) setOverlay(overlay); // overlays only draw in tracker mode
     if(on){ loadStats(); refreshCams(); }
     else stop();
   }
@@ -372,7 +373,7 @@
     frame = Math.max(0, Math.min(frames.length - 1, i));
     ensureLayer(frame);
     ensureLayer(frame + 1); // load the next frame early so playback doesn't flash
-    var opacity = overlay !== 'radar' ? 0 : tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
+    var opacity = shown() !== 'radar' ? 0 : tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
     frames.forEach(function(_, k){
       if(map.getLayer(layerId(k))) map.setPaintProperty(layerId(k), 'raster-opacity', k === frame ? opacity : 0);
     });
@@ -438,6 +439,8 @@
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
   var overlay = 'wind';
+  // The overlay actually drawn: none on the homepage, where the map is just topo behind the page.
+  function shown(){ return tracking ? overlay : null; }
   var radarPanel = document.querySelector('.radar-panel');
   var overlayBtns = document.querySelectorAll('[data-overlay]');
   function ensureOverlays(){
@@ -465,10 +468,11 @@
     if(tracking) refreshReadout(); // the coast view's readout names the overlay
     if(!mapReady) return;
     ensureOverlays();
-    map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
-    map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
+    var on = shown();
+    map.setLayoutProperty('temp', 'visibility', on === 'temp' ? 'visible' : 'none');
+    map.setLayoutProperty('temp-seam', 'visibility', on === 'temp' ? 'visible' : 'none');
     showFrame(frame);
-    if(name === 'wind') startWind();
+    if(on === 'wind') startWind();
     else stopWind();
   }
   overlayBtns.forEach(function(b){
@@ -600,7 +604,7 @@
   }
   function runWind(){
     cancelAnimationFrame(windRAF);
-    if(overlay !== 'wind' || !windField) return;
+    if(shown() !== 'wind' || !windField) return;
     if(reduceMotion){ // no motion: draw the settled trails once
       for(var i = 0; i < 60; i++) stepWind();
       return;
@@ -680,7 +684,7 @@
     })();
   }
   function loadWind(){
-    if(overlay !== 'wind') return;
+    if(shown() !== 'wind') return;
     var b = map.getBounds(), vw = b.getWest(), ve = b.getEast(), vs = b.getSouth(), vn = b.getNorth();
     // Still inside the area already fetched, at a similar scale: just rebuild the field.
     var d = windData;
@@ -720,17 +724,17 @@
   }
   // While the map moves, the trails would smear, so they hide and pick up again once it settles.
   map.on('movestart', function(){
-    if(overlay !== 'wind' || !windCanvas) return;
+    if(shown() !== 'wind' || !windCanvas) return;
     cancelAnimationFrame(windRAF);
     windCanvas.classList.add('is-moving');
   });
   map.on('moveend', function(){
-    if(overlay !== 'wind' || !windCanvas) return;
+    if(shown() !== 'wind' || !windCanvas) return;
     windCanvas.classList.remove('is-moving');
     clearTimeout(windTimer);
     windTimer = setTimeout(loadWind, 250);
   });
-  map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(overlay === 'wind') loadWind(); } });
+  map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(shown() === 'wind') loadWind(); } });
   map.on('load', function(){ mapReady = true; setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
@@ -1324,10 +1328,7 @@
   }
   var currentView = null;
   var buttons = document.querySelectorAll('[data-view]');
-  function saved(){
-    try { return localStorage.getItem('map-view'); } catch(e){ return null; }
-  }
-  function select(key, animate, keepSaved){
+  function select(key, animate){
     if(!VIEWS[key]) key = DEFAULT_VIEW;
     currentView = key;
     var v = VIEWS[key];
@@ -1342,12 +1343,11 @@
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
     updateCarousel();
     updateMarkers();
-    if(animate && !keepSaved){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
-  map.on('load', function(){ select(tracking ? 'west' : (saved() || DEFAULT_VIEW), false); }); // /elnino opens on the Overview
+  map.on('load', function(){ select(tracking ? 'west' : DEFAULT_VIEW, false); }); // /elnino opens on the Overview
   if(startTracking) setTracking(true);
   // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
   // steering the map.
