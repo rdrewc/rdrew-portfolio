@@ -432,11 +432,12 @@
   });
 
   // ---- overlays: forecast radar, wind, temperature ----
-  // Radar is the default and the only one with a timeline. Temperature is NOAA's NDFD forecast as map
-  // tiles, under the contour lines. Wind is a particle flow: see "wind flow" below.
+  // Wind is the default (see "wind flow" below). Radar is the only one with a timeline. Temperature is
+  // NOAA's NDFD forecast as map tiles, under the contour lines. Wind and Temp each show a small legend
+  // in the panel where Radar's timeline would be.
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
-  var overlay = 'radar';
+  var overlay = 'wind';
   var radarPanel = document.querySelector('.radar-panel');
   var overlayBtns = document.querySelectorAll('[data-overlay]');
   function ensureOverlays(){
@@ -452,13 +453,17 @@
     map.addLayer({ id: 'temp-seam', type: 'fill', source: 'temp-seam', layout: { visibility: 'none' },
       paint: { 'fill-color': cssVar('--bg', '#12131c') } }, 'contour-minor');
   }
+  // Set once the map fires 'load'. (isStyleLoaded() can't gate this: it stays false while any tiles
+  // are still arriving, as the radar's are right at load, which would leave the default wind unstarted.)
+  var mapReady = false;
   function setOverlay(name){
     overlay = name;
     if(radarPanel) radarPanel.setAttribute('data-active', name);
     overlayBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-overlay') === name)); });
     if(name !== 'radar') stop();
     updateTimeLabel();
-    if(!map.isStyleLoaded()) return;
+    if(tracking) refreshReadout(); // the coast view's readout names the overlay
+    if(!mapReady) return;
     ensureOverlays();
     map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
     map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
@@ -607,10 +612,72 @@
     windCanvas.classList.remove('is-hidden');
     loadWind();
     runWind();
+    startLegend();
   }
   function stopWind(){
     cancelAnimationFrame(windRAF);
+    cancelAnimationFrame(legendRAF);
     if(windCanvas){ windCanvas.classList.add('is-hidden'); windCtx.clearRect(0, 0, el.clientWidth, el.clientHeight); }
+  }
+
+  // Wind legend: a strip of the same particles, drawn by the same rules, with the wind rising from
+  // 0 mph at the left end to LEGEND_MAX at the right. Calm air barely creeps and stays dim; fast air
+  // streaks past brighter and thicker, so the strip reads the map's motion as speeds.
+  var LEGEND_MAX = 32;        // mph at the right end (labelled 30+)
+  var LEGEND_AREA = 80;       // one particle per this many square px (sparser than the map, so streaks stay distinct)
+  var LEGEND_FADE = 0.9;      // shorter trails than the map's, for the same reason
+  var legendCanvas = document.querySelector('.wind-legend');
+  var legendCtx = legendCanvas && legendCanvas.getContext('2d');
+  var legendDots = [], legendRAF = null, legendW = 0, legendH = 0;
+  function sizeLegend(){
+    var r = Math.min(window.devicePixelRatio || 1, 2);
+    legendW = legendCanvas.clientWidth; legendH = legendCanvas.clientHeight;
+    legendCanvas.width = Math.max(1, legendW * r); legendCanvas.height = Math.max(1, legendH * r);
+    legendCtx.setTransform(r, 0, 0, r, 0, 0);
+    legendDots = [];
+    for(var i = 0; i < Math.round(legendW * legendH / LEGEND_AREA); i++){
+      legendDots.push({ x: Math.random() * legendW, y: 1.5 + Math.random() * (legendH - 3), age: Math.floor(Math.random() * MAX_AGE) });
+    }
+  }
+  function stepLegend(){
+    var ctx = legendCtx;
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.fillStyle = 'rgba(0,0,0,' + LEGEND_FADE + ')';
+    ctx.fillRect(0, 0, legendW, legendH);
+    ctx.globalCompositeOperation = 'source-over';
+    var buckets = SPEED_STEPS.map(function(){ return []; });
+    legendDots.forEach(function(p){
+      var mph = LEGEND_MAX * p.x / legendW;
+      var nx = p.x + Math.max(0.04, mph * PX_PER_MPH);
+      if(nx >= legendW || ++p.age > MAX_AGE){ p.x = Math.random() * legendW; p.age = 0; return; }
+      for(var b = 0; mph > SPEED_STEPS[b][0]; b++);
+      buckets[b].push(p.x, p.y, nx, p.y);
+      p.x = nx;
+    });
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = cssVar('--accent', '#9b7bff');
+    buckets.forEach(function(seg, b){
+      if(!seg.length) return;
+      ctx.beginPath();
+      for(var i = 0; i < seg.length; i += 4){ ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
+      ctx.globalAlpha = SPEED_STEPS[b][1];
+      ctx.lineWidth = SPEED_STEPS[b][2];
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
+  function startLegend(){
+    cancelAnimationFrame(legendRAF);
+    if(!legendCtx) return;
+    // The panel only shows while tracking: draw only then, once the strip has a size.
+    (function frameLoop(){
+      if(legendCanvas.clientWidth && (legendCanvas.clientWidth !== legendW || legendCanvas.clientHeight !== legendH)) sizeLegend();
+      if(legendW && tracking){
+        if(reduceMotion){ for(var i = 0; i < 160; i++) stepLegend(); return; } // settled streaks, no motion
+        stepLegend();
+      }
+      legendRAF = requestAnimationFrame(frameLoop);
+    })();
   }
   function loadWind(){
     if(overlay !== 'wind') return;
@@ -664,7 +731,7 @@
     windTimer = setTimeout(loadWind, 250);
   });
   map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(overlay === 'wind') loadWind(); } });
-  map.on('load', function(){ setOverlay(overlay); });
+  map.on('load', function(){ mapReady = true; setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
   // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
@@ -1191,12 +1258,12 @@
   function updateReadout(v){
     if(!weatherLine || !elevLine) return;
     if(v === VIEWS.west){
-      // Whole-coast view: the readout follows the radar instead of one spot.
+      // Whole-coast view: the readout names the overlay instead of one spot (and the radar's time).
       readoutFor = v;
       if(coordsEl) coordsEl.textContent = 'WEST COAST';
       var d = validAt(frame);
-      weatherLine.textContent = 'Forecast radar';
-      elevLine.textContent = d ? formatTime(d) : '…';
+      weatherLine.textContent = overlay === 'wind' ? 'Wind' : overlay === 'temp' ? 'Temperature' : 'Forecast radar';
+      elevLine.textContent = overlay === 'wind' ? 'Now' : overlay === 'temp' ? 'NOAA forecast' : d ? formatTime(d) : '…';
       return;
     }
     if(readoutFor === v) return;

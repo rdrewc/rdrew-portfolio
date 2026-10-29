@@ -666,6 +666,20 @@
   .wind-canvas.is-moving, .wind-canvas.is-hidden{opacity:0;}
   .radar-panel:not([data-active="radar"]) #radar-play,
   .radar-panel:not([data-active="radar"]) input[type="range"]{display:none;}
+  /* Legends for Wind and Temp, in the timeline's place: a slim bar between its two end values.
+     Wind's is a strip of the same particles (see storm-map.js) running from calm to fast; Temp's is
+     NOAA's forecast scale at the map's own opacity, so the two read alike. */
+  .overlay-legend{display:none;flex:1;min-width:0;align-items:center;gap:8px;}
+  .radar-panel[data-active="wind"] .legend-wind,
+  .radar-panel[data-active="temp"] .legend-temp{display:flex;}
+  .legend-end{flex-shrink:0;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .wind-legend, .temp-bar{flex:1;min-width:48px;max-width:180px;height:8px;border-radius:4px;}
+  .wind-legend{display:block;height:12px;}
+  .temp-bar{
+    opacity:0.55;
+    background:linear-gradient(90deg, #9900ff, #0808ff 10%, #3b86ff 20%, #08fffb 30%, #30ff87 40%, #1aff00 50%,
+      #a1ff00 60%, #fffb00 70%, #ffbb00 80%, #fa7d00 90%, #b84000);
+  }
   /* Fixed top bar: opaque, with a rule across the full window. */
   .top-bar{
     position:fixed;
@@ -927,10 +941,10 @@
 
 <div id="storm-map"></div>
 <div class="terrain-scrim"></div>
-<div class="radar-panel enter" style="--i:1" data-active="radar" role="group" aria-label="Map overlay and radar timeline">
+<div class="radar-panel enter" style="--i:1" data-active="wind" role="group" aria-label="Map overlay and radar timeline">
   <span class="overlay-switch" role="group" aria-label="Map overlay">
-    <button type="button" data-overlay="radar" aria-pressed="true">Radar</button>
-    <button type="button" data-overlay="wind" aria-pressed="false">Wind</button>
+    <button type="button" data-overlay="radar" aria-pressed="false">Radar</button>
+    <button type="button" data-overlay="wind" aria-pressed="true">Wind</button>
     <button type="button" data-overlay="temp" aria-pressed="false">Temp</button>
   </span>
   <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
@@ -938,7 +952,13 @@
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
   </button>
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
-  <span class="radar-time" id="radar-time">Loading radar&hellip;</span>
+  <span class="overlay-legend legend-wind" role="img" aria-label="Wind speed: slow, dim trails near 0 mph to fast, bright streaks at 30 mph and up">
+    <span class="legend-end">0</span><canvas class="wind-legend" aria-hidden="true"></canvas><span class="legend-end">30+ mph</span>
+  </span>
+  <span class="overlay-legend legend-temp" role="img" aria-label="Temperature: purple at 0&deg;F through blue, green and yellow to orange at 100&deg;F">
+    <span class="legend-end">0&deg;</span><span class="temp-bar" aria-hidden="true"></span><span class="legend-end">100&deg;F</span>
+  </span>
+  <span class="radar-time" id="radar-time">Wind now</span>
 </div>
 <div class="view-tabs enter" id="view-tabs" style="--i:1" role="group" aria-label="Map view">
   <button type="button" data-view="west" aria-pressed="false">Overview</button>
@@ -1115,7 +1135,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=45"></script>
+<script src="assets/storm-map.js?v=48"></script>
 
 </body>
 </html>
