@@ -185,10 +185,10 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - On phones the tabs tightened (3 px padding, 0.02em tracking) so all seven fit beside the snowflake.
 
 ## Snow-globe snowflake (done)
-- While the tracker is on, the snowflake grows more detail instead of scaling up: arm tips with forks, then four diagonal arms, each drawing out in turn (`.flake-detail`, stroke-dashoffset, `--dur-base` / `--ease-out`, half-stagger).
-- A light flurry drifts inside the circle like a snow globe: two layers of box-shadow dots falling on a seamless 48 px loop, with a gentle sway.
-- Turning it off retracts the detail and fades the flurry (`--dur-quick` / `--ease-in`). With reduced motion there's no animation and no flurry.
-- The svg box is now 22 px with a wider viewBox, so the base flake still draws at 15 px.
+- Once the snowflake lands by the tabs (`--dur-slow`), the simple icon fades and a full six-armed crystal draws out from the middle: hexagon, then arms, then branches. It's a little wider (about 17 px vs 15 px) at the same line weight, not scaled up.
+- Then a one-shot snow-globe storm: 18 flakes (random each load, made in `storm-map.js`) fall quickly and settle on a mound that rises at the bottom of the circle, then everything stops. The settled scene is the base style, so the animations only play the fall and the rise.
+- Turning it off retracts the crystal, fades the scene, and brings the simple icon back. With reduced motion, the settled scene and the crystal just appear.
+- The svg box is 22 px with a wider viewBox, so the simple icon still draws at 15 px.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

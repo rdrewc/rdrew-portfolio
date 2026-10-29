@@ -302,6 +302,19 @@
       { transform: 'none' }
     ], { duration: seconds('--dur-slow'), delay: on ? 0 : seconds('--dur-quick'), easing: css.getPropertyValue('--ease-in-out').trim(), fill: 'backwards' });
   }
+  // Snow-globe flakes for the active snowflake: each falls once (from x0 above the circle) and rests
+  // at (x1, y1) on the mound, whose top curves from y 38 in the middle of the 48px circle.
+  var globe = trackerBtn && trackerBtn.querySelector('.globe');
+  for(var g = 0; globe && g < 18; g++){
+    var gx = 13 + Math.random() * 22, gs = 1.5 + Math.random() * 1.5;
+    var ground = 50 - 12 * Math.sqrt(1 - Math.pow((gx - 24) / 33.6, 2));
+    var flake = document.createElement('span');
+    flake.className = 'globe-flake';
+    flake.style.cssText = '--s:' + gs.toFixed(1) + 'px;--x0:' + (gx + (Math.random() - 0.5) * 12).toFixed(1) + 'px;--x1:' + gx.toFixed(1) +
+      'px;--y1:' + (ground - gs - 1 + Math.random() * 2.5).toFixed(1) + 'px;--t:' + (0.45 + Math.random() * 0.35).toFixed(2) +
+      's;--w:' + (Math.random() * 1.1).toFixed(2) + 's';
+    globe.appendChild(flake);
+  }
   setTracking(false);
   if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking, true); });
   var homeBtn = document.querySelector('[data-tracker-home]');

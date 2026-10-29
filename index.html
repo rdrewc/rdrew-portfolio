@@ -222,56 +222,47 @@
     transition:transform 0.6s var(--ease-out);
   }
   .tracker-toggle [data-tracker][aria-pressed="true"] svg{transform:rotate(90deg);}
-  /* Active: the flake grows more of itself (arm tips, then diagonal arms, each drawing out in turn)
-     rather than scaling up, and a light flurry drifts inside the circle like a snow globe. Turning
-     off retracts the detail and lets the flurry fade, quickly and all at once. */
+  /* Active, once the snowflake has landed by the tabs (--dur-slow): the simple icon gives way to a full
+     six-armed crystal drawn out from the middle (hexagon, arms, then branches), a little wider than
+     the icon but the same line weight, not scaled up. Then a quick snow-globe storm: flakes fall,
+     settle on a mound rising at the bottom, and stop. Turning off retracts it all quickly. */
   .tracker-toggle [data-tracker]{position:relative;overflow:hidden;}
-  .flake-detail{
-    stroke-width:1.6;
+  .flake-base{transition:opacity var(--dur-quick) var(--ease-out) var(--dur-quick);}
+  [data-tracker][aria-pressed="true"] .flake-base{opacity:0;transition:opacity var(--dur-quick) var(--ease-in) var(--dur-slow);}
+  .flake-line{
     stroke-dasharray:1;
     stroke-dashoffset:1;
     transition:stroke-dashoffset var(--dur-quick) var(--ease-in);
   }
-  [data-tracker][aria-pressed="true"] .flake-detail{
+  .flake-arm{stroke-width:1.8;}
+  .flake-hex, .flake-branch{stroke-width:1.4;}
+  [data-tracker][aria-pressed="true"] .flake-line{
     stroke-dashoffset:0;
-    transition:stroke-dashoffset var(--dur-base) var(--ease-out) calc(var(--dur-quick) + var(--d) * var(--stagger) / 2);
+    transition:stroke-dashoffset var(--dur-base) var(--ease-out) calc(var(--dur-slow) + var(--w));
   }
-  .flurry{
+  /* The storm. Its resting look (flakes on the mound) is the base style, so turning off just fades the
+     settled scene; the fall and the mound's rise play once, each time it turns on. */
+  .globe{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;opacity:0;transition:opacity var(--dur-quick) var(--ease-in);}
+  [data-tracker][aria-pressed="true"] .globe{opacity:1;transition:none;}
+  .globe-pile{position:absolute;left:-20%;right:-20%;bottom:-14px;height:24px;border-radius:50%;background:currentColor;opacity:0.3;}
+  .globe-flake{
     position:absolute;
-    inset:0;
-    border-radius:50%;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity var(--dur-quick) var(--ease-in);
-    animation:flurry-sway 2.2s ease-in-out infinite alternate paused;
-  }
-  [data-tracker][aria-pressed="true"] .flurry{animation-play-state:running;opacity:0.6;transition:opacity var(--dur-base) var(--ease-out) var(--dur-quick);}
-  /* Two layers of flakes (box-shadow dots, each set repeated one circle higher so the fall loops). */
-  .flurry::before, .flurry::after{
-    content:"";
-    position:absolute;
-    left:50%;
-    top:50%;
+    left:0;
+    top:0;
+    width:var(--s);
+    height:var(--s);
     border-radius:50%;
     background:currentColor;
-    animation:flurry-fall 2.6s linear infinite;
-    animation-play-state:paused;
+    opacity:0.85;
+    transform:translate(var(--x1), var(--y1));
   }
-  .flurry::before{
-    width:2px;height:2px;
-    box-shadow:4px -15px, 4px -63px, 9px 17px, 9px -31px, -13px -20px, -13px -68px, -10px -1px, -10px -49px, -13px 8px, -13px -40px, -3px -22px, -3px -70px, -11px 3px, -11px -45px;
-  }
-  .flurry::after{
-    width:1.5px;height:1.5px;
-    animation-duration:3.8s;
-    box-shadow:10px -20px, 10px -68px, -1px -19px, -1px -67px, 11px -21px, 11px -69px, -9px -10px, -9px -58px, -13px 12px, -13px -36px, 9px -21px, 9px -69px;
-  }
-  [data-tracker][aria-pressed="true"] .flurry::before, [data-tracker][aria-pressed="true"] .flurry::after{animation-play-state:running;}
-  @keyframes flurry-fall{ to{ transform:translateY(48px); } }
-  @keyframes flurry-sway{ from{ transform:translateX(-2px) rotate(-6deg); } to{ transform:translateX(2px) rotate(6deg); } }
+  [data-tracker][aria-pressed="true"] .globe-pile{animation:globe-pile 1.3s var(--ease-out) calc(var(--dur-slow) + 0.35s) backwards;}
+  [data-tracker][aria-pressed="true"] .globe-flake{animation:globe-fall var(--t) cubic-bezier(.45,0,.9,.55) calc(var(--dur-slow) + var(--w)) backwards;}
+  @keyframes globe-pile{ from{ transform:translateY(12px); } }
+  @keyframes globe-fall{ from{ transform:translate(var(--x0), -6px); } }
   @media (prefers-reduced-motion: reduce){
-    .tracker-toggle [data-tracker] svg, .flake-detail, [data-tracker][aria-pressed="true"] .flake-detail{transition:none;}
-    .flurry{display:none;}
+    .tracker-toggle [data-tracker] svg, .flake-base, .flake-line, [data-tracker][aria-pressed="true"] .flake-base, [data-tracker][aria-pressed="true"] .flake-line{transition:none;}
+    [data-tracker][aria-pressed="true"] .globe-pile, [data-tracker][aria-pressed="true"] .globe-flake{animation:none;}
   }
 
   /* Location tabs: their own pill above the footer, aligned right, opposite the radar timeline.
@@ -1052,16 +1043,22 @@
   <div class="footer-controls">
   <div class="tracker-toggle">
     <button type="button" data-tracker aria-pressed="false" aria-label="Storm tracker" aria-controls="view-tabs">
-      <span class="flurry" aria-hidden="true"></span>
-      <svg viewBox="-5.6 -5.6 35.2 35.2" aria-hidden="true"><path d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/>
-        <path class="flake-detail" pathLength="1" style="--d:0" d="M22 12L25.5 12M25.5 12L27.1 13.6M25.5 12L27.1 10.4"/>
-        <path class="flake-detail" pathLength="1" style="--d:2" d="M2 12L-1.5 12M-1.5 12L-3.1 10.4M-1.5 12L-3.1 13.6"/>
-        <path class="flake-detail" pathLength="1" style="--d:1" d="M12 22L12 25.5M12 25.5L10.4 27.1M12 25.5L13.6 27.1"/>
-        <path class="flake-detail" pathLength="1" style="--d:3" d="M12 2L12 -1.5M12 -1.5L13.6 -3.1M12 -1.5L10.4 -3.1"/>
-        <path class="flake-detail" pathLength="1" style="--d:4" d="M14.12 9.88L18.72 5.28M16.6 7.4L18.5 7.4M16.6 7.4L16.6 5.5"/>
-        <path class="flake-detail" pathLength="1" style="--d:6" d="M9.88 9.88L5.28 5.28M7.4 7.4L5.5 7.4M7.4 7.4L7.4 5.5"/>
-        <path class="flake-detail" pathLength="1" style="--d:5" d="M14.12 14.12L18.72 18.72M16.6 16.6L18.5 16.6M16.6 16.6L16.6 18.5"/>
-        <path class="flake-detail" pathLength="1" style="--d:7" d="M9.88 14.12L5.28 18.72M7.4 16.6L5.5 16.6M7.4 16.6L7.4 18.5"/>
+      <span class="globe" aria-hidden="true"><span class="globe-pile"></span></span>
+      <svg viewBox="-5.6 -5.6 35.2 35.2" aria-hidden="true">
+        <path class="flake-base" d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/>
+        <path class="flake-line flake-hex" pathLength="1" style="--w:0s" d="M14.08 13.2L12 14.4L9.92 13.2L9.92 10.8L12 9.6L14.08 10.8Z"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.08s" d="M13.8 12L26 12"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.11s" d="M12.9 13.56L19 24.12"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.14s" d="M11.1 13.56L5 24.12"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.17s" d="M10.2 12L-2 12"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.20s" d="M11.1 10.44L5 -0.12"/>
+        <path class="flake-line flake-arm" pathLength="1" style="--w:0.23s" d="M12.9 10.44L19 -0.12"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.30s" d="M18 12L20 8.54M18 12L20 15.46M22 12L23.4 9.58M22 12L23.4 14.42"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.34s" d="M15 17.2L19 17.2M15 17.2L13 20.66M17 20.66L19.8 20.66M17 20.66L15.6 23.09"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.38s" d="M9 17.2L11 20.66M9 17.2L5 17.2M7 20.66L8.4 23.09M7 20.66L4.2 20.66"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.42s" d="M6 12L4 15.46M6 12L4 8.54M2 12L0.6 14.42M2 12L0.6 9.58"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.46s" d="M9 6.8L5 6.8M9 6.8L11 3.34M7 3.34L4.2 3.34M7 3.34L8.4 0.91"/>
+        <path class="flake-line flake-branch" pathLength="1" style="--w:0.50s" d="M15 6.8L13 3.34M15 6.8L19 6.8M17 3.34L15.6 0.91M17 3.34L19.8 3.34"/>
       </svg>
     </button>
   </div>
@@ -1081,7 +1078,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=37"></script>
+<script src="assets/storm-map.js?v=38"></script>
 
 </body>
 </html>
