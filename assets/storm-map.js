@@ -989,16 +989,46 @@
     }).join('') + '</span>';
   }
 
-  // Card titles take their color from the storm coming in the next 24 hours at the target: red for a
-  // big one, yellow for a moderate one, plain ink for none. The Overview takes the biggest of them.
-  var STORM = { big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } }; // inches in 24 h
-  var STORM_ORDER = ['none', 'mid', 'big'];
-  var STORM_LABEL = { big: 'Big storm in the next 24 hours', mid: 'Some snow or rain in the next 24 hours', none: 'No storm in the next 24 hours' };
+  // Card titles take their color from the storm coming in the next 24 hours at the target: dark red
+  // for an extreme one, red for a big one, yellow for a moderate one, plain ink for none. The Overview
+  // takes the biggest of them. The storm-risk legend above the cards is built from these too.
+  var STORM = { extreme: { snow: 18, precip: 3 }, big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } }; // inches in 24 h
+  var STORM_ORDER = ['none', 'mid', 'big', 'extreme'];
+  var STORM_LABEL = { extreme: 'Extreme storm in the next 24 hours', big: 'Big storm in the next 24 hours', mid: 'Some snow or rain in the next 24 hours', none: 'No storm in the next 24 hours' };
+  var STORM_NAME = { none: 'No storm', mid: 'Moderate', big: 'Big', extreme: 'Extreme' };
   function stormLevel(snow24, precip24){
+    if(snow24 >= STORM.extreme.snow || precip24 >= STORM.extreme.precip) return 'extreme';
     if(snow24 >= STORM.big.snow || precip24 >= STORM.big.precip) return 'big';
     if(snow24 >= STORM.mid.snow || precip24 >= STORM.mid.precip) return 'mid';
     return 'none';
   }
+  // Storm-risk legend: a small label above the cards that opens to show every level, its thresholds,
+  // and how the level is assessed. The rows come from STORM, so they always match the titles.
+  var legendRows = document.getElementById('storm-legend-rows');
+  if(legendRows){
+    // Header, then one row per level: its snow and precip thresholds (either one sets the level).
+    legendRows.innerHTML = '<li class="storm-legend-head" aria-hidden="true"><span></span><span>Level</span><span>Snow</span><span>Precip</span></li>' +
+      STORM_ORDER.map(function(k){
+        var snow = k === 'none' ? '&lt;' + STORM.mid.snow + '"' : STORM[k].snow + '"+';
+        var precip = k === 'none' ? '&lt;' + STORM.mid.precip + '"' : STORM[k].precip + '"+';
+        return '<li><span class="storm-legend-swatch storm-' + k + '" aria-hidden="true"></span>' +
+          '<span class="storm-legend-name storm-' + k + '">' + STORM_NAME[k] + '</span>' +
+          '<span class="storm-legend-val"><span class="sr-only">snow </span>' + snow + '</span>' +
+          '<span class="storm-legend-val"><span class="sr-only">precip </span>' + precip + '</span></li>';
+      }).join('');
+  }
+  var legendToggle = document.querySelector('.storm-legend-toggle');
+  var legendPanel = document.getElementById('storm-legend-panel');
+  function openStormLegend(open){
+    if(!legendToggle) return;
+    legendToggle.setAttribute('aria-expanded', String(open));
+    legendPanel.hidden = !open;
+  }
+  if(legendToggle){
+    legendToggle.addEventListener('click', function(){ openStormLegend(legendPanel.hidden); });
+    document.addEventListener('click', function(e){ if(!legendPanel.hidden && !e.target.closest('.storm-legend')) openStormLegend(false); });
+  }
+
   // The label rides along as a tooltip and for screen readers, so the color isn't the only signal.
   function stormTitle(text, level){
     return '<span class="stat-name storm-' + level + '" title="' + STORM_LABEL[level] + '">' + text +
@@ -1071,7 +1101,7 @@
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) + '</span>' +
-            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft &middot; ' + formatCoords(t) + '</span>' +
+            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>' +
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +

@@ -45,6 +45,7 @@
     --temp-line:#d95926;  /* validated with the two bars above */
     --storm-big:#ff3b2f;  /* tracker card titles: big storm in the next 24 h */
     --storm-mid:#ffc93c;  /* moderate */
+    --storm-extreme:#c8102e; /* extreme: darker red, still 3:1 on the dark page for the big titles */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
   }
@@ -68,6 +69,7 @@
     --temp-line:#eb6834;
     --storm-big:#d42a1c;
     --storm-mid:#b07d00;  /* yellow darkened so it reads on the light page */
+    --storm-extreme:#8a0f1a;
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
   }
@@ -397,6 +399,44 @@
   }
   .stat-name.storm-big{color:var(--storm-big);}
   .stat-name.storm-mid{color:var(--storm-mid);}
+  .stat-name.storm-extreme{color:var(--storm-extreme);}
+  /* Storm-risk legend above the cards: a small label with the title colors as one gradient (no storm
+     to extreme). It opens over the card to list each level, its 24-hour thresholds and the source. */
+  .storm-legend{position:relative;align-self:flex-start;pointer-events:auto;}
+  .storm-legend-toggle{
+    display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 10px;
+    border:1px solid var(--glass-border);border-radius:999px;background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);backdrop-filter:var(--bar-blur);
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--label);cursor:pointer;transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .storm-legend-toggle:hover, .storm-legend-toggle[aria-expanded="true"]{color:var(--strong);border-color:var(--accent);}
+  .storm-legend-bar{width:40px;height:6px;border-radius:3px;
+    background:linear-gradient(90deg, var(--strong), var(--storm-mid) 38%, var(--storm-big) 70%, var(--storm-extreme));}
+  .storm-legend-toggle svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+    transition:transform var(--dur-base) var(--ease-out);}
+  .storm-legend-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .storm-legend-panel{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:min(260px, calc(100vw - 32px));
+    padding:12px 14px;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.5;letter-spacing:0.02em;color:var(--muted);
+  }
+  .storm-legend-panel[hidden]{display:none;}
+  .storm-legend-title{margin:0 0 8px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
+  .storm-legend-panel ul{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px;}
+  .storm-legend-panel li{display:grid;grid-template-columns:10px 1fr 44px 52px;align-items:center;gap:8px;}
+  .storm-legend-head{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
+  .storm-legend-head span:nth-child(n+3), .storm-legend-val{text-align:right;}
+  .storm-legend-val{color:var(--body-text);font-variant-numeric:tabular-nums;}
+  .storm-legend-swatch{width:10px;height:10px;border-radius:2px;background:var(--strong);}
+  .storm-legend-swatch.storm-mid{background:var(--storm-mid);}
+  .storm-legend-swatch.storm-big{background:var(--storm-big);}
+  .storm-legend-swatch.storm-extreme{background:var(--storm-extreme);}
+  .storm-legend-name{font-weight:600;color:var(--strong);}
+  .storm-legend-name.storm-mid{color:var(--storm-mid);}
+  .storm-legend-name.storm-big{color:var(--storm-big);}
+  .storm-legend-name.storm-extreme{color:var(--storm-extreme);}
+  .storm-legend-note{margin:0;padding-top:8px;border-top:1px solid var(--divider);color:var(--body-text);}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
   .stat-target{display:block;margin:10px 0 12px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -512,7 +552,7 @@
   /* Region card (West view): past and next week averaged across the Cascades and Sierra. Past days are
      faded and today is outlined, so the split reads without a legend. The card scrolls inside itself
      if it's taller than the window allows. */
-  .stat-card{max-height:calc(100vh - var(--bar-h) - 96px);overflow-y:auto;scrollbar-width:none;}
+  .stat-card{max-height:calc(100vh - var(--bar-h) - 130px);overflow-y:auto;scrollbar-width:none;} /* 96px, plus the storm legend's row */
   .stat-trend{display:block;margin-bottom:4px;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);white-space:normal;}
   .stat-bar.is-past > span{opacity:0.4;}
   .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
@@ -902,7 +942,7 @@
   }
   @media (min-width:861px) and (max-width:1010px){
     .radar-panel{bottom:74px;width:min(640px, calc(100vw - 120px));}
-    .stat-card{max-height:calc(100vh - var(--bar-h) - 154px);}
+    .stat-card{max-height:calc(100vh - var(--bar-h) - 188px);}
   }
   @media (max-width:860px){
     .page{
@@ -970,6 +1010,17 @@
   <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
 </div>
 <div class="site-stats enter" id="site-stats" style="--i:0" role="region" aria-label="Forecast totals">
+  <div class="storm-legend">
+    <button type="button" class="storm-legend-toggle" aria-expanded="false" aria-controls="storm-legend-panel">
+      <span class="storm-legend-bar" aria-hidden="true"></span>Storm risk
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="storm-legend-panel" id="storm-legend-panel" hidden>
+      <p class="storm-legend-title">Storm risk &middot; next 24 hours</p>
+      <ul id="storm-legend-rows"></ul>
+      <p class="storm-legend-note">Either total sets the level. Each card&rsquo;s title is colored by the snow and precipitation forecast at its zone&rsquo;s target over the next 24 hours. The Overview takes the highest of its zones. Totals come from Open-Meteo&rsquo;s hourly forecast. It&rsquo;s an estimate from model totals, not an official warning: check the National Weather Service for those.</p>
+    </div>
+  </div>
   <div class="stats-track">
     <div class="stats-rail" id="stats-rail"></div>
   </div>
@@ -1135,7 +1186,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=48"></script>
+<script src="assets/storm-map.js?v=50"></script>
 
 </body>
 </html>
