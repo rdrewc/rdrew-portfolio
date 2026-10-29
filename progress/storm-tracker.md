@@ -192,6 +192,12 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Turning it off retracts the crystal, fades the scene, and brings the simple icon back. With reduced motion, the settled scene and the crystal just appear.
 - The svg box is 22 px with a wider viewBox, so the simple icon still draws at 15 px.
 
+## Snow and rain callouts side by side (done)
+- The two callouts sit in `.stat-heroes`. That's a grid that goes to two columns through a container query on `.site-stats` (`container: stats`) once the cards are 320 px or wider, so it follows card width, not screen width.
+  - Phones (343 px card): side by side, each number above its place, and the label shortens to "Most snow, 7 days".
+  - Tablets: side by side, number beside place, full label.
+  - Desktop (260 px card): stacked as before.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
