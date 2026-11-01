@@ -9,6 +9,8 @@ import { readNetCDF, values } from './netcdf.js';
 
 const CACHE_SECONDS = 1800; // rebuilt at most every 30 minutes; widgets refresh on iOS's schedule anyway
 const STALE_SECONDS = 86400; // the last good answer, served for a day if a rebuild fails
+const FORECAST_CACHE_SECONDS = 3600; // the cards' forecast, so visitors don't each spend Open-Meteo's limit
+const FORECAST_STALE_SECONDS = 259200;
 
 const ZONES = [
   { key: 'shasta', name: 'Shasta', spot: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330 },
@@ -16,6 +18,11 @@ const ZONES = [
   { key: 'mammoth', name: 'Mammoth', spot: 'Mammoth Mountain', lat: 37.6308, lon: -119.0326, ft: 11053 },
   { key: 'whitney', name: 'Whitney', spot: 'Whitney summit', lat: 36.5786, lon: -118.2921, ft: 14505 }
 ];
+// Every card on the tracker, in order: the city landmarks, then the mountains.
+const CARD_ZONES = [
+  { lat: 37.8183, lon: -122.4784, ft: 220 },  // SF, Golden Gate Bridge
+  { lat: 34.1341, lon: -118.3217, ft: 1575 }  // LA, Hollywood Sign
+].concat(ZONES);
 // The region card's sites: the Cascades, then the mountain zones.
 const REGION_SITES = [
   { name: 'Mt. Baker', spot: 'Mt. Baker Ski Area', lat: 48.857, lon: -121.665, ft: 5000 },
@@ -70,6 +77,9 @@ const UNITS = '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=Ame
 export function elninoJSON(request, ctx){
   return cached(request, ctx, '/elnino.json', CACHE_SECONDS, STALE_SECONDS, async () => JSON.stringify(await buildSummary()));
 }
+export function forecastJSON(request, ctx){
+  return cached(request, ctx, '/elnino-forecast.json', FORECAST_CACHE_SECONDS, FORECAST_STALE_SECONDS, async () => JSON.stringify(await buildForecast()));
+}
 export function moistureJSON(request, ctx){
   // text/plain so Cloudflare compresses it; the page reads it as bytes
   return cached(request, ctx, '/elnino-moisture.bin', MOISTURE_CACHE_SECONDS, MOISTURE_STALE_SECONDS, buildMoisture, 'text/plain; charset=x-user-defined');
@@ -104,6 +114,19 @@ function respond(body, status, cacheControl, type = 'application/json; charset=u
     'Cache-Control': cacheControl,
     'Access-Control-Allow-Origin': '*'
   } });
+}
+
+// Everything the tracker's cards draw, as Open-Meteo returns it. Same requests as loadStats() in
+// assets/storm-map.js, which makes them itself if this can't be reached.
+export async function buildForecast(){
+  const [zones, region, ensemble] = await Promise.all([
+    getJSON(API + where(CARD_ZONES, true) + '&hourly=precipitation,snowfall,wind_gusts_10m,wind_direction_10m&forecast_hours=240' +
+      '&daily=snowfall_sum,precipitation_sum&forecast_days=10&precipitation_unit=inch&wind_speed_unit=mph&timezone=America%2FLos_Angeles'),
+    getJSON(API + where(REGION_SITES, true) + '&daily=snowfall_sum,precipitation_sum,temperature_2m_mean&past_days=7&forecast_days=7' + UNITS),
+    getJSON('https://ensemble-api.open-meteo.com/v1/ensemble' + where(CARD_ZONES, true) +
+      '&models=ecmwf_ifs025&daily=snowfall_sum&forecast_days=10&precipitation_unit=inch&timezone=America%2FLos_Angeles').catch(() => null)
+  ]);
+  return { updated: new Date().toISOString(), zones, region, ensemble };
 }
 
 export async function buildSummary(){

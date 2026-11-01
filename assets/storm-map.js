@@ -922,7 +922,10 @@
   // The cards sit in a carousel, one at a time; its back / next carets step through the zones and
   // fly the map there.
   var statsRail = document.getElementById('stats-rail');
-  var statsState = 'idle'; // idle, loading, done
+  var statsState = 'idle'; // idle, loading, done, saved (showing an old copy; tries again next open)
+  var FORECAST_KEY = 'storm-forecast';
+  var STALE_HOURS = 3;     // older than this, the cards say when it's from
+  var staleNote = '';      // that note, once the cards know
   var statIndex = CARDS.indexOf(DEFAULT_VIEW);
   var STAT_WINDOWS = [[24, 'Next 24h'], [72, '3 days'], [168, '7 days']];
   // Bar scales are shared by every card so they compare as you flip through, and never drop
@@ -1000,7 +1003,9 @@
     var snow = average(d.map(function(x){ return x.snowfall_sum; }));
     var precip = average(d.map(function(x){ return x.precipitation_sum; }));
     var temp = average(d.map(function(x){ return x.temperature_2m_mean; }));
-    var TODAY = 7; // past_days=7, so index 7 is today
+    // past_days=7, so index 7 is today, or later in a saved copy
+    var todayIndex = d[0].time.indexOf(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }));
+    var TODAY = todayIndex < 0 ? 7 : todayIndex;
     var pastP = total(precip, 0, TODAY), nextP = total(precip, TODAY, 14);
     var pastS = total(snow, 0, TODAY), nextS = total(snow, TODAY, 14);
     var dT = total(temp, TODAY, 14) / 7 - total(temp, 0, TODAY) / 7;
@@ -1052,7 +1057,7 @@
     var snowMax = Math.max.apply(null, [2].concat(snow)), precipMax = Math.max.apply(null, [0.2].concat(precip));
     return '<div class="stat-card stat-card-region" data-stat-view="west">' +
       '<span class="stat-head">' + stormTitle('Pacific Maritime El Ni&ntilde;o', storm) + '</span>' +
-      '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
+      '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' + staleNote +
       '<span class="stat-heroes">' + snowHero + rainHero + '</span>' +
       '<span class="stat-trend">' + trend + '</span>' +
       '<span class="stat-charts"><span class="stat-charts-inner">' +
@@ -1239,10 +1244,16 @@
       '<span class="sr-only"> (' + STORM_LABEL[level].toLowerCase() + ')</span></span>';
   }
 
+  function saveForecast(copy){
+    try { localStorage.setItem(FORECAST_KEY, JSON.stringify(copy)); } catch(e){}
+  }
+  function savedForecast(){
+    try { return JSON.parse(localStorage.getItem(FORECAST_KEY)); } catch(e){ return null; }
+  }
   function loadStats(){
-    if(!statsRail || statsState !== 'idle') return;
+    if(!statsRail || (statsState !== 'idle' && statsState !== 'saved')) return;
+    if(statsState === 'idle') statsRail.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
     statsState = 'loading';
-    statsRail.innerHTML = '<p class="stat-note">Loading forecast&hellip;</p>';
     var pts = ZONES.map(function(k){ return VIEWS[k].target; });
     var where = '?latitude=' + pts.map(function(p){ return p.lat; }).join(',') +
       '&longitude=' + pts.map(function(p){ return p.lon; }).join(',') +
@@ -1267,19 +1278,51 @@
       '?latitude=' + RAIN_SITES.map(function(p){ return p.lat; }).join(',') +
       '&longitude=' + RAIN_SITES.map(function(p){ return p.lon; }).join(',') +
       '&daily=rain_sum&forecast_days=7&precipitation_unit=inch&timezone=America%2FLos_Angeles';
-    function getJSON(u){ return fetch(u).then(function(r){ return r.json(); }); }
-    function optional(promise){ return promise.catch(function(){ return null; }); } // odds can fail alone
+    function getJSON(u){
+      return fetch(u).then(function(r){ if(!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
+    }
+    function optional(promise){ return promise.catch(function(){ return null; }); } // these can fail alone
+    function asList(x){ return Array.isArray(x) ? x : [x]; }
+    // The Worker's copy, so visitors don't spend Open-Meteo's per-address limit. The same requests
+    // from here if that can't be reached (as in the local preview).
+    function forecast(){
+      return getJSON('/elnino-forecast.json').then(function(data){
+        if(!data.zones) throw new Error('no forecast');
+        return data;
+      }).catch(function(){
+        return Promise.all([getJSON(url), getJSON(regionUrl), optional(getJSON(ensembleUrl))]).then(function(got){
+          return { updated: new Date().toISOString(), zones: got[0], region: got[1], ensemble: got[2] };
+        });
+      });
+    }
+    // A cold rebuild can take a few seconds; the cards don't wait past this for it.
+    var summaryReady = optional(Promise.race([getJSON('/elnino.json'), new Promise(function(done){ setTimeout(done, 4000); })]));
     Promise.all([
-      getJSON(url), getJSON(regionUrl),
-      optional(getJSON(ensembleUrl)),
+      optional(forecast()),
       Promise.all(pts.map(function(p){ return optional(getJSON(WPC_URL + p.lon + ',' + p.lat)); })),
-      optional(getJSON(rainUrl)),
-      // A cold rebuild can take a few seconds; the cards don't wait past this for it.
-      optional(Promise.race([getJSON('/elnino.json'), new Promise(function(done){ setTimeout(done, 4000); })]))
+      summaryReady.then(function(s){ return s && s.mostRain ? null : optional(getJSON(rainUrl)); }),
+      summaryReady
     ])
       .then(function(all){
-        var list = Array.isArray(all[0]) ? all[0] : [all[0]];
-        var ensList = all[2] ? (Array.isArray(all[2]) ? all[2] : [all[2]]) : [];
+        var data = all[0], odds = all[1], rain = all[2], summary = all[3], saved = null;
+        // Never empty: if nothing came back, this browser's last forecast stands in.
+        if(data) saveForecast({ data: data, rain: rain, summary: summary });
+        else {
+          saved = savedForecast();
+          if(!saved) throw new Error('no forecast');
+          data = saved.data;
+          rain = rain || saved.rain;
+          summary = summary || saved.summary;
+        }
+        var hoursOld = Math.max(0, Math.floor((Date.now() - Date.parse(data.updated)) / 3600000));
+        staleNote = hoursOld >= STALE_HOURS
+          ? '<span class="stat-note-inline">Saved forecast from ' + formatTime(new Date(data.updated)) + '</span>' : '';
+        var list = asList(data.zones);
+        // Hourly data starts when it was fetched; "next 24 h" starts now.
+        if(hoursOld) list.forEach(function(z){
+          Object.keys(z.hourly).forEach(function(k){ z.hourly[k] = z.hourly[k].slice(hoursOld); });
+        });
+        var ensList = data.ensemble ? asList(data.ensemble) : [];
         var ens = ZONES.map(function(_, i){ return ensembleDays(ensList[i]); });
         // one snow scale and one precip scale for every zone card, so they compare as you page
         var snowMax = SNOW_FLOOR, precipMax = PRECIP_FLOOR;
@@ -1291,7 +1334,7 @@
           return stormLevel(sum(list[i].hourly.snowfall, 24), sum(list[i].hourly.precipitation, 24));
         });
         var worst = storms.reduce(function(a, b){ return STORM_ORDER.indexOf(b) > STORM_ORDER.indexOf(a) ? b : a; }, 'none');
-        statsRail.innerHTML = regionCard(sites, all[1], worst, Array.isArray(all[4]) ? all[4] : null, all[5]) + ZONES.map(function(k, i){
+        statsRail.innerHTML = regionCard(sites, asList(data.region), worst, Array.isArray(rain) ? rain : null, summary) + ZONES.map(function(k, i){
           var v = VIEWS[k], t = v.target, h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var snow = d.snowfall_sum.map(Number);
@@ -1307,7 +1350,7 @@
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) + '</span>' +
-            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>' +
+            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>' + staleNote +
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
@@ -1315,12 +1358,12 @@
             tabBar() +
             snowPanel(days, snow, d.precipitation_sum.map(Number), snowMax, precipMax) +
             windPanel(days, gusts, dirs, nextGust, nextDir) +
-            oddsPanel(days, all[3][i] ? wpcGrid(all[3][i]) : null, ens[i]) +
+            oddsPanel(days, odds[i] ? wpcGrid(odds[i]) : null, ens[i]) +
             '</span></span>' +
             cardFooter(i + 1) +
             '</div>';
         }).join('');
-        statsState = 'done';
+        statsState = saved ? 'saved' : 'done';
         loadStats.retried = false;
         showTab(currentTab);
         updateCarousel();
@@ -1450,7 +1493,7 @@
   function updateCarousel(){
     if(!statsRail) return;
     if(CARDS.indexOf(currentView) >= 0) statIndex = CARDS.indexOf(currentView);
-    if(statsState === 'done') statsRail.style.transform = 'translateX(' + (-100 * statIndex) + '%)';
+    if(statsState !== 'idle' && statsRail.querySelector('.stat-card')) statsRail.style.transform = 'translateX(' + (-100 * statIndex) + '%)';
     statsRail.querySelectorAll('[data-stat-view]').forEach(function(card, i){
       card.classList.toggle('is-current', card.getAttribute('data-stat-view') === currentView);
       card.inert = i !== statIndex; // off-screen cards (and their footers) stay out of tab order
