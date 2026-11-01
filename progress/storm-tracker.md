@@ -199,7 +199,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
   - Under 860 px the cards fill the width up to 400 px and stop there (left-aligned), so a tablet gets the same narrow card as a phone, not one stretched across the screen.
   - Desktop (260 px card): stacked as before.
 
-## /elnino.json for the iOS widget (done, not deployed)
+## /elnino.json for the iOS widget (done, live)
 - `worker/elnino.js` builds the tracker's headline numbers as one JSON answer at `rdrew.com/elnino.json`, cached 30 minutes in the Worker's cache, with CORS open:
   - each mountain zone's storm level, 24 h snow and precip, and 7-day snow
   - the worst storm level
@@ -240,7 +240,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Under 520 px, Wind and Temp hide the time label so their legend has the row.
 - Open-Meteo's free limit is per IP and counts each location, so a wind map is about 120 calls. Heavy testing from one address gets 429s for a while. Normal visits are fine. The Worker calls from Cloudflare's shared IPs, so if it ever gets limited, `elnino.json` falls back to the last good copy.
 
-## Moisture overlay (done, not deployed)
+## Moisture overlay (done, live)
 - A fourth overlay. It shows GFS water vapor in the whole air column (precipitable water), the usual way to spot atmospheric rivers. It's vapor, not IVT (vapor moved by wind), so a plume is moist air, not a measure of how much is being pushed ashore.
 - `worker/elnino.js` serves `/elnino-moisture.bin`: the full 0.25-degree GFS grid (341 x 193, 170 W to 85 W, 12 N to 60 N), 14 frames 6 hours apart, about 3 days. It comes from UCAR's free THREDDS server as netCDF (`worker/netcdf.js` reads it) and is packed to one byte per point (mm x 2). About 920 KB, roughly 460 KB gzipped, fetched only when Moisture is opened. Sent as text/plain so Cloudflare compresses it. Rebuilt every 6 hours, last good copy kept 2 days.
 - Fallback if UCAR is down: a 2.5-degree grid from Open-Meteo in the same format. Open-Meteo can't carry the fine grid: 1 degree is 3,483 points, which it rejects as too long, and it would top the 10,000 calls a day limit.
@@ -249,7 +249,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Timeline: it shares Radar's play button and scrubber, and starts on the frame nearest now. The legend floats above the panel's right end.
 - The fourth tab took room: the panel's minimum went to 500 px, the tabs tighten at 1140 px, and the panel steps up a row at 1080 px.
 - Local preview: `.claude/serve.py` serves `.claude/elnino-moisture.bin`, a copy made with `buildMoisture()`.
-- To check on deploy: the Worker's rebuild took about 38 ms of CPU in Node, above the free plan's nominal 10 ms. If Cloudflare stops it, use `horizStride=2` (0.5 degree, a quarter of the work).
+- Deploy check, 2026-11-01: the rebuild takes about 2.4 s and ran fine on Cloudflare at the full 0.25 degrees. If it's ever stopped for CPU, `horizStride=2` (0.5 degree) is a quarter of the work.
 - GFS is about 17 miles per point, so city-level zoom is a soft wash. Finer data (HRRR) stops at the coast and wouldn't show the Pacific.
 
 ## Not done yet
