@@ -133,7 +133,7 @@
       'For the Cascades that usually means a milder, thinner snowpack; for the Sierra, the wettest odds come mid to late winter, with higher snow levels and rain-on-snow risk at lake level.',
     source: 'NOAA CPC · updated Oct 28, 2026'
   };
-  var DEFAULT_VIEW = 'tahoe';
+  var DEFAULT_VIEW = 'shasta'; // the homepage background always opens here, topo only
 
   // ---- map ----
   var demSource = new mlcontour.DemSource({ url: DEM_TILES, encoding: 'terrarium', maxzoom: 12, worker: true });
@@ -352,11 +352,9 @@
     HANDLERS.forEach(function(h){ if(map[h]) map[h][on ? 'enable' : 'disable'](); });
     if(map.isStyleLoaded()){ showFrame(frame); applyColors(); }
     refreshReadout();
-    // The tracker always opens on the Overview (the whole coast); the saved view stays the homepage's.
-    if(on && currentView && currentView !== 'west') select('west', true, true);
-    // ...and on Wind. The homepage keeps the quiet radar behind it, so a visit fetches no wind grid.
-    // (overlayBtns is unset on the first call, before the overlays are set up.)
-    if(overlayBtns) setOverlay(on ? 'wind' : 'radar');
+    // The tracker always opens on the Overview (the whole coast).
+    if(on && currentView && currentView !== 'west') select('west', true);
+    if(mapReady) setOverlay(overlay); // overlays only draw in tracker mode
     if(on){ loadStats(); refreshCams(); }
     else { stop(); closeHot(); }
   }
@@ -397,6 +395,15 @@
   }
   setTracking(false);
   if(trackerBtn) trackerBtn.addEventListener('click', function(){ setTracking(!tracking, true); });
+  // Links to /elnino on the page itself (the Personal Projects card) open the tracker in place, with
+  // the snowflake's animation, instead of reloading. Modified clicks still open the link in a new tab.
+  document.querySelectorAll('a[href="' + TRACKER_PATH + '"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      if(e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      if(!tracking) setTracking(true, true);
+    });
+  });
   var homeBtn = document.querySelector('[data-tracker-home]');
   if(homeBtn) homeBtn.addEventListener('click', function(){ setTracking(false, true); });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && tracking) setTracking(false, true); });
@@ -428,7 +435,7 @@
     frame = Math.max(0, Math.min(frames.length - 1, i));
     ensureLayer(frame);
     ensureLayer(frame + 1); // load the next frame early so playback doesn't flash
-    var opacity = overlay !== 'radar' ? 0 : tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
+    var opacity = shown() !== 'radar' ? 0 : tracking ? RADAR_OPACITY.tracker : RADAR_OPACITY.page;
     frames.forEach(function(_, k){
       if(map.getLayer(layerId(k))) map.setPaintProperty(layerId(k), 'raster-opacity', k === frame ? opacity : 0);
     });
@@ -488,14 +495,14 @@
   });
 
   // ---- overlays: forecast radar, wind, temperature ----
-  // Wind opens the tracker; radar sits behind the homepage and is the only one with a timeline.
-  // Temperature is NOAA's NDFD forecast as map
-  // tiles, under the contour lines. Wind is a particle flow: see "wind flow" below.
+  // Wind is the default (see "wind flow" below). Radar is the only one with a timeline. Temperature is
+  // NOAA's NDFD forecast as map tiles, under the contour lines. Wind and Temp each show a small legend
+  // in the panel where Radar's timeline would be.
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
-  var overlay = 'radar';
-  // Not map.isStyleLoaded(): that goes false whenever a source is still loading, even after load.
-  var overlaysReady = false;
+  var overlay = 'wind';
+  // The overlay actually drawn: none on the homepage, where the map is just topo behind the page.
+  function shown(){ return tracking ? overlay : null; }
   var radarPanel = document.querySelector('.radar-panel');
   var overlayBtns = document.querySelectorAll('[data-overlay]');
   function ensureOverlays(){
@@ -511,18 +518,23 @@
     map.addLayer({ id: 'temp-seam', type: 'fill', source: 'temp-seam', layout: { visibility: 'none' },
       paint: { 'fill-color': cssVar('--bg', '#12131c') } }, 'contour-minor');
   }
+  // Set once the map fires 'load'. (isStyleLoaded() can't gate this: it stays false while any tiles
+  // are still arriving, as the radar's are right at load, which would leave the default wind unstarted.)
+  var mapReady = false;
   function setOverlay(name){
     overlay = name;
     if(radarPanel) radarPanel.setAttribute('data-active', name);
     overlayBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-overlay') === name)); });
     if(name !== 'radar') stop();
     updateTimeLabel();
-    if(!overlaysReady) return; // the map's load picks this up
+    if(tracking) refreshReadout(); // the coast view's readout names the overlay
+    if(!mapReady) return;
     ensureOverlays();
-    map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
-    map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
+    var on = shown();
+    map.setLayoutProperty('temp', 'visibility', on === 'temp' ? 'visible' : 'none');
+    map.setLayoutProperty('temp-seam', 'visibility', on === 'temp' ? 'visible' : 'none');
     showFrame(frame);
-    if(name === 'wind') startWind();
+    if(on === 'wind') startWind();
     else stopWind();
   }
   overlayBtns.forEach(function(b){
@@ -654,7 +666,7 @@
   }
   function runWind(){
     cancelAnimationFrame(windRAF);
-    if(overlay !== 'wind' || !windField) return;
+    if(shown() !== 'wind' || !windField) return;
     if(reduceMotion){ // no motion: draw the settled trails once
       for(var i = 0; i < 60; i++) stepWind();
       return;
@@ -669,13 +681,75 @@
     if(map.isMoving()){ windCanvas.classList.add('is-moving'); return; }
     loadWind();
     runWind();
+    startLegend();
   }
   function stopWind(){
     cancelAnimationFrame(windRAF);
+    cancelAnimationFrame(legendRAF);
     if(windCanvas){ windCanvas.classList.add('is-hidden'); windCtx.clearRect(0, 0, el.clientWidth, el.clientHeight); }
   }
+
+  // Wind legend: a strip of the same particles, drawn by the same rules, with the wind rising from
+  // 0 mph at the left end to LEGEND_MAX at the right. Calm air barely creeps and stays dim; fast air
+  // streaks past brighter and thicker, so the strip reads the map's motion as speeds.
+  var LEGEND_MAX = 32;        // mph at the right end (labelled 30+)
+  var LEGEND_AREA = 80;       // one particle per this many square px (sparser than the map, so streaks stay distinct)
+  var LEGEND_FADE = 0.9;      // shorter trails than the map's, for the same reason
+  var legendCanvas = document.querySelector('.wind-legend');
+  var legendCtx = legendCanvas && legendCanvas.getContext('2d');
+  var legendDots = [], legendRAF = null, legendW = 0, legendH = 0;
+  function sizeLegend(){
+    var r = Math.min(window.devicePixelRatio || 1, 2);
+    legendW = legendCanvas.clientWidth; legendH = legendCanvas.clientHeight;
+    legendCanvas.width = Math.max(1, legendW * r); legendCanvas.height = Math.max(1, legendH * r);
+    legendCtx.setTransform(r, 0, 0, r, 0, 0);
+    legendDots = [];
+    for(var i = 0; i < Math.round(legendW * legendH / LEGEND_AREA); i++){
+      legendDots.push({ x: Math.random() * legendW, y: 1.5 + Math.random() * (legendH - 3), age: Math.floor(Math.random() * MAX_AGE) });
+    }
+  }
+  function stepLegend(){
+    var ctx = legendCtx;
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.fillStyle = 'rgba(0,0,0,' + LEGEND_FADE + ')';
+    ctx.fillRect(0, 0, legendW, legendH);
+    ctx.globalCompositeOperation = 'source-over';
+    var buckets = SPEED_STEPS.map(function(){ return []; });
+    legendDots.forEach(function(p){
+      var mph = LEGEND_MAX * p.x / legendW;
+      var nx = p.x + Math.max(0.04, mph * PX_PER_MPH);
+      if(nx >= legendW || ++p.age > MAX_AGE){ p.x = Math.random() * legendW; p.age = 0; return; }
+      for(var b = 0; mph > SPEED_STEPS[b][0]; b++);
+      buckets[b].push(p.x, p.y, nx, p.y);
+      p.x = nx;
+    });
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = cssVar('--accent', '#9b7bff');
+    buckets.forEach(function(seg, b){
+      if(!seg.length) return;
+      ctx.beginPath();
+      for(var i = 0; i < seg.length; i += 4){ ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
+      ctx.globalAlpha = SPEED_STEPS[b][1];
+      ctx.lineWidth = SPEED_STEPS[b][2];
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
+  function startLegend(){
+    cancelAnimationFrame(legendRAF);
+    if(!legendCtx) return;
+    // The panel only shows while tracking: draw only then, once the strip has a size.
+    (function frameLoop(){
+      if(legendCanvas.clientWidth && (legendCanvas.clientWidth !== legendW || legendCanvas.clientHeight !== legendH)) sizeLegend();
+      if(legendW && tracking){
+        if(reduceMotion){ for(var i = 0; i < 160; i++) stepLegend(); return; } // settled streaks, no motion
+        stepLegend();
+      }
+      legendRAF = requestAnimationFrame(frameLoop);
+    })();
+  }
   function loadWind(){
-    if(overlay !== 'wind') return;
+    if(shown() !== 'wind') return;
     var b = map.getBounds(), vw = b.getWest(), ve = b.getEast(), vs = b.getSouth(), vn = b.getNorth();
     // Still inside the area already fetched, at a similar scale: just rebuild the field.
     var d = windData;
@@ -715,17 +789,18 @@
   }
   // While the map moves, the trails would smear, so they hide and pick up again once it settles.
   map.on('movestart', function(){
-    if(overlay !== 'wind' || !windCanvas) return;
+    if(shown() !== 'wind' || !windCanvas) return;
     cancelAnimationFrame(windRAF);
     windCanvas.classList.add('is-moving');
   });
   map.on('moveend', function(){
-    if(overlay !== 'wind' || !windCanvas) return;
+    if(shown() !== 'wind' || !windCanvas) return;
     windCanvas.classList.remove('is-moving');
     clearTimeout(windTimer);
     windTimer = setTimeout(loadWind, 250);
   });
-  map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(overlay === 'wind') loadWind(); } });
+  map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(shown() === 'wind') loadWind(); } });
+  map.on('load', function(){ mapReady = true; setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
   // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
@@ -1004,16 +1079,46 @@
     }).join('') + '</span>';
   }
 
-  // Card titles take their color from the storm coming in the next 24 hours at the target: red for a
-  // big one, yellow for a moderate one, plain ink for none. The Overview takes the biggest of them.
-  var STORM = { big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } }; // inches in 24 h
-  var STORM_ORDER = ['none', 'mid', 'big'];
-  var STORM_LABEL = { big: 'Big storm in the next 24 hours', mid: 'Some snow or rain in the next 24 hours', none: 'No storm in the next 24 hours' };
+  // Card titles take their color from the storm coming in the next 24 hours at the target: dark red
+  // for an extreme one, red for a big one, yellow for a moderate one, plain ink for none. The Overview
+  // takes the biggest of them. The storm-risk legend above the cards is built from these too.
+  var STORM = { extreme: { snow: 18, precip: 3 }, big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } }; // inches in 24 h
+  var STORM_ORDER = ['none', 'mid', 'big', 'extreme'];
+  var STORM_LABEL = { extreme: 'Extreme storm in the next 24 hours', big: 'Big storm in the next 24 hours', mid: 'Some snow or rain in the next 24 hours', none: 'No storm in the next 24 hours' };
+  var STORM_NAME = { none: 'No storm', mid: 'Moderate', big: 'Big', extreme: 'Extreme' };
   function stormLevel(snow24, precip24){
+    if(snow24 >= STORM.extreme.snow || precip24 >= STORM.extreme.precip) return 'extreme';
     if(snow24 >= STORM.big.snow || precip24 >= STORM.big.precip) return 'big';
     if(snow24 >= STORM.mid.snow || precip24 >= STORM.mid.precip) return 'mid';
     return 'none';
   }
+  // Storm-risk legend: a small label above the cards that opens to show every level, its thresholds,
+  // and how the level is assessed. The rows come from STORM, so they always match the titles.
+  var legendRows = document.getElementById('storm-legend-rows');
+  if(legendRows){
+    // Header, then one row per level: its snow and precip thresholds (either one sets the level).
+    legendRows.innerHTML = '<li class="storm-legend-head" aria-hidden="true"><span></span><span>Level</span><span>Snow</span><span>Precip</span></li>' +
+      STORM_ORDER.map(function(k){
+        var snow = k === 'none' ? '&lt;' + STORM.mid.snow + '"' : STORM[k].snow + '"+';
+        var precip = k === 'none' ? '&lt;' + STORM.mid.precip + '"' : STORM[k].precip + '"+';
+        return '<li><span class="storm-legend-swatch storm-' + k + '" aria-hidden="true"></span>' +
+          '<span class="storm-legend-name storm-' + k + '">' + STORM_NAME[k] + '</span>' +
+          '<span class="storm-legend-val"><span class="sr-only">snow </span>' + snow + '</span>' +
+          '<span class="storm-legend-val"><span class="sr-only">precip </span>' + precip + '</span></li>';
+      }).join('');
+  }
+  var legendToggle = document.querySelector('.storm-legend-toggle');
+  var legendPanel = document.getElementById('storm-legend-panel');
+  function openStormLegend(open){
+    if(!legendToggle) return;
+    legendToggle.setAttribute('aria-expanded', String(open));
+    legendPanel.hidden = !open;
+  }
+  if(legendToggle){
+    legendToggle.addEventListener('click', function(){ openStormLegend(legendPanel.hidden); });
+    document.addEventListener('click', function(e){ if(!legendPanel.hidden && !e.target.closest('.storm-legend')) openStormLegend(false); });
+  }
+
   // The label rides along as a tooltip and for screen readers, so the color isn't the only signal.
   function stormTitle(text, level){
     return '<span class="stat-name storm-' + level + '" title="' + STORM_LABEL[level] + '">' + text +
@@ -1088,7 +1193,7 @@
           }).join('');
           return '<div class="stat-card" data-stat-view="' + k + '">' +
             '<span class="stat-head">' + stormTitle(v.title || v.label, storms[i]) + '</span>' +
-            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft &middot; ' + formatCoords(t) + '</span>' +
+            '<span class="stat-target">' + t.name + ' &middot; ' + t.ft.toLocaleString() + ' ft</span>' +
             '<span class="stat-grid"><span></span>' +
             '<span class="stat-col snow"><span class="stat-swatch"></span>Snow</span>' +
             '<span class="stat-col precip"><span class="stat-swatch"></span>Precip</span>' + rows + '</span>' +
@@ -1289,7 +1394,7 @@
   function updateReadout(v){
     if(!weatherLine || !elevLine) return;
     if(v === VIEWS.west){
-      // Whole-coast view: the readout follows the overlay instead of one spot.
+      // Whole-coast view: the readout names the overlay instead of one spot (and the radar's time).
       readoutFor = v;
       if(coordsEl) coordsEl.textContent = 'WEST COAST';
       var d = validAt(frame);
@@ -1303,7 +1408,7 @@
     if(coordsEl) coordsEl.textContent = v.coords || formatCoords(t);
     weatherLine.innerHTML = '&hellip;';
     // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
-    elevLine.textContent = 'ELEV ' + t.ft.toLocaleString() + ' FT';
+    elevLine.textContent = t.ft.toLocaleString() + "'";
     fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
       '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
       .then(function(r){ return r.json(); })
@@ -1325,10 +1430,7 @@
   }
   var currentView = null;
   var buttons = document.querySelectorAll('[data-view]');
-  function saved(){
-    try { return localStorage.getItem('map-view'); } catch(e){ return null; }
-  }
-  function select(key, animate, keepSaved){
+  function select(key, animate){
     if(!VIEWS[key]) key = DEFAULT_VIEW;
     closeHot();
     currentView = key;
@@ -1344,16 +1446,11 @@
     buttons.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === key)); });
     updateCarousel();
     updateMarkers();
-    if(animate && !keepSaved){ try { localStorage.setItem('map-view', key); } catch(e){} }
   }
   buttons.forEach(function(b){
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
-  map.on('load', function(){
-    select(tracking ? 'west' : (saved() || DEFAULT_VIEW), false); // /elnino opens on the Overview
-    overlaysReady = true;
-    setOverlay(overlay); // after the view is set, so wind loads for where the map actually is
-  });
+  map.on('load', function(){ select(tracking ? 'west' : DEFAULT_VIEW, false); }); // /elnino opens on the Overview
   if(startTracking) setTracking(true);
   // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
   // steering the map.

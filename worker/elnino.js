@@ -38,8 +38,8 @@ const RAIN_SITES = [
   ['Phoenix', 'Arizona', 33.448, -112.074]
 ].map(([name, where, lat, lon]) => ({ name, where, lat, lon }));
 
-// Inches in the next 24 hours: snow or precip at or above these makes a big or mid storm.
-const STORM = { big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } };
+// Inches in the next 24 hours: snow or precip at or above these makes an extreme, big or mid storm.
+const STORM = { extreme: { snow: 18, precip: 3 }, big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } };
 
 // Most rain: Open-Meteo shortlists the wettest towns, then the National Weather Service forecast
 // (its gridded data, forecaster-reviewed) ranks them. Open-Meteo stands in if NWS is down.
@@ -111,7 +111,7 @@ export async function buildSummary(){
   const levels = zoneList.map((z) => z.storm);
   return {
     updated: new Date().toISOString(),
-    storm: levels.includes('big') ? 'big' : levels.includes('mid') ? 'mid' : 'none', // the worst zone
+    storm: ['extreme', 'big', 'mid'].find((level) => levels.includes(level)) || 'none', // the worst zone
     zones: zoneList,
     mostSnow: { name: top.s.name, spot: top.s.spot, ft: top.s.ft, inches: round(top.snow) },
     mostRain: wettest,
@@ -171,6 +171,7 @@ async function getJSON(url){
 }
 
 function stormLevel(snow24, precip24){
+  if(snow24 >= STORM.extreme.snow || precip24 >= STORM.extreme.precip) return 'extreme';
   if(snow24 >= STORM.big.snow || precip24 >= STORM.big.precip) return 'big';
   if(snow24 >= STORM.mid.snow || precip24 >= STORM.mid.precip) return 'mid';
   return 'none';

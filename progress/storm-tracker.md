@@ -222,9 +222,9 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Every cam now has a small "View cam" link with an external arrow, opening in a new tab: `cameras.alertcalifornia.org/?id=<cam id>` for ALERTCalifornia, Palisades' webcams page for the Scope cam.
 - Browser testing note: a hidden Browser pane pauses requestAnimationFrame and CSS transitions, so map flights never finish there. This was checked with a stand-in timer injected into the test page only.
 
-## Tracker opens on Wind (done)
-- Opening the tracker switches to the Wind overlay; closing it goes back to radar, which stays behind the homepage. So a homepage visit fetches no wind grid (checked: 0 requests), and opening fetches one, for where the map lands.
-- The West view's top bar follows the overlay: "Wind / Now", "Temperature / NOAA forecast", or "Forecast radar / time".
+## Merged main's tracker work (2026-11-01)
+- This branch had missed seven commits made on main from other sessions (Personal Projects card, wind by default, legends, the storm-risk legend with the Extreme level, no GPS on cards, homepage copy, header elevation). Merged them in and took main's version wherever both touched the same thing, including `overlay = 'wind'`, `shown()` (no overlay on the topo-only homepage) and `mapReady`.
+- `worker/elnino.js` picked up the Extreme level, and so did the widget's `Storm` enum.
 
 ## Most rain uses NWS (done)
 - Ryan picked reliability, so Most rain now runs in the Worker (`worker/elnino.js`): Open-Meteo shortlists the 6 wettest towns, then NWS gridded forecasts rank them over the next 7 days. Rain is total water less snow at 10:1 (an estimate), so a mountain town can't win on snow. `mostRain.source` says which forecast answered.

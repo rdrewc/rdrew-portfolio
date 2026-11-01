@@ -45,6 +45,7 @@
     --temp-line:#d95926;  /* validated with the two bars above */
     --storm-big:#ff3b2f;  /* tracker card titles: big storm in the next 24 h */
     --storm-mid:#ffc93c;  /* moderate */
+    --storm-extreme:#c8102e; /* extreme: darker red, still 3:1 on the dark page for the big titles */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
   }
@@ -68,6 +69,7 @@
     --temp-line:#eb6834;
     --storm-big:#d42a1c;
     --storm-mid:#b07d00;  /* yellow darkened so it reads on the light page */
+    --storm-extreme:#8a0f1a;
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
   }
@@ -397,6 +399,44 @@
   }
   .stat-name.storm-big{color:var(--storm-big);}
   .stat-name.storm-mid{color:var(--storm-mid);}
+  .stat-name.storm-extreme{color:var(--storm-extreme);}
+  /* Storm-risk legend above the cards: a small label with the title colors as one gradient (no storm
+     to extreme). It opens over the card to list each level, its 24-hour thresholds and the source. */
+  .storm-legend{position:relative;align-self:flex-start;pointer-events:auto;}
+  .storm-legend-toggle{
+    display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 10px;
+    border:1px solid var(--glass-border);border-radius:999px;background:var(--bar-bg);
+    -webkit-backdrop-filter:var(--bar-blur);backdrop-filter:var(--bar-blur);
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--label);cursor:pointer;transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .storm-legend-toggle:hover, .storm-legend-toggle[aria-expanded="true"]{color:var(--strong);border-color:var(--accent);}
+  .storm-legend-bar{width:40px;height:6px;border-radius:3px;
+    background:linear-gradient(90deg, var(--strong), var(--storm-mid) 38%, var(--storm-big) 70%, var(--storm-extreme));}
+  .storm-legend-toggle svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+    transition:transform var(--dur-base) var(--ease-out);}
+  .storm-legend-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .storm-legend-panel{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:min(260px, calc(100vw - 32px));
+    padding:12px 14px;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.5;letter-spacing:0.02em;color:var(--muted);
+  }
+  .storm-legend-panel[hidden]{display:none;}
+  .storm-legend-title{margin:0 0 8px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
+  .storm-legend-panel ul{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px;}
+  .storm-legend-panel li{display:grid;grid-template-columns:10px 1fr 44px 52px;align-items:center;gap:8px;}
+  .storm-legend-head{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
+  .storm-legend-head span:nth-child(n+3), .storm-legend-val{text-align:right;}
+  .storm-legend-val{color:var(--body-text);font-variant-numeric:tabular-nums;}
+  .storm-legend-swatch{width:10px;height:10px;border-radius:2px;background:var(--strong);}
+  .storm-legend-swatch.storm-mid{background:var(--storm-mid);}
+  .storm-legend-swatch.storm-big{background:var(--storm-big);}
+  .storm-legend-swatch.storm-extreme{background:var(--storm-extreme);}
+  .storm-legend-name{font-weight:600;color:var(--strong);}
+  .storm-legend-name.storm-mid{color:var(--storm-mid);}
+  .storm-legend-name.storm-big{color:var(--storm-big);}
+  .storm-legend-name.storm-extreme{color:var(--storm-extreme);}
+  .storm-legend-note{margin:0;padding-top:8px;border-top:1px solid var(--divider);color:var(--body-text);}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
   .stat-target{display:block;margin:10px 0 12px;font-size:9px;letter-spacing:0.02em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
@@ -520,7 +560,7 @@
   /* Region card (West view): past and next week averaged across the Cascades and Sierra. Past days are
      faded and today is outlined, so the split reads without a legend. The card scrolls inside itself
      if it's taller than the window allows. */
-  .stat-card{max-height:calc(100vh - var(--bar-h) - 96px);overflow-y:auto;scrollbar-width:none;}
+  .stat-card{max-height:calc(100vh - var(--bar-h) - 130px);overflow-y:auto;scrollbar-width:none;} /* 96px, plus the storm legend's row */
   .stat-trend{display:block;margin-bottom:4px;font-size:10px;line-height:1.55;letter-spacing:0.02em;color:var(--body-text);white-space:normal;}
   .stat-bar.is-past > span{opacity:0.4;}
   .stat-bar.is-today{box-shadow:inset 0 0 0 1px var(--divider);border-radius:4px 4px 0 0;}
@@ -680,6 +720,20 @@
   .wind-canvas.is-moving, .wind-canvas.is-hidden{opacity:0;}
   .radar-panel:not([data-active="radar"]) #radar-play,
   .radar-panel:not([data-active="radar"]) input[type="range"]{display:none;}
+  /* Legends for Wind and Temp, in the timeline's place: a slim bar between its two end values.
+     Wind's is a strip of the same particles (see storm-map.js) running from calm to fast; Temp's is
+     NOAA's forecast scale at the map's own opacity, so the two read alike. */
+  .overlay-legend{display:none;flex:1;min-width:0;align-items:center;gap:8px;}
+  .radar-panel[data-active="wind"] .legend-wind,
+  .radar-panel[data-active="temp"] .legend-temp{display:flex;}
+  .legend-end{flex-shrink:0;font-size:10px;color:var(--muted);white-space:nowrap;}
+  .wind-legend, .temp-bar{flex:1;min-width:48px;max-width:180px;height:8px;border-radius:4px;}
+  .wind-legend{display:block;height:12px;}
+  .temp-bar{
+    opacity:0.55;
+    background:linear-gradient(90deg, #9900ff, #0808ff 10%, #3b86ff 20%, #08fffb 30%, #30ff87 40%, #1aff00 50%,
+      #a1ff00 60%, #fffb00 70%, #ffbb00 80%, #fa7d00 90%, #b84000);
+  }
   /* Fixed top bar: opaque, with a rule across the full window. */
   .top-bar{
     position:fixed;
@@ -902,7 +956,7 @@
   }
   @media (min-width:861px) and (max-width:1010px){
     .radar-panel{bottom:74px;width:min(640px, calc(100vw - 120px));}
-    .stat-card{max-height:calc(100vh - var(--bar-h) - 154px);}
+    .stat-card{max-height:calc(100vh - var(--bar-h) - 188px);}
   }
   @media (max-width:860px){
     .page{
@@ -951,10 +1005,10 @@
 
 <div id="storm-map"></div>
 <div class="terrain-scrim"></div>
-<div class="radar-panel enter" style="--i:1" data-active="radar" role="group" aria-label="Map overlay and radar timeline">
+<div class="radar-panel enter" style="--i:1" data-active="wind" role="group" aria-label="Map overlay and radar timeline">
   <span class="overlay-switch" role="group" aria-label="Map overlay">
-    <button type="button" data-overlay="radar" aria-pressed="true">Radar</button>
-    <button type="button" data-overlay="wind" aria-pressed="false">Wind</button>
+    <button type="button" data-overlay="radar" aria-pressed="false">Radar</button>
+    <button type="button" data-overlay="wind" aria-pressed="true">Wind</button>
     <button type="button" data-overlay="temp" aria-pressed="false">Temp</button>
   </span>
   <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
@@ -962,7 +1016,13 @@
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
   </button>
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
-  <span class="radar-time" id="radar-time">Loading radar&hellip;</span>
+  <span class="overlay-legend legend-wind" role="img" aria-label="Wind speed: slow, dim trails near 0 mph to fast, bright streaks at 30 mph and up">
+    <span class="legend-end">0</span><canvas class="wind-legend" aria-hidden="true"></canvas><span class="legend-end">30+ mph</span>
+  </span>
+  <span class="overlay-legend legend-temp" role="img" aria-label="Temperature: purple at 0&deg;F through blue, green and yellow to orange at 100&deg;F">
+    <span class="legend-end">0&deg;</span><span class="temp-bar" aria-hidden="true"></span><span class="legend-end">100&deg;F</span>
+  </span>
+  <span class="radar-time" id="radar-time">Wind now</span>
 </div>
 <div class="view-tabs enter" id="view-tabs" style="--i:1" role="group" aria-label="Map view">
   <button type="button" data-view="west" aria-pressed="false">Overview</button>
@@ -974,6 +1034,17 @@
   <button type="button" data-view="whitney" aria-pressed="false">Whitney</button>
 </div>
 <div class="site-stats enter" id="site-stats" style="--i:0" role="region" aria-label="Forecast totals">
+  <div class="storm-legend">
+    <button type="button" class="storm-legend-toggle" aria-expanded="false" aria-controls="storm-legend-panel">
+      <span class="storm-legend-bar" aria-hidden="true"></span>Storm risk
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="storm-legend-panel" id="storm-legend-panel" hidden>
+      <p class="storm-legend-title">Storm risk &middot; next 24 hours</p>
+      <ul id="storm-legend-rows"></ul>
+      <p class="storm-legend-note">Either total sets the level. Each card&rsquo;s title is colored by the snow and precipitation forecast at its zone&rsquo;s target over the next 24 hours. The Overview takes the highest of its zones. Totals come from Open-Meteo&rsquo;s hourly forecast. It&rsquo;s an estimate from model totals, not an official warning: check the National Weather Service for those.</p>
+    </div>
+  </div>
   <div class="stats-track">
     <div class="stats-rail" id="stats-rail"></div>
   </div>
@@ -1001,9 +1072,9 @@
     <div class="section-label">About Me</div>
     <hr class="section-rule">
     <div class="bio">
-      <p>I&rsquo;m a product designer living in the Sierra Nevada. Most recently I&rsquo;ve been working at Netflix building the games social platform and previously was on the commerce team growing subscribers.</p>
-      <p>Before that I worked at Discord helping people express themselves and grow the Nitro subscription product. During my time at Meta, I designed ad formats, creator products, and all types of video formats across Instagram and the Facebook App.</p>
-      <p>I get excited by prototyping, exploring artificial intelligence, and well crafted products. I&rsquo;m always interested in pushing digital mediums to the next levels of immersion.</p>
+      <p>I&rsquo;m a product designer living in Northern California. Most recently I was working at Netflix building the Games Social Platform and previously was on the Commerce and Growth teams growing subscribers.</p>
+      <p>Before that I worked at Discord helping people express themselves and grow the Nitro product. During my time at Meta, I designed ad formats, creator products, and all types of video products across Instagram and the Facebook App.</p>
+      <p>I get excited by prototyping, exploring artificial intelligence, and well crafted products. I&rsquo;m continually pursuing how we can push digital mediums to the next levels of immersion.</p>
       <p>Currently available for full-time roles.</p>
     </div>
   </div>
@@ -1082,6 +1153,16 @@
       </a>
     </div>
   </section>
+  <section class="projects">
+    <div class="section-label">Personal Projects</div>
+    <hr class="section-rule">
+    <div class="project-grid">
+      <a class="project-card" href="/elnino">
+        <span class="project-name">El Ni&ntilde;o Tracker</span>
+        <span class="project-thumb"><img src="assets/thumbs/elnino.gif" width="640" height="360" loading="lazy" alt=""></span>
+      </a>
+    </div>
+  </section>
 </div>
 
 <footer class="site-footer">
@@ -1129,7 +1210,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=50"></script>
+<script src="assets/storm-map.js?v=53"></script>
 
 </body>
 </html>
