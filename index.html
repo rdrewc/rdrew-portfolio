@@ -45,8 +45,6 @@
     --temp-line:#d95926;  /* validated with the two bars above */
     --storm-big:#ff3b2f;  /* tracker card titles: big storm in the next 24 h */
     --storm-mid:#ffc93c;  /* moderate */
-    --moisture-low:#1f9e7a;  /* moisture overlay: one hue, brightest in the wettest air */
-    --moisture-high:#8ff0cf;
     --storm-extreme:#c8102e; /* extreme: darker red, still 3:1 on the dark page for the big titles */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
@@ -71,8 +69,6 @@
     --temp-line:#eb6834;
     --storm-big:#d42a1c;
     --storm-mid:#b07d00;  /* yellow darkened so it reads on the light page */
-    --moisture-low:#5fcfa8;  /* on the light map the wettest air goes darker, not brighter */
-    --moisture-high:#0a6b4a;
     --storm-extreme:#8a0f1a;
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
@@ -730,7 +726,7 @@
   /* Moisture keeps the timeline, so its legend floats just above the panel's right end. */
   .moisture-key{display:none;position:absolute;right:14px;bottom:calc(100% + 8px);align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--glass-border);border-radius:999px;background:var(--bar-bg);-webkit-backdrop-filter:var(--bar-blur);backdrop-filter:var(--bar-blur);white-space:nowrap;}
   .radar-panel[data-active="moisture"] .moisture-key{display:flex;}
-  .moisture-bar{width:72px;height:8px;border-radius:4px;background:linear-gradient(90deg, transparent, var(--moisture-low) 34%, var(--moisture-high));}
+  .moisture-bar{width:110px;height:8px;border-radius:4px;background:linear-gradient(90deg, rgba(42,63,158,0), #2f6fd0 9%, #27b3c4 23%, #3ed08a 36%, #c9e24f 50%, #ffc93c 64%, #ff7a3c 82%, #ff3fa0);} /* MOIST_SCALE in storm-map.js */
   .overlay-legend{display:none;flex:1;min-width:0;align-items:center;gap:8px;}
   .radar-panel[data-active="wind"] .legend-wind,
   .radar-panel[data-active="temp"] .legend-temp{display:flex;}
@@ -1029,8 +1025,8 @@
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
   </button>
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
-  <span class="moisture-key" role="img" aria-label="Water vapor in the air: clear below 0.7 inches, brightest at two inches and up">
-    <span class="legend-end">0.7&Prime;</span><span class="moisture-bar"></span><span class="legend-end">2&Prime;+ water vapor</span>
+  <span class="moisture-key" role="img" aria-label="Water vapor in the air: clear below 0.7 inches, then blue, green, yellow, orange and pink at 2.5 inches and up">
+    <span class="legend-end">0.7&Prime;</span><span class="moisture-bar"></span><span class="legend-end">2.5&Prime;+ water vapor</span>
   </span>
   <span class="overlay-legend legend-wind" role="img" aria-label="Wind speed: slow, dim trails near 0 mph to fast, bright streaks at 30 mph and up">
     <span class="legend-end">0</span><canvas class="wind-legend" aria-hidden="true"></canvas><span class="legend-end">30+ mph</span>
@@ -1226,7 +1222,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=56"></script>
+<script src="assets/storm-map.js?v=57"></script>
 
 </body>
 </html>

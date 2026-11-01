@@ -2,6 +2,8 @@
 // iOS widget (and anything else that wants them without the dozen requests the page makes).
 // Public forecast data only; nothing about the house goes here.
 //
+import { readNetCDF, values } from './netcdf.js';
+
 // The places mirror assets/storm-map.js (VIEWS targets, REGION_SITES, RAIN_SITES) and the storm
 // levels mirror its stormLevel(). Change both together.
 
@@ -49,9 +51,16 @@ const NWS_TIMEOUT_MS = 6000;
 const SNOW_TO_WATER = 10; // NWS gives total water and snow depth; 10" of snow is about 1" of water
 
 // Moisture overlay: GFS water vapor in the whole air column, the usual way to spot an atmospheric
-// river, on a coarse grid over the Pacific, every 6 hours for about 3 days. GFS runs every 6 hours,
-// so that's how often it's rebuilt. Each grid point counts as a call against Open-Meteo's daily limit.
-const MOISTURE_GRID = { lat: { from: 16, step: 2.5, count: 18 }, lon: { from: -170, step: 2.5, count: 33 } };
+// river, every 6 hours for about 3 days. The full 0.25 degree grid comes from UCAR's free THREDDS
+// server, over the Pacific and the West. If that's down, a coarse 2.5 degree grid from Open-Meteo
+// stands in. GFS runs every 6 hours, so that's how often it's rebuilt.
+const MOISTURE_URL = 'https://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/Global_0p25deg/Best' +
+  '?var=Precipitable_water_entire_atmosphere_single_layer&north=60&south=12&west=190&east=275' +
+  '&horizStride=1&timeStride=2&accept=netcdf3';
+const MOISTURE_HOURS = 78;
+const MOISTURE_TIMEOUT_MS = 20000;
+const MOISTURE_SCALE = 2; // one byte per point: mm of water x 2, so half-mm steps up to 127 mm
+const COARSE_GRID = { lat: { from: 16, step: 2.5, count: 18 }, lon: { from: -170, step: 2.5, count: 33 } };
 const MOISTURE_CACHE_SECONDS = 21600;
 const MOISTURE_STALE_SECONDS = 172800;
 
@@ -59,14 +68,15 @@ const API = 'https://api.open-meteo.com/v1/forecast';
 const UNITS = '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles';
 
 export function elninoJSON(request, ctx){
-  return cached(request, ctx, '/elnino.json', CACHE_SECONDS, STALE_SECONDS, buildSummary);
+  return cached(request, ctx, '/elnino.json', CACHE_SECONDS, STALE_SECONDS, async () => JSON.stringify(await buildSummary()));
 }
 export function moistureJSON(request, ctx){
-  return cached(request, ctx, '/elnino-moisture.json', MOISTURE_CACHE_SECONDS, MOISTURE_STALE_SECONDS, buildMoisture);
+  // text/plain so Cloudflare compresses it; the page reads it as bytes
+  return cached(request, ctx, '/elnino-moisture.bin', MOISTURE_CACHE_SECONDS, MOISTURE_STALE_SECONDS, buildMoisture, 'text/plain; charset=x-user-defined');
 }
 
 // Serves the cached copy, or rebuilds it. If a rebuild fails, serves the last good copy.
-async function cached(request, ctx, path, seconds, staleSeconds, build){
+async function cached(request, ctx, path, seconds, staleSeconds, build, type = 'application/json; charset=utf-8'){
   const cache = caches.default;
   const key = new Request(new URL(path, request.url).toString());
   const staleKey = new Request(new URL(path + '?stale', request.url).toString());
@@ -74,23 +84,23 @@ async function cached(request, ctx, path, seconds, staleSeconds, build){
   if(hit) return hit;
   let body;
   try {
-    body = JSON.stringify(await build());
+    body = await build();
   } catch(err){
     const stale = await cache.match(staleKey);
-    if(stale) return json(await stale.text(), 200, 'no-store');
-    return json(JSON.stringify({ error: 'forecast unavailable' }), 502, 'no-store');
+    if(stale) return respond(await stale.arrayBuffer(), 200, 'no-store', type);
+    return respond(JSON.stringify({ error: 'forecast unavailable' }), 502, 'no-store');
   }
-  const res = json(body, 200, 'public, max-age=' + seconds);
+  const res = respond(body, 200, 'public, max-age=' + seconds, type);
   ctx.waitUntil(Promise.all([
     cache.put(key, res.clone()),
-    cache.put(staleKey, json(body, 200, 'public, max-age=' + staleSeconds))
+    cache.put(staleKey, respond(body, 200, 'public, max-age=' + staleSeconds, type))
   ]));
   return res;
 }
 
-function json(body, status, cacheControl){
+function respond(body, status, cacheControl, type = 'application/json; charset=utf-8'){
   return new Response(body, { status, headers: {
-    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Type': type,
     'Cache-Control': cacheControl,
     'Access-Control-Allow-Origin': '*'
   } });
@@ -138,8 +148,55 @@ export async function buildSummary(){
   };
 }
 
+// The moisture file: a 4-byte length, a JSON header (grid, start time, frames) of that length, then one
+// byte per point: frame by frame, each running south to north, then west to east.
 export async function buildMoisture(){
-  const { lat, lon } = MOISTURE_GRID;
+  const { header, bytes } = await fineMoisture().catch(coarseMoisture);
+  const head = new TextEncoder().encode(JSON.stringify({ updated: new Date().toISOString(), scale: MOISTURE_SCALE, ...header }));
+  const out = new Uint8Array(4 + head.length + bytes.length);
+  new DataView(out.buffer).setUint32(0, head.length);
+  out.set(head, 4);
+  out.set(bytes, 4 + head.length);
+  return out;
+}
+
+async function fineMoisture(){
+  const hour = (t) => new Date(t).toISOString().slice(0, 13) + ':00:00Z';
+  const now = Date.now();
+  const res = await fetch(MOISTURE_URL + '&time_start=' + hour(now) + '&time_end=' + hour(now + MOISTURE_HOURS * 3600000),
+    { signal: AbortSignal.timeout(MOISTURE_TIMEOUT_MS) });
+  if(!res.ok) throw new Error('THREDDS ' + res.status);
+  const file = readNetCDF(await res.arrayBuffer());
+  const find = (test) => file.variables.find(test);
+  const lats = values(file, find((v) => v.name === 'latitude'));
+  const lons = values(file, find((v) => v.name === 'longitude'));
+  const timeVar = find((v) => v.name === 'time');
+  const data = find((v) => v.name.startsWith('Precipitable_water'));
+  const hours = values(file, timeVar);
+  const since = Date.parse(timeVar.attributes.units.replace(/^Hour since /, ''));
+
+  const rows = lats.length, cols = lons.length, count = hours.length, north = lats[0] > lats[rows - 1];
+  const bytes = new Uint8Array(count * rows * cols);
+  const view = file.view;
+  for(let f = 0, i = 0; f < count; f++){
+    for(let r = 0; r < rows; r++){
+      let from = data.begin + (f * rows + (north ? rows - 1 - r : r)) * cols * 4;
+      for(let c = 0; c < cols; c++, i++, from += 4){
+        bytes[i] = Math.min(255, Math.round(view.getFloat32(from) * MOISTURE_SCALE));
+      }
+    }
+  }
+  return { bytes, header: {
+    start: new Date(since + hours[0] * 3600000).toISOString(),
+    stepHours: hours[1] - hours[0],
+    frames: count,
+    lat: { from: Math.min(lats[0], lats[rows - 1]), step: Math.abs(lats[1] - lats[0]), count: rows },
+    lon: { from: lons[0] - 360, step: lons[1] - lons[0], count: cols }
+  } };
+}
+
+async function coarseMoisture(){
+  const { lat, lon } = COARSE_GRID;
   const lats = [], lons = [];
   for(let r = 0; r < lat.count; r++){
     for(let c = 0; c < lon.count; c++){
@@ -150,14 +207,11 @@ export async function buildMoisture(){
   const points = await getJSON('https://api.open-meteo.com/v1/gfs?latitude=' + lats.join(',') + '&longitude=' + lons.join(',') +
     '&hourly=total_column_integrated_water_vapour&forecast_hours=84&temporal_resolution=hourly_6&timezone=GMT');
   const times = points[0].hourly.time;
-  return {
-    updated: new Date().toISOString(),
-    start: times[0] + ':00Z',
-    stepHours: 6,
-    lat, lon,
-    // mm of water, rounded; each frame runs south to north, then west to east
-    frames: times.map((_, f) => points.map((p) => Math.round(p.hourly.total_column_integrated_water_vapour[f] || 0)))
-  };
+  const bytes = new Uint8Array(times.length * points.length);
+  times.forEach((_, f) => points.forEach((p, i) => {
+    bytes[f * points.length + i] = Math.min(255, Math.round((p.hourly.total_column_integrated_water_vapour[f] || 0) * MOISTURE_SCALE));
+  }));
+  return { bytes, header: { start: times[0] + ':00Z', stepHours: 6, frames: times.length, lat, lon } };
 }
 
 async function mostRain(towns){

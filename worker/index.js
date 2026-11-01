@@ -16,7 +16,7 @@ const TRACKER_PATH = '/elnino';
 // The tracker's headline numbers as JSON, for the iOS widget (see elnino.js).
 const SUMMARY_PATH = '/elnino.json';
 // The Moisture overlay's grid (see elnino.js).
-const MOISTURE_PATH = '/elnino-moisture.json';
+const MOISTURE_PATH = '/elnino-moisture.bin';
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
