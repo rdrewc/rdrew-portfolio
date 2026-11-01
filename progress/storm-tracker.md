@@ -257,7 +257,10 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - `loadStats()`: Worker first, then the same requests directly (as in the local preview), then the browser's saved copy (`storm-forecast` in localStorage, about 84 KB). "Forecast unavailable" only shows if all of that fails and this browser has never loaded a forecast.
 - A copy 3+ hours old says "Saved forecast from ...", hourly data is shifted so "next 24 h" starts now, and the region card finds today by date. Showing a saved copy, the tracker tries again on next open.
 - Checked on the preview deploy, on a connection getting 429s from Open-Meteo: all 7 cards loaded. With the Worker and Open-Meteo both blocked and the saved copy aged 20 hours: all 7 cards showed it, with the note.
-- Still direct from the browser, and so still limited per address: the Wind overlay's grid and the top bar's current weather.
+- Still direct from the browser, and so still limited per address: the Wind overlay's grid.
+
+## Top bar weather never goes empty (done)
+- `/elnino-weather.json` holds the current weather for the homepage's lake spot and all six cards, cached 15 minutes, last good copy kept a day. The page tries that, then Open-Meteo directly, then the last reading this browser saved (`storm-weather`, used for up to a day).
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

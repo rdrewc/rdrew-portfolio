@@ -1567,15 +1567,49 @@
     weatherLine.innerHTML = '&hellip;';
     // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
     elevLine.textContent = t.ft.toLocaleString() + "'";
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
-      '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(readoutFor !== v) return;
-        var cw = data.current_weather;
-        weatherLine.textContent = Math.round(cw.temperature) + '°F, ' + (WEATHER_CODES[cw.weathercode] || 'Unknown');
-      })
-      .catch(function(){ if(readoutFor === v) weatherLine.textContent = ''; });
+    var key = v === HOME ? 'home' : currentView;
+    weatherNow(key, t).then(function(now){
+      if(readoutFor !== v) return;
+      weatherLine.textContent = now ? Math.round(now.temperature) + '°F, ' + (WEATHER_CODES[now.code] || 'Unknown') : '';
+    });
+  }
+  // Current weather for a spot: the Worker's copy (15 minutes old at most, shared by every visitor),
+  // then Open-Meteo directly, then the last reading this browser saw, so the top bar isn't left empty.
+  var WEATHER_KEY = 'storm-weather';
+  var WEATHER_KEEP_MS = 86400000; // past a day, a saved reading says nothing useful
+  var WEATHER_REFRESH_MS = 900000;
+  var weatherAll = null, weatherAt = 0;
+  function savedWeather(){
+    try { return JSON.parse(localStorage.getItem(WEATHER_KEY)) || {}; } catch(e){ return {}; }
+  }
+  function saveWeather(places){
+    var at = Date.now(), saved = savedWeather();
+    Object.keys(places).forEach(function(k){ saved[k] = { temperature: places[k].temperature, code: places[k].code, at: at }; });
+    try { localStorage.setItem(WEATHER_KEY, JSON.stringify(saved)); } catch(e){}
+  }
+  function weatherNow(key, t){
+    if(!weatherAll || Date.now() - weatherAt > WEATHER_REFRESH_MS){
+      weatherAt = Date.now();
+      weatherAll = fetch('/elnino-weather.json')
+        .then(function(r){ if(!r.ok) throw new Error('weather ' + r.status); return r.json(); })
+        .then(function(data){ saveWeather(data.places); return data.places; })
+        .catch(function(){ weatherAt = 0; return {}; }); // ask again next time
+    }
+    return weatherAll.then(function(places){
+      if(places[key]) return places[key];
+      return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
+        '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
+        .then(function(r){ if(!r.ok) throw new Error('weather ' + r.status); return r.json(); })
+        .then(function(data){
+          var now = { temperature: data.current_weather.temperature, code: data.current_weather.weathercode }, one = {};
+          one[key] = now;
+          saveWeather(one);
+          return now;
+        });
+    }).catch(function(){
+      var last = savedWeather()[key];
+      return last && Date.now() - last.at < WEATHER_KEEP_MS ? last : null;
+    });
   }
 
   // ---- view picker (footer) ----

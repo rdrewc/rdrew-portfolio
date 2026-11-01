@@ -19,12 +19,14 @@ const SUMMARY_PATH = '/elnino.json';
 const MOISTURE_PATH = '/elnino-moisture.bin';
 // The forecast the tracker's cards draw (see elnino.js).
 const FORECAST_PATH = '/elnino-forecast.json';
+// The top bar's current weather (see elnino.js).
+const WEATHER_PATH = '/elnino-weather.json';
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
 const PROTECTED_PATHS = [];
 
-import { elninoJSON, forecastJSON, moistureJSON } from './elnino.js';
+import { elninoJSON, forecastJSON, moistureJSON, weatherJSON } from './elnino.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -33,6 +35,7 @@ export default {
     if(url.pathname === SUMMARY_PATH) return elninoJSON(request, ctx);
     if(url.pathname === MOISTURE_PATH) return moistureJSON(request, ctx);
     if(url.pathname === FORECAST_PATH) return forecastJSON(request, ctx);
+    if(url.pathname === WEATHER_PATH) return weatherJSON(request, ctx);
     if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
     if(url.pathname === TRACKER_PATH) return env.ASSETS.fetch(new Request(new URL('/', url), request));
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);

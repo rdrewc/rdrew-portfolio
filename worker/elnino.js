@@ -11,6 +11,7 @@ const CACHE_SECONDS = 1800; // rebuilt at most every 30 minutes; widgets refresh
 const STALE_SECONDS = 86400; // the last good answer, served for a day if a rebuild fails
 const FORECAST_CACHE_SECONDS = 3600; // the cards' forecast, so visitors don't each spend Open-Meteo's limit
 const FORECAST_STALE_SECONDS = 259200;
+const WEATHER_CACHE_SECONDS = 900;   // the top bar's current weather
 
 const ZONES = [
   { key: 'shasta', name: 'Shasta', spot: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330 },
@@ -20,9 +21,11 @@ const ZONES = [
 ];
 // Every card on the tracker, in order: the city landmarks, then the mountains.
 const CARD_ZONES = [
-  { lat: 37.8183, lon: -122.4784, ft: 220 },  // SF, Golden Gate Bridge
-  { lat: 34.1341, lon: -118.3217, ft: 1575 }  // LA, Hollywood Sign
+  { key: 'sf', lat: 37.8183, lon: -122.4784, ft: 220 },  // Golden Gate Bridge
+  { key: 'la', lat: 34.1341, lon: -118.3217, ft: 1575 }  // Hollywood Sign
 ].concat(ZONES);
+// The top bar's weather: every card's spot, plus the lake, which the homepage shows (HOME in storm-map.js).
+const WEATHER_PLACES = [{ key: 'home', lat: 39.1657, lon: -120.14, ft: 6225 }].concat(CARD_ZONES);
 // The region card's sites: the Cascades, then the mountain zones.
 const REGION_SITES = [
   { name: 'Mt. Baker', spot: 'Mt. Baker Ski Area', lat: 48.857, lon: -121.665, ft: 5000 },
@@ -80,6 +83,9 @@ export function elninoJSON(request, ctx){
 export function forecastJSON(request, ctx){
   return cached(request, ctx, '/elnino-forecast.json', FORECAST_CACHE_SECONDS, FORECAST_STALE_SECONDS, async () => JSON.stringify(await buildForecast()));
 }
+export function weatherJSON(request, ctx){
+  return cached(request, ctx, '/elnino-weather.json', WEATHER_CACHE_SECONDS, STALE_SECONDS, async () => JSON.stringify(await buildWeather()));
+}
 export function moistureJSON(request, ctx){
   // text/plain so Cloudflare compresses it; the page reads it as bytes
   return cached(request, ctx, '/elnino-moisture.bin', MOISTURE_CACHE_SECONDS, MOISTURE_STALE_SECONDS, buildMoisture, 'text/plain; charset=x-user-defined');
@@ -127,6 +133,15 @@ export async function buildForecast(){
       '&models=ecmwf_ifs025&daily=snowfall_sum&forecast_days=10&precipitation_unit=inch&timezone=America%2FLos_Angeles').catch(() => null)
   ]);
   return { updated: new Date().toISOString(), zones, region, ensemble };
+}
+
+export async function buildWeather(){
+  const points = await getJSON(API + where(WEATHER_PLACES, true) + '&current_weather=true' + UNITS);
+  const places = {};
+  WEATHER_PLACES.forEach((place, i) => {
+    places[place.key] = { temperature: points[i].current_weather.temperature, code: points[i].current_weather.weathercode };
+  });
+  return { updated: new Date().toISOString(), places };
 }
 
 export async function buildSummary(){
