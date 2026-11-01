@@ -15,18 +15,21 @@ const UNLOCK_PATH = '/__unlock';
 const TRACKER_PATH = '/elnino';
 // The tracker's headline numbers as JSON, for the iOS widget (see elnino.js).
 const SUMMARY_PATH = '/elnino.json';
+// The Moisture overlay's grid (see elnino.js).
+const MOISTURE_PATH = '/elnino-moisture.json';
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
 const PROTECTED_PATHS = [];
 
-import { elninoJSON } from './elnino.js';
+import { elninoJSON, moistureJSON } from './elnino.js';
 
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
     if(url.pathname === UNLOCK_PATH) return unlock(request);
     if(url.pathname === SUMMARY_PATH) return elninoJSON(request, ctx);
+    if(url.pathname === MOISTURE_PATH) return moistureJSON(request, ctx);
     if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
     if(url.pathname === TRACKER_PATH) return env.ASSETS.fetch(new Request(new URL('/', url), request));
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);

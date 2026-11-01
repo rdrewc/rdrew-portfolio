@@ -45,6 +45,8 @@
     --temp-line:#d95926;  /* validated with the two bars above */
     --storm-big:#ff3b2f;  /* tracker card titles: big storm in the next 24 h */
     --storm-mid:#ffc93c;  /* moderate */
+    --moisture-low:#1f9e7a;  /* moisture overlay: one hue, brightest in the wettest air */
+    --moisture-high:#8ff0cf;
     --storm-extreme:#c8102e; /* extreme: darker red, still 3:1 on the dark page for the big titles */
     --scrim:rgba(10,10,16,0.72);
     --tile-bg:#1a1b25;
@@ -69,6 +71,8 @@
     --temp-line:#eb6834;
     --storm-big:#d42a1c;
     --storm-mid:#b07d00;  /* yellow darkened so it reads on the light page */
+    --moisture-low:#5fcfa8;  /* on the light map the wettest air goes darker, not brighter */
+    --moisture-high:#0a6b4a;
     --storm-extreme:#8a0f1a;
     --scrim:rgba(246,245,251,0.62);
     --tile-bg:#ecebf6;
@@ -672,9 +676,9 @@
     align-items:center;
     gap:12px;
     /* Shares the bottom row with the tabs and snowflake (--tabs-cluster wide, 16px apart): the
-       scrubber gives up width first, and below ~1010px the panel steps up a row (see below). */
+       scrubber gives up width first, and below ~1080px the panel steps up a row (see below). */
     --tabs-cluster:500px;
-    width:clamp(430px, calc(100vw - 2 * max(60px, 50vw - 640px) - var(--tabs-cluster) - 16px), 640px);
+    width:clamp(500px, calc(100vw - 2 * max(60px, 50vw - 640px) - var(--tabs-cluster) - 16px), 640px);
     padding:8px 14px 8px 8px;
     border:1px solid var(--glass-border);
     border-radius:999px;
@@ -718,11 +722,15 @@
      the map moves (trails would smear) and fades back in once it settles. */
   .wind-canvas{position:absolute;left:0;top:0;pointer-events:none;transition:opacity var(--dur-quick) ease;}
   .wind-canvas.is-moving, .wind-canvas.is-hidden{opacity:0;}
-  .radar-panel:not([data-active="radar"]) #radar-play,
-  .radar-panel:not([data-active="radar"]) input[type="range"]{display:none;}
+  .radar-panel:is([data-active="wind"], [data-active="temp"]) #radar-play,
+  .radar-panel:is([data-active="wind"], [data-active="temp"]) input[type="range"]{display:none;}
   /* Legends for Wind and Temp, in the timeline's place: a slim bar between its two end values.
      Wind's is a strip of the same particles (see storm-map.js) running from calm to fast; Temp's is
      NOAA's forecast scale at the map's own opacity, so the two read alike. */
+  /* Moisture keeps the timeline, so its legend floats just above the panel's right end. */
+  .moisture-key{display:none;position:absolute;right:14px;bottom:calc(100% + 8px);align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--glass-border);border-radius:999px;background:var(--bar-bg);-webkit-backdrop-filter:var(--bar-blur);backdrop-filter:var(--bar-blur);white-space:nowrap;}
+  .radar-panel[data-active="moisture"] .moisture-key{display:flex;}
+  .moisture-bar{width:72px;height:8px;border-radius:4px;background:linear-gradient(90deg, transparent, var(--moisture-low) 34%, var(--moisture-high));}
   .overlay-legend{display:none;flex:1;min-width:0;align-items:center;gap:8px;}
   .radar-panel[data-active="wind"] .legend-wind,
   .radar-panel[data-active="temp"] .legend-temp{display:flex;}
@@ -950,11 +958,11 @@
 
   /* Narrower desktops: first the tabs tighten, then the radar panel moves up above them so the two
      never overlap. The cards end above it. Phones (below) stack the same way. */
-  @media (max-width:1080px){
+  @media (max-width:1140px){
     .radar-panel{--tabs-cluster:444px;}
     .view-tabs button{padding:0 7px;}
   }
-  @media (min-width:861px) and (max-width:1010px){
+  @media (min-width:861px) and (max-width:1080px){
     .radar-panel{bottom:74px;width:min(640px, calc(100vw - 120px));}
     .stat-card{max-height:calc(100vh - var(--bar-h) - 188px);}
   }
@@ -992,12 +1000,12 @@
   /* The overlay bar stacks only when it has to: Radar's timeline needs a second row on narrow phones,
      but Wind and Temp have no timeline, and from 520px up everything fits on one line. */
   @media (max-width:860px){
-    .radar-panel:not([data-active="radar"]){flex-wrap:nowrap;justify-content:space-between;padding:8px 18px 8px 8px;border-radius:999px;}
-    .radar-panel:not([data-active="radar"]) .overlay-switch{width:auto;border-bottom:none;padding:0 4px 0 8px;}
+    .radar-panel:is([data-active="wind"], [data-active="temp"]){flex-wrap:nowrap;justify-content:space-between;padding:8px 18px 8px 8px;border-radius:999px;}
+    .radar-panel:is([data-active="wind"], [data-active="temp"]) .overlay-switch{width:auto;border-bottom:none;padding:0 4px 0 8px;}
   }
   /* Narrow phones: the legend gets the row. The tab and the top bar already name the overlay. */
   @media (max-width:519px){
-    .radar-panel:not([data-active="radar"]) .radar-time{display:none;}
+    .radar-panel:is([data-active="wind"], [data-active="temp"]) .radar-time{display:none;}
   }
   @media (min-width:520px) and (max-width:860px){
     .radar-panel{flex-wrap:nowrap;padding:8px 18px 8px 8px;border-radius:999px;}
@@ -1014,12 +1022,16 @@
     <button type="button" data-overlay="radar" aria-pressed="false">Radar</button>
     <button type="button" data-overlay="wind" aria-pressed="true">Wind</button>
     <button type="button" data-overlay="temp" aria-pressed="false">Temp</button>
+    <button type="button" data-overlay="moisture" aria-pressed="false">Moisture</button>
   </span>
   <button type="button" id="radar-play" aria-pressed="false" aria-label="Play radar">
     <svg class="play-icon" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"></path></svg>
     <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"></path></svg>
   </button>
   <input type="range" id="radar-slider" min="0" max="18" step="1" value="0" aria-label="Forecast hour">
+  <span class="moisture-key" role="img" aria-label="Water vapor in the air: clear below 0.7 inches, brightest at two inches and up">
+    <span class="legend-end">0.7&Prime;</span><span class="moisture-bar"></span><span class="legend-end">2&Prime;+ water vapor</span>
+  </span>
   <span class="overlay-legend legend-wind" role="img" aria-label="Wind speed: slow, dim trails near 0 mph to fast, bright streaks at 30 mph and up">
     <span class="legend-end">0</span><canvas class="wind-legend" aria-hidden="true"></canvas><span class="legend-end">30+ mph</span>
   </span>
@@ -1214,7 +1226,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=54"></script>
+<script src="assets/storm-map.js?v=56"></script>
 
 </body>
 </html>

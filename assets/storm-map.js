@@ -217,7 +217,11 @@
     map.resize(); // a page opened in a background tab can start the map at the wrong size
     applyColors();
   });
-  new MutationObserver(function(){ if(map.isStyleLoaded()) applyColors(); })
+  new MutationObserver(function(){
+    if(map.isStyleLoaded()) applyColors();
+    moistImages = []; // drawn in the theme's colors
+    if(moist && shown() === 'moisture') showMoisture(moistFrame);
+  })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   // ---- target markers (tracker mode) ----
@@ -439,7 +443,7 @@
     frames.forEach(function(_, k){
       if(map.getLayer(layerId(k))) map.setPaintProperty(layerId(k), 'raster-opacity', k === frame ? opacity : 0);
     });
-    if(slider) slider.value = String(frame);
+    if(slider && overlay !== 'moisture') slider.value = String(frame);
     updateTimeLabel();
     if(tracking && currentView === 'west') updateReadout(VIEWS.west);
   }
@@ -454,6 +458,10 @@
     if(!timeLabel) return;
     if(overlay === 'temp'){ timeLabel.textContent = 'Temperature \u00b7 NOAA forecast'; return; }
     if(overlay === 'wind'){ timeLabel.textContent = 'Wind now'; return; }
+    if(overlay === 'moisture'){
+      timeLabel.textContent = moist ? formatTime(moistTime(moistFrame)) : moistFailed ? 'Moisture unavailable' : 'Loading moisture…';
+      return;
+    }
     var d = validAt(frame);
     if(!d){ timeLabel.textContent = 'Loading radar…'; return; }
     timeLabel.textContent = formatTime(d);
@@ -461,22 +469,29 @@
 
   if(slider){
     slider.max = String(frames.length - 1);
-    slider.addEventListener('input', function(){ stop(); showFrame(parseInt(slider.value, 10)); });
+    slider.addEventListener('input', function(){
+      stop();
+      (overlay === 'moisture' ? showMoisture : showFrame)(parseInt(slider.value, 10));
+    });
   }
   var timer = null;
   var startFrame = 0; // the frame nearest now; playback loops from here to the end of the run
   function stop(){
     if(timer){ clearInterval(timer); timer = null; }
-    if(playBtn){ playBtn.setAttribute('aria-pressed', 'false'); playBtn.setAttribute('aria-label', 'Play radar'); }
+    if(playBtn){ playBtn.setAttribute('aria-pressed', 'false'); playBtn.setAttribute('aria-label', 'Play forecast'); }
   }
   function play(){
     stop();
     timer = setInterval(function(){
-      showFrame(frame >= frames.length - 1 ? startFrame : frame + 1);
+      if(overlay === 'moisture') showMoisture(moistFrame >= moist.frames.length - 1 ? moistStart : moistFrame + 1);
+      else showFrame(frame >= frames.length - 1 ? startFrame : frame + 1);
     }, 700);
-    if(playBtn){ playBtn.setAttribute('aria-pressed', 'true'); playBtn.setAttribute('aria-label', 'Pause radar'); }
+    if(playBtn){ playBtn.setAttribute('aria-pressed', 'true'); playBtn.setAttribute('aria-label', 'Pause forecast'); }
   }
-  if(playBtn) playBtn.addEventListener('click', function(){ timer ? stop() : play(); });
+  if(playBtn) playBtn.addEventListener('click', function(){
+    if(timer) stop();
+    else if(overlay !== 'moisture' || moist) play();
+  });
 
   map.on('load', function(){
     showFrame(0);
@@ -495,9 +510,9 @@
   });
 
   // ---- overlays: forecast radar, wind, temperature ----
-  // Wind is the default (see "wind flow" below). Radar is the only one with a timeline. Temperature is
+  // Wind is the default (see "wind flow" below). Radar and Moisture have a timeline. Temperature is
   // NOAA's NDFD forecast as map tiles, under the contour lines. Wind and Temp each show a small legend
-  // in the panel where Radar's timeline would be.
+  // in the panel where the timeline would be; Moisture's sits just above the panel.
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
   var overlay = 'wind';
@@ -525,7 +540,8 @@
     overlay = name;
     if(radarPanel) radarPanel.setAttribute('data-active', name);
     overlayBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-overlay') === name)); });
-    if(name !== 'radar') stop();
+    stop();
+    if(slider) slider.max = String((name === 'moisture' && moist ? moist.frames.length : frames.length) - 1);
     updateTimeLabel();
     if(tracking) refreshReadout(); // the coast view's readout names the overlay
     if(!mapReady) return;
@@ -533,7 +549,9 @@
     var on = shown();
     map.setLayoutProperty('temp', 'visibility', on === 'temp' ? 'visible' : 'none');
     map.setLayoutProperty('temp-seam', 'visibility', on === 'temp' ? 'visible' : 'none');
+    if(map.getLayer('moisture')) map.setLayoutProperty('moisture', 'visibility', on === 'moisture' ? 'visible' : 'none');
     showFrame(frame);
+    if(on === 'moisture') moist ? showMoisture(moistFrame) : loadMoisture();
     if(on === 'wind') startWind();
     else stopWind();
   }
@@ -801,6 +819,102 @@
   });
   map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(shown() === 'wind') loadWind(); } });
   map.on('load', function(){ mapReady = true; setOverlay(overlay); });
+
+  // ---- moisture ----
+  // Water vapor in the whole air column, from the Worker (/elnino-moisture.json, GFS every 6 hours for
+  // about 3 days). Atmospheric rivers show up as long plumes reaching from the tropics to the coast.
+  // The grid is drawn smooth into an image for the map, under the contour lines: one hue that's clear
+  // in ordinary air, fades in at 0.7" of water (near the 20 mm usually used for an atmospheric river)
+  // and is brightest at two inches and up. The image's edges fade out so the data's limits don't show.
+  // An image on the map stretches evenly in Mercator, so its rows are spaced to match.
+  var MOIST_FLOOR = 18, MOIST_FULL = 50; // mm, about 0.7" and 2"
+  var MOIST_WIDTH = 640;                 // px across the grid
+  var MOIST_EDGE = 0.06;                 // share of the image that fades out along each side
+  var moist = null, moistFailed = false, moistLoading = false;
+  var moistFrame = 0, moistStart = 0, moistImages = [];
+
+  function moistTime(i){
+    return new Date(Date.parse(moist.start) + i * moist.stepHours * 3600000);
+  }
+  function loadMoisture(){
+    if(moistLoading) return;
+    moistLoading = true;
+    moistFailed = false;
+    updateTimeLabel();
+    fetch('/elnino-moisture.json')
+      .then(function(r){ if(!r.ok) throw new Error('moisture ' + r.status); return r.json(); })
+      .then(function(data){
+        moist = data;
+        var ahead = (Date.now() - Date.parse(data.start)) / 3600000 / data.stepHours;
+        moistStart = moistFrame = Math.max(0, Math.min(data.frames.length - 1, Math.round(ahead))); // nearest now
+        if(slider && overlay === 'moisture') slider.max = String(data.frames.length - 1);
+        if(shown() === 'moisture') showMoisture(moistFrame);
+      })
+      .catch(function(){ moistFailed = true; })
+      .then(function(){ moistLoading = false; updateTimeLabel(); if(tracking) refreshReadout(); });
+  }
+  function mercator(lat){
+    var s = Math.sin(lat * Math.PI / 180);
+    return 0.5 * Math.log((1 + s) / (1 - s));
+  }
+  function hexColor(name, fallback){
+    var n = parseInt(cssVar(name, fallback).slice(1), 16);
+    return [n >> 16, (n >> 8) & 255, n & 255];
+  }
+  function catmullRom(a, b, c, d, t){
+    return b + 0.5 * t * (c - a + t * (2 * a - 5 * b + 4 * c - d + t * (3 * (b - c) + d - a)));
+  }
+  function moistImage(i){
+    if(moistImages[i]) return moistImages[i];
+    var lat = moist.lat, lon = moist.lon, grid = moist.frames[i];
+    var north = lat.from + (lat.count - 1) * lat.step, top = mercator(north), bottom = mercator(lat.from);
+    var w = MOIST_WIDTH, h = Math.round(w * (top - bottom) / ((lon.count - 1) * lon.step * Math.PI / 180));
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d'), img = ctx.createImageData(w, h), px = img.data;
+    var low = hexColor('--moisture-low', '#1f9e7a'), high = hexColor('--moisture-high', '#8ff0cf');
+    function at(r, c){
+      r = Math.max(0, Math.min(lat.count - 1, r));
+      c = Math.max(0, Math.min(lon.count - 1, c));
+      return grid[r * lon.count + c];
+    }
+    for(var y = 0; y < h; y++){
+      var la = Math.atan(Math.sinh(top - (y + 0.5) / h * (top - bottom))) * 180 / Math.PI;
+      var gy = (la - lat.from) / lat.step, r = Math.floor(gy), fy = gy - r;
+      for(var x = 0; x < w; x++){
+        var gx = (x + 0.5) / w * (lon.count - 1), c = Math.floor(gx), fx = gx - c;
+        var rows = [-1, 0, 1, 2].map(function(k){
+          return catmullRom(at(r + k, c - 1), at(r + k, c), at(r + k, c + 1), at(r + k, c + 2), fx);
+        });
+        var t = Math.max(0, Math.min(1, (catmullRom(rows[0], rows[1], rows[2], rows[3], fy) - MOIST_FLOOR) / (MOIST_FULL - MOIST_FLOOR)));
+        var i4 = (y * w + x) * 4;
+        px[i4] = low[0] + (high[0] - low[0]) * t;
+        px[i4 + 1] = low[1] + (high[1] - low[1]) * t;
+        px[i4 + 2] = low[2] + (high[2] - low[2]) * t;
+        var edge = Math.min(x / w, 1 - x / w, y / h, 1 - y / h) / MOIST_EDGE;
+        px[i4 + 3] = 255 * Math.min(1, t * 3) * Math.min(1, edge);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return (moistImages[i] = canvas.toDataURL('image/png'));
+  }
+  function showMoisture(i){
+    moistFrame = i;
+    if(slider) slider.value = String(i);
+    var lat = moist.lat, lon = moist.lon;
+    var w = lon.from, e = lon.from + (lon.count - 1) * lon.step, s = lat.from, n = lat.from + (lat.count - 1) * lat.step;
+    var coordinates = [[w, n], [e, n], [e, s], [w, s]];
+    var source = map.getSource('moisture');
+    if(source) source.updateImage({ url: moistImage(i), coordinates: coordinates });
+    else {
+      map.addSource('moisture', { type: 'image', url: moistImage(i), coordinates: coordinates });
+      map.addLayer({ id: 'moisture', type: 'raster', source: 'moisture',
+        paint: { 'raster-opacity': 0.8, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, 'contour-minor');
+    }
+    updateTimeLabel();
+    if(tracking) refreshReadout();
+  }
 
   // ---- forecast totals (tracker mode) ----
   // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
@@ -1398,7 +1512,8 @@
       readoutFor = v;
       if(coordsEl) coordsEl.textContent = 'WEST COAST';
       var d = validAt(frame);
-      weatherLine.textContent = overlay === 'wind' ? 'Wind' : overlay === 'temp' ? 'Temperature' : 'Forecast radar';
+      weatherLine.textContent = overlay === 'wind' ? 'Wind' : overlay === 'temp' ? 'Temperature' : overlay === 'moisture' ? 'Moisture' : 'Forecast radar';
+      if(overlay === 'moisture') d = moist ? moistTime(moistFrame) : null;
       elevLine.textContent = overlay === 'wind' ? 'Now' : overlay === 'temp' ? 'NOAA forecast' : d ? formatTime(d) : '…';
       return;
     }

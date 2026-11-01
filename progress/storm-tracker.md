@@ -240,6 +240,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Under 520 px, Wind and Temp hide the time label so their legend has the row.
 - Open-Meteo's free limit is per IP and counts each location, so a wind map is about 120 calls. Heavy testing from one address gets 429s for a while. Normal visits are fine. The Worker calls from Cloudflare's shared IPs, so if it ever gets limited, `elnino.json` falls back to the last good copy.
 
+## Moisture overlay (done, not deployed)
+- A fourth overlay. It shows GFS water vapor in the whole air column (`total_column_integrated_water_vapour`), the usual way to spot atmospheric rivers. It's vapor, not IVT (vapor moved by wind), so a plume is moist air, not a measure of how much is being pushed ashore.
+- `worker/elnino.js` serves `/elnino-moisture.json`: a 2.5-degree grid, 594 points from 170 W to 90 W and 16 N to 58.5 N, 14 frames 6 hours apart (about 3 days). About 24 KB. Rebuilt every 6 hours, with the last good copy kept 2 days. Visitors make no Open-Meteo calls for it.
+- The page draws the grid smooth into an image under the contours, in Mercator rows, with faded edges. One hue (`--moisture-low`, `--moisture-high`), clear below 18 mm (0.7"), brightest at 50 mm (2"). Redraws on theme change.
+- It shares Radar's play button and scrubber, and starts on the frame nearest now. The legend floats above the panel's right end.
+- The fourth tab took room: the panel's minimum went to 500 px, the tabs tighten at 1140 px, and the panel steps up a row at 1080 px. Wind and Temp keep their one-line and legend rules.
+- Local preview: `.claude/serve.py` serves `.claude/elnino-moisture.json`, a copy made with `buildMoisture()`.
+- NASA GIBS has satellite water vapor but with gaps between passes, and NOAA's map services had nothing fitting, so neither was used.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.

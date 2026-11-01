@@ -48,27 +48,42 @@ const NWS_HEADERS = { 'User-Agent': 'rdrew.com storm tracker', Accept: 'applicat
 const NWS_TIMEOUT_MS = 6000;
 const SNOW_TO_WATER = 10; // NWS gives total water and snow depth; 10" of snow is about 1" of water
 
+// Moisture overlay: GFS water vapor in the whole air column, the usual way to spot an atmospheric
+// river, on a coarse grid over the Pacific, every 6 hours for about 3 days. GFS runs every 6 hours,
+// so that's how often it's rebuilt. Each grid point counts as a call against Open-Meteo's daily limit.
+const MOISTURE_GRID = { lat: { from: 16, step: 2.5, count: 18 }, lon: { from: -170, step: 2.5, count: 33 } };
+const MOISTURE_CACHE_SECONDS = 21600;
+const MOISTURE_STALE_SECONDS = 172800;
+
 const API = 'https://api.open-meteo.com/v1/forecast';
 const UNITS = '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles';
 
-export async function elninoJSON(request, ctx){
+export function elninoJSON(request, ctx){
+  return cached(request, ctx, '/elnino.json', CACHE_SECONDS, STALE_SECONDS, buildSummary);
+}
+export function moistureJSON(request, ctx){
+  return cached(request, ctx, '/elnino-moisture.json', MOISTURE_CACHE_SECONDS, MOISTURE_STALE_SECONDS, buildMoisture);
+}
+
+// Serves the cached copy, or rebuilds it. If a rebuild fails, serves the last good copy.
+async function cached(request, ctx, path, seconds, staleSeconds, build){
   const cache = caches.default;
-  const key = new Request(new URL('/elnino.json', request.url).toString());
-  const staleKey = new Request(new URL('/elnino.json?stale', request.url).toString());
+  const key = new Request(new URL(path, request.url).toString());
+  const staleKey = new Request(new URL(path + '?stale', request.url).toString());
   const hit = await cache.match(key);
   if(hit) return hit;
   let body;
   try {
-    body = JSON.stringify(await buildSummary());
+    body = JSON.stringify(await build());
   } catch(err){
     const stale = await cache.match(staleKey);
     if(stale) return json(await stale.text(), 200, 'no-store');
     return json(JSON.stringify({ error: 'forecast unavailable' }), 502, 'no-store');
   }
-  const res = json(body, 200, 'public, max-age=' + CACHE_SECONDS);
+  const res = json(body, 200, 'public, max-age=' + seconds);
   ctx.waitUntil(Promise.all([
     cache.put(key, res.clone()),
-    cache.put(staleKey, json(body, 200, 'public, max-age=' + STALE_SECONDS))
+    cache.put(staleKey, json(body, 200, 'public, max-age=' + staleSeconds))
   ]));
   return res;
 }
@@ -120,6 +135,28 @@ export async function buildSummary(){
       tempChange: Math.round(dT), // °F, next week's mean minus the past week's
       nextPrecip: round(nextP, 2), nextSnow: round(nextS), pastPrecip: round(pastP, 2), pastSnow: round(pastS)
     }
+  };
+}
+
+export async function buildMoisture(){
+  const { lat, lon } = MOISTURE_GRID;
+  const lats = [], lons = [];
+  for(let r = 0; r < lat.count; r++){
+    for(let c = 0; c < lon.count; c++){
+      lats.push(lat.from + r * lat.step);
+      lons.push(lon.from + c * lon.step);
+    }
+  }
+  const points = await getJSON('https://api.open-meteo.com/v1/gfs?latitude=' + lats.join(',') + '&longitude=' + lons.join(',') +
+    '&hourly=total_column_integrated_water_vapour&forecast_hours=84&temporal_resolution=hourly_6&timezone=GMT');
+  const times = points[0].hourly.time;
+  return {
+    updated: new Date().toISOString(),
+    start: times[0] + ':00Z',
+    stepHours: 6,
+    lat, lon,
+    // mm of water, rounded; each frame runs south to north, then west to east
+    frames: times.map((_, f) => points.map((p) => Math.round(p.hourly.total_column_integrated_water_vapour[f] || 0)))
   };
 }
 
