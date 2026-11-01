@@ -935,6 +935,16 @@
     .view-tabs button{padding:0 3px;font-size:10px;letter-spacing:0.02em;} /* seven tabs beside the snowflake on a 375px phone */
     .target-cam{width:180px;}
   }
+  /* The overlay bar stacks only when it has to: Radar's timeline needs a second row on narrow phones,
+     but Wind and Temp have no timeline, and from 520px up everything fits on one line. */
+  @media (max-width:860px){
+    .radar-panel:not([data-active="radar"]){flex-wrap:nowrap;justify-content:space-between;padding:8px 18px 8px 8px;border-radius:999px;}
+    .radar-panel:not([data-active="radar"]) .overlay-switch{width:auto;border-bottom:none;padding:0 4px 0 8px;}
+  }
+  @media (min-width:520px) and (max-width:860px){
+    .radar-panel{flex-wrap:nowrap;padding:8px 18px 8px 8px;border-radius:999px;}
+    .overlay-switch{width:auto;justify-content:flex-start;border-right:1px solid var(--divider);border-bottom:none;padding:0 4px 0 8px;margin:0 2px 0 0;}
+  }
 </style>
 </head>
 <body>
@@ -1119,7 +1129,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=49"></script>
+<script src="assets/storm-map.js?v=50"></script>
 
 </body>
 </html>

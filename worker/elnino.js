@@ -6,6 +6,7 @@
 // levels mirror its stormLevel(). Change both together.
 
 const CACHE_SECONDS = 1800; // rebuilt at most every 30 minutes; widgets refresh on iOS's schedule anyway
+const STALE_SECONDS = 86400; // the last good answer, served for a day if a rebuild fails
 
 const ZONES = [
   { key: 'shasta', name: 'Shasta', spot: 'Shastina summit', lat: 41.4092, lon: -122.2233, ft: 12330 },
@@ -40,22 +41,35 @@ const RAIN_SITES = [
 // Inches in the next 24 hours: snow or precip at or above these makes a big or mid storm.
 const STORM = { big: { snow: 6, precip: 1 }, mid: { snow: 1, precip: 0.25 } };
 
+// Most rain: Open-Meteo shortlists the wettest towns, then the National Weather Service forecast
+// (its gridded data, forecaster-reviewed) ranks them. Open-Meteo stands in if NWS is down.
+const RAIN_SHORTLIST = 6;
+const NWS_HEADERS = { 'User-Agent': 'rdrew.com storm tracker', Accept: 'application/geo+json' };
+const NWS_TIMEOUT_MS = 6000;
+const SNOW_TO_WATER = 10; // NWS gives total water and snow depth; 10" of snow is about 1" of water
+
 const API = 'https://api.open-meteo.com/v1/forecast';
 const UNITS = '&precipitation_unit=inch&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles';
 
 export async function elninoJSON(request, ctx){
   const cache = caches.default;
   const key = new Request(new URL('/elnino.json', request.url).toString());
+  const staleKey = new Request(new URL('/elnino.json?stale', request.url).toString());
   const hit = await cache.match(key);
   if(hit) return hit;
   let body;
   try {
     body = JSON.stringify(await buildSummary());
   } catch(err){
+    const stale = await cache.match(staleKey);
+    if(stale) return json(await stale.text(), 200, 'no-store');
     return json(JSON.stringify({ error: 'forecast unavailable' }), 502, 'no-store');
   }
   const res = json(body, 200, 'public, max-age=' + CACHE_SECONDS);
-  ctx.waitUntil(cache.put(key, res.clone()));
+  ctx.waitUntil(Promise.all([
+    cache.put(key, res.clone()),
+    cache.put(staleKey, json(body, 200, 'public, max-age=' + STALE_SECONDS))
+  ]));
   return res;
 }
 
@@ -90,8 +104,9 @@ export async function buildSummary(){
   const nextS = avg('snowfall_sum', TODAY), pastS = avg('snowfall_sum', 0, TODAY);
   const dT = (avg('temperature_2m_mean', TODAY) - avg('temperature_2m_mean', 0, TODAY)) / 7;
 
-  const wet = RAIN_SITES.map((s, i) => ({ s, ft: rain[i].elevation * 3.28084, rain: sum(rain[i].daily.rain_sum) }))
-    .sort((a, b) => b.rain - a.rain)[0];
+  const towns = RAIN_SITES.map((s, i) => ({ s, ft: rain[i].elevation * 3.28084, rain: sum(rain[i].daily.rain_sum) }))
+    .sort((a, b) => b.rain - a.rain);
+  const wettest = await mostRain(towns);
 
   const levels = zoneList.map((z) => z.storm);
   return {
@@ -99,13 +114,48 @@ export async function buildSummary(){
     storm: levels.includes('big') ? 'big' : levels.includes('mid') ? 'mid' : 'none', // the worst zone
     zones: zoneList,
     mostSnow: { name: top.s.name, spot: top.s.spot, ft: top.s.ft, inches: round(top.snow) },
-    mostRain: { name: wet.s.name, where: wet.s.where, ft: Math.round(wet.ft), inches: round(wet.rain) },
+    mostRain: wettest,
     week: {
       mood: nextP > pastP * 1.25 + 0.05 ? 'Wetter week ahead' : nextP < pastP * 0.8 - 0.05 ? 'Drier week ahead' : 'A similar week ahead',
       tempChange: Math.round(dT), // °F, next week's mean minus the past week's
       nextPrecip: round(nextP, 2), nextSnow: round(nextS), pastPrecip: round(pastP, 2), pastSnow: round(pastS)
     }
   };
+}
+
+async function mostRain(towns){
+  const shortlist = towns.slice(0, RAIN_SHORTLIST);
+  const results = await Promise.allSettled(shortlist.map((t) => nwsRain(t.s.lat, t.s.lon)));
+  const checked = shortlist.flatMap((t, i) => results[i].status === 'fulfilled' ? [{ ...t, rain: results[i].value }] : []);
+  const top = checked.length ? checked.sort((a, b) => b.rain - a.rain)[0] : towns[0];
+  return { name: top.s.name, where: top.s.where, ft: Math.round(top.ft), inches: round(top.rain), source: checked.length ? 'NWS' : 'Open-Meteo' };
+}
+
+// Inches of rain in the next 7 days at a point: total water, less the water in any snow.
+async function nwsRain(lat, lon){
+  const point = await getNWS('https://api.weather.gov/points/' + lat + ',' + lon);
+  const grid = (await getNWS(point.properties.forecastGridData)).properties;
+  const start = Date.now(), end = start + 7 * 86400000;
+  const water = inWindow(grid.quantitativePrecipitation.values, start, end);
+  const snow = inWindow(grid.snowfallAmount.values, start, end);
+  return Math.max(0, water - snow / SNOW_TO_WATER) / 25.4; // mm to inches
+}
+
+// Sums NWS grid values ("2026-11-01T04:00:00+00:00/PT6H"), counting the part of each period in the window.
+function inWindow(values, start, end){
+  return values.reduce((total, v) => {
+    const [from, length] = v.validTime.split('/');
+    const m = length.match(/P(?:(\d+)D)?T?(?:(\d+)H)?/);
+    const t0 = Date.parse(from), t1 = t0 + ((Number(m[1]) || 0) * 24 + (Number(m[2]) || 0)) * 3600000;
+    const overlap = Math.min(t1, end) - Math.max(t0, start);
+    return overlap > 0 ? total + (v.value || 0) * overlap / (t1 - t0) : total;
+  }, 0);
+}
+
+async function getNWS(url){
+  const res = await fetch(url, { headers: NWS_HEADERS, signal: AbortSignal.timeout(NWS_TIMEOUT_MS) });
+  if(!res.ok) throw new Error('NWS ' + res.status);
+  return res.json();
 }
 
 function where(list, withElevation){

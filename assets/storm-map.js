@@ -806,7 +806,7 @@
   }
   // The region card: past 7 days and next 7 averaged over the Cascade and Sierra sites, a plain
   // sentence on how the coming week compares, next week by site, and the El Niño summary.
-  function regionCard(sites, list, storm, rainList){
+  function regionCard(sites, list, storm, rainList, summary){
     var d = list.map(function(z){ return z.daily; });
     var snow = average(d.map(function(x){ return x.snowfall_sum; }));
     var precip = average(d.map(function(x){ return x.precipitation_sum; }));
@@ -829,11 +829,20 @@
         '<span class="stat-hero-site"><span class="stat-hero-name">' + top.name + '</span>' +
         '<span>' + top.spot + '</span><span>' + top.ft.toLocaleString() + ' ft</span></span>'
       : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No snow ahead</span>at any of the ' + sites.length + ' sites</span>';
-    // The rainiest spot in the western states. Its own request, so the card still shows if it fails.
-    var rainHero = '';
-    if(rainList){
-      var wet = RAIN_SITES.map(function(s, i){ return { site: s, ft: rainList[i].elevation * 3.28084, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
+    // The rainiest spot in the western states: the Worker's pick (National Weather Service forecasts,
+    // see worker/elnino.js), or Open-Meteo's if that isn't available. Its own requests, so the card
+    // still shows if both fail.
+    var wet = null;
+    var pick = summary && summary.mostRain;
+    var pickSite = pick && RAIN_SITES.filter(function(s){ return s.name === pick.name; })[0];
+    if(pickSite){
+      wet = { site: pickSite, ft: pick.ft, rain: pick.inches };
+    } else if(rainList){
+      wet = RAIN_SITES.map(function(s, i){ return { site: s, ft: rainList[i].elevation * 3.28084, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
         .sort(function(a, b){ return b.rain - a.rain; })[0];
+    }
+    var rainHero = '';
+    if(wet){
       hotSpots.rain = wet.rain >= 0.05 ? { name: wet.site.name + ', ' + wet.site.where, title: wet.site.name, lat: wet.site.lat, lon: wet.site.lon, ft: Math.round(wet.ft) } : null;
       rainHero = calloutShell('rain', 'precip', 'Show ' + wet.site.name + ' on the map, the most rain in the next 7 days',
         '<span class="stat-hero-label"><span class="stat-swatch"></span><span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
@@ -1045,7 +1054,9 @@
       getJSON(url), getJSON(regionUrl),
       optional(getJSON(ensembleUrl)),
       Promise.all(pts.map(function(p){ return optional(getJSON(WPC_URL + p.lon + ',' + p.lat)); })),
-      optional(getJSON(rainUrl))
+      optional(getJSON(rainUrl)),
+      // A cold rebuild can take a few seconds; the cards don't wait past this for it.
+      optional(Promise.race([getJSON('/elnino.json'), new Promise(function(done){ setTimeout(done, 4000); })]))
     ])
       .then(function(all){
         var list = Array.isArray(all[0]) ? all[0] : [all[0]];
@@ -1061,7 +1072,7 @@
           return stormLevel(sum(list[i].hourly.snowfall, 24), sum(list[i].hourly.precipitation, 24));
         });
         var worst = storms.reduce(function(a, b){ return STORM_ORDER.indexOf(b) > STORM_ORDER.indexOf(a) ? b : a; }, 'none');
-        statsRail.innerHTML = regionCard(sites, all[1], worst, Array.isArray(all[4]) ? all[4] : null) + ZONES.map(function(k, i){
+        statsRail.innerHTML = regionCard(sites, all[1], worst, Array.isArray(all[4]) ? all[4] : null, all[5]) + ZONES.map(function(k, i){
           var v = VIEWS[k], t = v.target, h = list[i].hourly, d = list[i].daily;
           var days = d.time.map(dayName);
           var snow = d.snowfall_sum.map(Number);

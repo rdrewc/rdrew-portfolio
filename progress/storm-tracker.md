@@ -226,9 +226,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Opening the tracker switches to the Wind overlay; closing it goes back to radar, which stays behind the homepage. So a homepage visit fetches no wind grid (checked: 0 requests), and opening fetches one, for where the map lands.
 - The West view's top bar follows the overlay: "Wind / Now", "Temperature / NOAA forecast", or "Forecast radar / time".
 
-## Rain data check, 2026-11-01 (open question)
-- Live pick: Flagstaff, 2.3" (Reno 0.18"). The 14" Reno Ryan saw was a forced test value in the preview page, never in the code.
-- 7-day precip, Open-Meteo vs NWS: Forks 1.16 / 2.79, Flagstaff 2.31 / 3.05, Durango 2.05 / 2.70, Phoenix 1.60 / 2.09, Seattle 0.20 / 0.40, Astoria 0.12 / 0.86. Open-Meteo ran low everywhere checked, most on the Pacific Northwest coast. Flagstaff still leads among the six checked.
+## Most rain uses NWS (done)
+- Ryan picked reliability, so Most rain now runs in the Worker (`worker/elnino.js`): Open-Meteo shortlists the 6 wettest towns, then NWS gridded forecasts rank them over the next 7 days. Rain is total water less snow at 10:1 (an estimate), so a mountain town can't win on snow. `mostRain.source` says which forecast answered.
+- Why: over the same 7 days on 2026-11-01, Open-Meteo vs NWS precip was Forks 1.16 / 2.79, Flagstaff 2.31 / 3.05, Durango 2.05 / 2.70, Phoenix 1.60 / 2.09, Seattle 0.20 / 0.40, Astoria 0.12 / 0.86. One day's check, not proof of accuracy.
+- Fallbacks: if NWS fails for all six, Open-Meteo's top town. If a rebuild fails outright, the last good summary (kept a day). The page reads `/elnino.json` with a 4 s limit and uses its own Open-Meteo request otherwise, which is what the local preview shows, since it has no Worker.
+- The shortlist can miss a town Open-Meteo rates low but NWS rates high.
+
+## Overlay bar on one line (done)
+- Under 860 px, Wind and Temp sit on one line. From 520 px up, Radar does too. Only Radar on narrow phones uses two rows, for its timeline.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
