@@ -469,8 +469,16 @@
   .target-cam-frame{display:block;aspect-ratio:16 / 9;border-radius:4px;overflow:hidden;background:var(--tile-bg);}
   .target-cam-frame img{display:block;width:100%;height:100%;object-fit:cover;}
   .target-cam.is-offline img{visibility:hidden;}
+  .target-cam.is-none{width:auto;} /* no cam nearby: no empty frame, just the note */
+  .target-cam.is-none .target-cam-frame{display:none;}
+  .target-cam.is-none .target-cam-caption{margin-top:0;}
   .target-cam-caption{display:flex;flex-direction:column;margin-top:5px;font-size:9px;letter-spacing:0.02em;line-height:1.5;color:var(--label);}
   .target-cam-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;}
+  .target-cam-link{display:inline-flex;align-items:center;gap:3px;align-self:flex-start;margin-top:2px;color:var(--accent);text-decoration:none;pointer-events:auto;transition:color var(--dur-quick) var(--ease-out);}
+  .target-cam-link[hidden]{display:none;}
+  .target-cam-link:hover{color:var(--strong);}
+  .target-cam-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .target-cam-link svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
   .stat-grid{display:grid;grid-template-columns:1fr auto auto;gap:4px 16px;}
   .stat-col{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);text-align:right;white-space:nowrap;}
   .stat-val{text-align:right;color:var(--strong);font-variant-numeric:tabular-nums;}
@@ -524,6 +532,12 @@
      .site-stats under 860px). */
   .stat-heroes{display:grid;gap:8px;margin:10px 0 12px;}
   .stat-hero{display:block;min-width:0;padding:10px 12px;border:1px solid var(--divider);border-radius:8px;}
+  /* A callout with a spot this week opens it on the map; the target in its corner hints at that. */
+  button.stat-hero{position:relative;width:100%;margin:0;background:none;font:inherit;letter-spacing:inherit;color:inherit;text-align:left;cursor:pointer;transition:border-color var(--dur-quick) var(--ease-out);}
+  button.stat-hero:hover, button.stat-hero.is-active{border-color:var(--accent);}
+  button.stat-hero:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .stat-hero-go{position:absolute;right:9px;bottom:9px;width:11px;height:11px;fill:none;stroke:var(--label);stroke-width:2;stroke-linecap:round;transition:stroke var(--dur-quick) var(--ease-out);}
+  button.stat-hero:hover .stat-hero-go, button.stat-hero.is-active .stat-hero-go{stroke:var(--accent);}
   .stat-hero-label{display:flex;align-items:baseline;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--label);}
   .stat-hero-row{display:flex;align-items:center;gap:6px 12px;margin-top:6px;}
   .stat-hero-num{font-family:'DM Sans',sans-serif;font-size:36px;font-weight:600;line-height:1;letter-spacing:-0.01em;color:var(--strong);font-variant-numeric:tabular-nums;}
@@ -1105,7 +1119,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/maplibre-contour@0.1.1/dist/index.min.js"></script>
-<script src="assets/storm-map.js?v=44"></script>
+<script src="assets/storm-map.js?v=47"></script>
 
 </body>
 </html>

@@ -57,7 +57,7 @@
       target: { name: 'Siberia, Palisades', lat: 39.1828, lon: -120.2722, ft: 8630, // top of Siberia Express
         // Palisades' own Scope cam at High Camp, 8,200 ft, next to Siberia. Its live player only plays
         // on Palisades' site, but the player's poster is a public still (refreshed about every 15 min).
-        cams: [{ name: 'Palisades Scope 8,200′', credit: 'Palisades Tahoe', url: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_EIFC0000015B' }],
+        cams: [{ name: 'Palisades Scope 8,200′', credit: 'Palisades Tahoe', url: 'https://relay.ozolio.com/pub.api?cmd=poster&oid=EMB_EIFC0000015B', link: 'https://www.palisadestahoe.com/mountain-information/webcams' }],
         fixedCams: true } // always this cam, not the nearest ALERTCalifornia pick
     },
     mammoth: {
@@ -226,13 +226,13 @@
   var LABEL_MIN_ZOOM = 7;
   // The marker element itself is positioned by MapLibre's transform, so the enter animation goes on
   // an inner .target-body; each target arrives after the cards and timeline (--i from 2).
-  var markers = ZONES.map(function(k, i){
-    var t = VIEWS[k].target;
+  var HOT = 'hot'; // the temporary most-snow / most-rain target's key, alongside the zones'
+  function targetNode(key, t, title, enterAt){
     var node = document.createElement('div');
-    node.className = 'target-marker is-open';
-    node.setAttribute('data-zone', k);
-    node.innerHTML = '<span class="target-body enter" style="--i:' + (2 + i) + '">' +
-      '<button type="button" class="target-hit" aria-label="' + VIEWS[k].label + ' forecast point: ' + t.name + '">' +
+    node.className = 'target-marker';
+    node.setAttribute('data-zone', key);
+    node.innerHTML = '<span class="target-body' + (enterAt == null ? '">' : ' enter" style="--i:' + enterAt + '">') +
+      '<button type="button" class="target-hit" aria-label="' + title + ' forecast point: ' + t.name + '">' +
       '<svg class="target-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg></button>' +
       // leader, in a box that starts 18px above the target: from the ring at 45 degrees, then flat into the label
       '<svg class="target-leader" viewBox="0 0 44 30" aria-hidden="true"><path d="M17 25 30 12h14"/></svg>' +
@@ -241,8 +241,16 @@
       '<span class="target-name">' + t.name + '</span>' +
       formatCoords(t) + ' &middot; ' + t.ft.toLocaleString() + ' ft' +
       '<span class="target-cam"><span class="target-cam-frame"><img alt="" decoding="async"></span>' +
-      '<span class="target-cam-caption"><span class="target-cam-name"></span><span class="target-cam-dist"></span></span></span>' +
+      '<span class="target-cam-caption"><span class="target-cam-name"></span><span class="target-cam-dist"></span>' +
+      '<a class="target-cam-link" target="_blank" rel="noopener" hidden>View cam' +
+      '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M6 1.5h2.5V4M8.5 1.5l-4 4M7.5 6v2.5h-6v-6H4"/></svg></a></span></span>' +
       '</span></span>';
+    return node;
+  }
+  var markers = ZONES.map(function(k, i){
+    var t = VIEWS[k].target;
+    var node = targetNode(k, t, VIEWS[k].label, 2 + i);
+    node.classList.add('is-open');
     // The crosshair selects the target and (re)opens its label; the label's X closes just the label.
     node.querySelector('.target-hit').addEventListener('click', function(){ openLabel(node); select(k, true); });
     node.querySelector('.target-close').addEventListener('click', function(){ node.classList.remove('is-open'); });
@@ -256,6 +264,60 @@
     node.classList.add('is-unfurling');
     clearTimeout(node.unfurlTimer);
     node.unfurlTimer = setTimeout(function(){ node.classList.remove('is-unfurling'); }, 1000);
+  }
+  // Most snow / most rain open as a temporary target, like the zones' but not one of them: one at a
+  // time, always selected (so it shows its cam), and gone when it's closed, when any view is picked
+  // or when the tracker closes. A spot that already has a target (a zone) just selects that one.
+  var HOT_ZOOM = 9.5;
+  var hotSpots = {};      // snow / rain -> this week's top spot, set by regionCard
+  var hotMarker = null, hotTarget = null;
+  function closeHot(){
+    if(!hotMarker) return;
+    hotMarker.remove();
+    hotMarker = hotTarget = null;
+    delete camPicks[HOT];
+    markHotCallout(null);
+  }
+  function markHotCallout(kind){
+    if(!statsRail) return;
+    statsRail.querySelectorAll('[data-hot]').forEach(function(b){
+      b.classList.toggle('is-active', b.getAttribute('data-hot') === kind);
+    });
+  }
+  // Lands the target clear of the cards, with room for its label to hang down and right: beside the
+  // card on desktop, just under it on phones.
+  function flyToHot(){
+    var offset = window.innerWidth <= 860
+      ? [-70, statsEl.getBoundingClientRect().bottom + 32 - window.innerHeight / 2]
+      : [140, -60];
+    map.flyTo({ center: [hotTarget.lon, hotTarget.lat], zoom: HOT_ZOOM, offset: offset, essential: true, duration: reduceMotion ? 0 : 3000 });
+  }
+  function openHot(kind){
+    var spot = hotSpots[kind];
+    if(!spot) return;
+    if(spot.zone){
+      openLabel(markers[ZONES.indexOf(spot.zone)].getElement());
+      select(spot.zone, true);
+      return;
+    }
+    closeHot();
+    hotTarget = { name: spot.name, lat: spot.lat, lon: spot.lon, ft: spot.ft };
+    var node = targetNode(HOT, hotTarget, spot.title);
+    node.classList.add('is-current');
+    node.querySelector('.target-hit').addEventListener('click', function(){ openLabel(node); flyToHot(); });
+    node.querySelector('.target-close').addEventListener('click', closeHot);
+    hotMarker = new maplibregl.Marker({ element: node, anchor: 'center' }).setLngLat([spot.lon, spot.lat]).addTo(map);
+    markHotCallout(kind);
+    map.once('moveend', function(){ if(hotMarker && hotMarker.getElement() === node) openLabel(node); });
+    flyToHot();
+    loadCamFeed().then(function(){
+      if(!hotMarker || hotMarker.getElement() !== node) return;
+      if(camFeatures){ // nearby first; farther only if nothing's close
+        var near = rankCams(hotTarget, CAM_RANGE_MI);
+        camPicks[HOT] = near.length ? near : rankCams(hotTarget, HOT_CAM_RANGE_MI);
+      }
+      showCam(node, HOT, 0);
+    });
   }
   function updateMarkers(){
     el.classList.toggle('show-target-labels', map.getZoom() >= LABEL_MIN_ZOOM);
@@ -293,7 +355,7 @@
     // The tracker always opens on the Overview (the whole coast); the saved view stays the homepage's.
     if(on && currentView && currentView !== 'west') select('west', true, true);
     if(on){ loadStats(); refreshCams(); }
-    else stop();
+    else { stop(); closeHot(); }
   }
   // The footer slides away while tracking, so the snowflake moves out of it to sit beside the location
   // tabs, flying between the two spots (FLIP) on the page's own timing: out with the page, back in
@@ -727,6 +789,13 @@
   function total(list, from, to){
     return list.slice(from, to).reduce(function(s, v){ return s + v; }, 0);
   }
+  // A most-snow or most-rain callout: a button that opens the spot on the map, or plain when there's
+  // no spot this week. The little target says so.
+  function calloutShell(kind, series, label, body){
+    if(!hotSpots[kind]) return '<span class="stat-hero ' + series + '">' + body + '</span>';
+    return '<button type="button" class="stat-hero ' + series + '" data-hot="' + kind + '" aria-label="' + label + '">' + body +
+      '<svg class="stat-hero-go" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg></button>';
+  }
   // The region card: past 7 days and next 7 averaged over the Cascade and Sierra sites, a plain
   // sentence on how the coming week compares, next week by site, and the El Niño summary.
   function regionCard(sites, list, storm, rainList){
@@ -741,7 +810,7 @@
     var mood = nextP > pastP * 1.25 + 0.05 ? 'Wetter week ahead' : nextP < pastP * 0.8 - 0.05 ? 'Drier week ahead' : 'A similar week ahead';
     var tempNote = dT <= -3 ? ', about ' + Math.round(-dT) + '°F colder' : dT >= 3 ? ', about ' + Math.round(dT) + '°F warmer' : '';
     var bySite = sites.map(function(s, i){
-      return { name: s.name, spot: s.spot, ft: s.ft, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
+      return { name: s.name, spot: s.spot, zone: s.zone, lat: s.lat, lon: s.lon, ft: s.ft, snow: total(d[i].snowfall_sum.map(Number), TODAY, 14), precip: total(d[i].precipitation_sum.map(Number), TODAY, 14) };
     });
     var top = bySite.slice().sort(function(a, b){ return b.snow - a.snow; })[0];
     var trend = mood + tempNote + ': ' + formatPrecip(nextP) + ' of precip and ' + formatSnow(nextS) + ' of snow per site on average, ' +
@@ -752,19 +821,25 @@
         '<span class="stat-hero-site"><span class="stat-hero-name">' + top.name + '</span>' +
         '<span>' + top.spot + '</span><span>' + top.ft.toLocaleString() + ' ft</span></span>'
       : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No snow ahead</span>at any of the ' + sites.length + ' sites</span>';
-    // The rainiest spot, Alaska to San Diego. Its own request, so the card still shows if it fails.
+    // The rainiest spot in the western states. Its own request, so the card still shows if it fails.
     var rainHero = '';
     if(rainList){
       var wet = RAIN_SITES.map(function(s, i){ return { site: s, ft: rainList[i].elevation * 3.28084, rain: total(rainList[i].daily.rain_sum.map(Number), 0, 7) }; })
         .sort(function(a, b){ return b.rain - a.rain; })[0];
-      rainHero = '<span class="stat-hero precip"><span class="stat-hero-label"><span class="stat-swatch"></span><span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
+      hotSpots.rain = wet.rain >= 0.05 ? { name: wet.site.name + ', ' + wet.site.where, title: wet.site.name, lat: wet.site.lat, lon: wet.site.lon, ft: Math.round(wet.ft) } : null;
+      rainHero = calloutShell('rain', 'precip', 'Show ' + wet.site.name + ' on the map, the most rain in the next 7 days',
+        '<span class="stat-hero-label"><span class="stat-swatch"></span><span>Most rain,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
         '<span class="stat-hero-row">' + (wet.rain >= 0.05
           ? '<span class="stat-hero-num">' + wet.rain.toFixed(1) + '"</span>' +
             '<span class="stat-hero-site"><span class="stat-hero-name">' + wet.site.name + '</span><span>' + wet.site.where + '</span>' +
             '<span>' + Math.round(wet.ft).toLocaleString() + ' ft</span></span>'
           : '<span class="stat-hero-num">0"</span><span class="stat-hero-site"><span class="stat-hero-name">No rain ahead</span>Western US</span>') +
-        '</span></span>';
+        '</span>');
     }
+    hotSpots.snow = top.snow >= 0.5 ? { name: top.spot, title: top.name, zone: top.zone, lat: top.lat, lon: top.lon, ft: top.ft } : null;
+    var snowHero = calloutShell('snow', 'snow', 'Show ' + top.spot + ' on the map, the most snow in the next 7 days',
+      '<span class="stat-hero-label"><span class="stat-swatch"></span><span>Most snow,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
+      '<span class="stat-hero-row">' + hero + '</span>');
     var dates = d[0].time;
     var days = dates.map(function(t, i){ return i === TODAY ? 'Today' : dayName(t); });
     var label = function(t){ return new Date(t + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
@@ -772,8 +847,7 @@
     return '<div class="stat-card stat-card-region" data-stat-view="west">' +
       '<span class="stat-head">' + stormTitle('Pacific Maritime El Ni&ntilde;o', storm) + '</span>' +
       '<span class="stat-target">Cascades to Sierra &middot; ' + sites.length + ' sites</span>' +
-      '<span class="stat-heroes"><span class="stat-hero snow"><span class="stat-hero-label"><span class="stat-swatch"></span><span>Most snow,<span class="stat-hero-next"> next</span> 7 days</span></span>' +
-      '<span class="stat-hero-row">' + hero + '</span></span>' + rainHero + '</span>' +
+      '<span class="stat-heroes">' + snowHero + rainHero + '</span>' +
       '<span class="stat-trend">' + trend + '</span>' +
       '<span class="stat-charts"><span class="stat-charts-inner">' +
       '<span class="stat-chart-head stat-section-head">Past week &middot; next week</span>' +
@@ -945,7 +1019,7 @@
       '&models=ecmwf_ifs025&daily=snowfall_sum&forecast_days=10&precipitation_unit=inch&timezone=America%2FLos_Angeles';
     var sites = REGION_SITES.concat(ZONES.filter(function(k){ return !VIEWS[k].target.landmark; }).map(function(k){
       var t = VIEWS[k].target;
-      return { name: VIEWS[k].label, spot: t.name, lat: t.lat, lon: t.lon, ft: t.ft };
+      return { name: VIEWS[k].label, spot: t.name, zone: k, lat: t.lat, lon: t.lon, ft: t.ft };
     }));
     var regionUrl = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=' + sites.map(function(p){ return p.lat; }).join(',') +
@@ -1042,9 +1116,11 @@
   // then the nearest of the rest. Thumbnails are 480 x 270.
   var CAM_FEED = 'https://cameras.alertcalifornia.org/public-camera-data/all_cameras-v3.json';
   var CAM_IMG = 'https://cameras.alertcalifornia.org/public-camera-data/{id}/latest-thumb.jpg';
-  var CAM_RANGE_MI = 25;
+  var CAM_PAGE = 'https://cameras.alertcalifornia.org/?id={id}'; // the camera's live view
+  var CAM_RANGE_MI = 25, HOT_CAM_RANGE_MI = 50; // the feed covers California and a little past it
   var camPicks = {};  // zone -> cameras to try, best first
   var camFeed = null; // promise, fetched once
+  var camFeatures = null;
   function miles(lat1, lon1, lat2, lon2){
     var r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
     var h = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.pow(Math.sin(dLon / 2), 2);
@@ -1056,18 +1132,19 @@
     var x = Math.cos(lat1 * r) * Math.sin(lat2 * r) - Math.sin(lat1 * r) * Math.cos(lat2 * r) * Math.cos(dLon);
     return (Math.atan2(y, x) / r + 360) % 360;
   }
+  function rankCams(t, range){
+    return camFeatures.map(function(f){
+      var c = f.geometry.coordinates, p = f.properties;
+      var mi = miles(c[1], c[0], t.lat, t.lon);
+      var off = p.az_current == null ? 180 : Math.abs(((bearing(c[1], c[0], t.lat, t.lon) - p.az_current + 540) % 360) - 180);
+      return { id: p.id, name: p.name, mi: Math.round(mi * 10) / 10, facing: (mi < 1 && !t.landmark) || off <= (p.fov || 60) / 2 };
+    }).filter(function(c){ return c.mi <= range; })
+      .sort(function(a, b){ return (b.facing - a.facing) || (a.mi - b.mi); })
+      .slice(0, 3);
+  }
   function pickCams(feed){
-    ZONES.forEach(function(k){
-      var t = VIEWS[k].target;
-      camPicks[k] = feed.features.map(function(f){
-        var c = f.geometry.coordinates, p = f.properties;
-        var mi = miles(c[1], c[0], t.lat, t.lon);
-        var off = p.az_current == null ? 180 : Math.abs(((bearing(c[1], c[0], t.lat, t.lon) - p.az_current + 540) % 360) - 180);
-        return { id: p.id, name: p.name, mi: Math.round(mi * 10) / 10, facing: (mi < 1 && !t.landmark) || off <= (p.fov || 60) / 2 };
-      }).filter(function(c){ return c.mi <= CAM_RANGE_MI; })
-        .sort(function(a, b){ return (b.facing - a.facing) || (a.mi - b.mi); })
-        .slice(0, 3);
-    });
+    camFeatures = feed.features;
+    ZONES.forEach(function(k){ camPicks[k] = rankCams(VIEWS[k].target, CAM_RANGE_MI); });
   }
   function loadCamFeed(){
     if(!camFeed) camFeed = fetch(CAM_FEED).then(function(r){ return r.json(); }).then(pickCams).catch(function(){});
@@ -1078,19 +1155,26 @@
   // the best camera that answers; the query changes once a minute so a fresh frame is fetched without
   // hammering the server.
   function showCam(node, k, n){
-    var t = VIEWS[k].target;
-    var cams = (!t.fixedCams && camPicks[k] && camPicks[k].length) ? camPicks[k] : t.cams;
+    var t = k === HOT ? hotTarget : VIEWS[k].target;
+    var cams = (!t.fixedCams && camPicks[k] && camPicks[k].length) ? camPicks[k] : (t.cams || []);
     var box = node.querySelector('.target-cam');
     var img = box && box.querySelector('img');
     if(!img) return;
+    var link = box.querySelector('.target-cam-link');
     if(n >= cams.length){
+      var none = !cams.length && !!camFeatures; // the feed loaded and nothing's in range
       box.classList.add('is-offline');
-      box.querySelector('.target-cam-name').textContent = 'Cams offline';
+      box.classList.toggle('is-none', none);
+      box.querySelector('.target-cam-name').textContent = none ? 'No mountain cam nearby' : 'Cams offline';
       box.querySelector('.target-cam-dist').textContent = '';
+      link.hidden = true;
       return;
     }
     var cam = cams[n];
-    box.classList.remove('is-offline');
+    box.classList.remove('is-offline', 'is-none');
+    link.href = cam.link || CAM_PAGE.replace('{id}', cam.id);
+    link.setAttribute('aria-label', 'View the ' + cam.name + ' cam in a new tab');
+    link.hidden = false;
     img.onerror = function(){ showCam(node, k, n + 1); };
     img.alt = 'Latest still from the ' + cam.name + ' camera';
     var src = cam.url || CAM_IMG.replace('{id}', cam.id);
@@ -1105,6 +1189,7 @@
         var node = m.getElement();
         showCam(node, node.getAttribute('data-zone'), 0);
       });
+      if(hotMarker) showCam(hotMarker.getElement(), HOT, 0);
     });
   }
   setInterval(function(){ if(tracking) refreshCams(); }, 60000);
@@ -1142,7 +1227,10 @@
     var step = e.target.closest('[data-stats-step]');
     var expand = e.target.closest('[data-stats-expand]');
     var card = e.target.closest('[data-stat-view]');
-    if(tab){
+    var hotButton = e.target.closest('[data-hot]');
+    if(hotButton){
+      openHot(hotButton.getAttribute('data-hot'));
+    } else if(tab){
       showTab(tab.getAttribute('data-stat-tab'));
     } else if(step){
       var i = Math.max(0, Math.min(CARDS.length - 1, statIndex + parseInt(step.getAttribute('data-stats-step'), 10)));
@@ -1223,6 +1311,7 @@
   }
   function select(key, animate, keepSaved){
     if(!VIEWS[key]) key = DEFAULT_VIEW;
+    closeHot();
     currentView = key;
     var v = VIEWS[key];
     var instant = !animate || reduceMotion;

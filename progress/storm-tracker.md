@@ -214,6 +214,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Checked at 870, 1000, 1011, 1081, 1280 and 1440 px. The gap is never under 23 px when they share a row.
 - Fixed "MOST SNOW,NEXT7 DAYS": the label is a flex row, which dropped the spaces around the hidden "next" span. The text now sits in one span.
 
+## Temporary targets, View cam links (done)
+- The Most snow and Most rain callouts are buttons (a small target in the corner hints at it). Clicking one flies the map there and opens a temporary target with the same label, unfurl, X and drag or zoom behavior as the others. The callout stays highlighted while it's open.
+  - One at a time. It goes when its X is clicked, when any view is picked, or when the tracker closes. Panning and zooming keep it.
+  - A spot that's already a zone (Mammoth, Tahoe) selects that zone's own target instead, and the card moves with it. The Cascades and rain towns get the temporary one.
+- Cams: nearest ALERTCalifornia cam within 25 mi, then 50 mi. The feed only covers California, a little of Nevada and southern Oregon, and part of Wyoming, so most inland towns and the Cascades show "No mountain cam nearby", with no empty frame. Road cams stay out, per Ryan.
+- Every cam now has a small "View cam" link with an external arrow, opening in a new tab: `cameras.alertcalifornia.org/?id=<cam id>` for ALERTCalifornia, Palisades' webcams page for the Scope cam.
+- Browser testing note: a hidden Browser pane pauses requestAnimationFrame and CSS transitions, so map flights never finish there. This was checked with a stand-in timer injected into the test page only.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
