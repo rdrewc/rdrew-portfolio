@@ -252,6 +252,13 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Deploy check, 2026-11-01: the rebuild takes about 2.4 s and ran fine on Cloudflare at the full 0.25 degrees. If it's ever stopped for CPU, `horizStride=2` (0.5 degree) is a quarter of the work.
 - GFS is about 17 miles per point, so city-level zoom is a soft wash. Finer data (HRRR) stops at the coast and wouldn't show the Pacific.
 
+## Forecast cards never go empty (done)
+- `/elnino-forecast.json` (`worker/elnino.js`) serves everything the cards draw: the zones, region and ensemble requests, as Open-Meteo returns them. Cached 1 hour, last good copy kept 3 days. So visitors no longer use their own Open-Meteo limit for the cards. About 9 KB compressed.
+- `loadStats()`: Worker first, then the same requests directly (as in the local preview), then the browser's saved copy (`storm-forecast` in localStorage, about 84 KB). "Forecast unavailable" only shows if all of that fails and this browser has never loaded a forecast.
+- A copy 3+ hours old says "Saved forecast from ...", hourly data is shifted so "next 24 h" starts now, and the region card finds today by date. Showing a saved copy, the tracker tries again on next open.
+- Checked on the preview deploy, on a connection getting 429s from Open-Meteo: all 7 cards loaded. With the Worker and Open-Meteo both blocked and the saved copy aged 20 hours: all 7 cards showed it, with the note.
+- Still direct from the browser, and so still limited per address: the Wind overlay's grid and the top bar's current weather.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
