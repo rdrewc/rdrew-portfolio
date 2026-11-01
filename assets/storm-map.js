@@ -494,6 +494,8 @@
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
   var overlay = 'radar';
+  // Not map.isStyleLoaded(): that goes false whenever a source is still loading, even after load.
+  var overlaysReady = false;
   var radarPanel = document.querySelector('.radar-panel');
   var overlayBtns = document.querySelectorAll('[data-overlay]');
   function ensureOverlays(){
@@ -515,7 +517,7 @@
     overlayBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-overlay') === name)); });
     if(name !== 'radar') stop();
     updateTimeLabel();
-    if(!map.isStyleLoaded()) return;
+    if(!overlaysReady) return; // the map's load picks this up
     ensureOverlays();
     map.setLayoutProperty('temp', 'visibility', name === 'temp' ? 'visible' : 'none');
     map.setLayoutProperty('temp-seam', 'visibility', name === 'temp' ? 'visible' : 'none');
@@ -724,7 +726,6 @@
     windTimer = setTimeout(loadWind, 250);
   });
   map.on('resize', function(){ if(windCanvas){ sizeWindCanvas(); if(overlay === 'wind') loadWind(); } });
-  map.on('load', function(){ setOverlay(overlay); });
 
   // ---- forecast totals (tracker mode) ----
   // One Open-Meteo request covers every zone: hourly snow and liquid precip for the next 7 days from
@@ -1337,7 +1338,11 @@
   buttons.forEach(function(b){
     b.addEventListener('click', function(){ select(b.getAttribute('data-view'), true); });
   });
-  map.on('load', function(){ select(tracking ? 'west' : (saved() || DEFAULT_VIEW), false); }); // /elnino opens on the Overview
+  map.on('load', function(){
+    select(tracking ? 'west' : (saved() || DEFAULT_VIEW), false); // /elnino opens on the Overview
+    overlaysReady = true;
+    setOverlay(overlay); // after the view is set, so wind loads for where the map actually is
+  });
   if(startTracking) setTracking(true);
   // Keep framed views (the whole coast, Tahoe) in frame when the window changes shape, unless you're
   // steering the map.
