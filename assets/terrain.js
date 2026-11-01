@@ -395,7 +395,7 @@
       .then(function(data){
         if(readoutFor !== t) return;
         var meters = data.elevation && data.elevation[0];
-        elevLine.textContent = typeof meters === 'number' ? 'ELEV ' + Math.round(meters * 3.28084).toLocaleString() + ' FT' : '';
+        elevLine.textContent = typeof meters === 'number' ? Math.round(meters * 3.28084).toLocaleString() + "'" : '';
       })
       .catch(function(){ if(readoutFor === t) elevLine.textContent = ''; });
   }

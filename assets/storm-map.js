@@ -1306,7 +1306,7 @@
     if(coordsEl) coordsEl.textContent = v.coords || formatCoords(t);
     weatherLine.innerHTML = '&hellip;';
     // Published elevation, not a lookup: elevation services smooth summits down by 30-200 ft.
-    elevLine.textContent = 'ELEV ' + t.ft.toLocaleString() + ' FT';
+    elevLine.textContent = t.ft.toLocaleString() + "'";
     fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
       '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
       .then(function(r){ return r.json(); })
