@@ -174,7 +174,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - The title stands alone on its line. Elevation moved to the line below (place, elevation, coordinates), with 10 px of space under the title on every card.
 
 ## Most rain callout, taller Overview (done)
-- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 28 towns across the eleven western states in the lower 48 (WA, OR, CA, NV, UT, ID, MT, WY, CO, NM, AZ). That's the wet coast plus a town or two per interior state; Alaska and BC were dropped (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
+- The Overview card has a second callout under the snow one: "Most rain, next 7 days". It takes the wettest of 27 towns across the eleven western states in the lower 48 (WA, OR, CA, NV, UT, ID, MT, WY, CO, NM, AZ). That's the wet coast plus a town or two per interior state; Alaska and BC were dropped (`RAIN_SITES`), using Open-Meteo `rain_sum` so mountain snow isn't counted. It's a separate request; if it fails, the card shows without it.
 - On desktop the cards can grow 54 px taller (the max-height reserve went from 150 px to 96 px), which puts the Overview card's bottom 16 px above the radar panel.
 
 ## Rain to one decimal, snow spot, footer hides in the tracker (done)
@@ -221,6 +221,14 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - Cams: nearest ALERTCalifornia cam within 25 mi, then 50 mi. The feed only covers California, a little of Nevada and southern Oregon, and part of Wyoming, so most inland towns and the Cascades show "No mountain cam nearby", with no empty frame. Road cams stay out, per Ryan.
 - Every cam now has a small "View cam" link with an external arrow, opening in a new tab: `cameras.alertcalifornia.org/?id=<cam id>` for ALERTCalifornia, Palisades' webcams page for the Scope cam.
 - Browser testing note: a hidden Browser pane pauses requestAnimationFrame and CSS transitions, so map flights never finish there. This was checked with a stand-in timer injected into the test page only.
+
+## Tracker opens on Wind (done)
+- Opening the tracker switches to the Wind overlay; closing it goes back to radar, which stays behind the homepage. So a homepage visit fetches no wind grid (checked: 0 requests), and opening fetches one, for where the map lands.
+- The West view's top bar follows the overlay: "Wind / Now", "Temperature / NOAA forecast", or "Forecast radar / time".
+
+## Rain data check, 2026-11-01 (open question)
+- Live pick: Flagstaff, 2.3" (Reno 0.18"). The 14" Reno Ryan saw was a forced test value in the preview page, never in the code.
+- 7-day precip, Open-Meteo vs NWS: Forks 1.16 / 2.79, Flagstaff 2.31 / 3.05, Durango 2.05 / 2.70, Phoenix 1.60 / 2.09, Seattle 0.20 / 0.40, Astoria 0.12 / 0.86. Open-Meteo ran low everywhere checked, most on the Pacific Northwest coast. Flagstaff still leads among the six checked.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

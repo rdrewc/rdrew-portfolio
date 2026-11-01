@@ -354,6 +354,9 @@
     refreshReadout();
     // The tracker always opens on the Overview (the whole coast); the saved view stays the homepage's.
     if(on && currentView && currentView !== 'west') select('west', true, true);
+    // ...and on Wind. The homepage keeps the quiet radar behind it, so a visit fetches no wind grid.
+    // (overlayBtns is unset on the first call, before the overlays are set up.)
+    if(overlayBtns) setOverlay(on ? 'wind' : 'radar');
     if(on){ loadStats(); refreshCams(); }
     else { stop(); closeHot(); }
   }
@@ -485,7 +488,8 @@
   });
 
   // ---- overlays: forecast radar, wind, temperature ----
-  // Radar is the default and the only one with a timeline. Temperature is NOAA's NDFD forecast as map
+  // Wind opens the tracker; radar sits behind the homepage and is the only one with a timeline.
+  // Temperature is NOAA's NDFD forecast as map
   // tiles, under the contour lines. Wind is a particle flow: see "wind flow" below.
   var TEMP_TILES = 'https://mapservices.weather.noaa.gov/raster/rest/services/NDFD/NDFD_temp/MapServer/export' +
     '?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&layers=show:0,1,4&format=png32&transparent=true&f=image';
@@ -658,6 +662,9 @@
   function startWind(){
     ensureWindCanvas();
     windCanvas.classList.remove('is-hidden');
+    // Mid-flight (opening the tracker flies to the coast), wait for moveend: it loads the wind for
+    // where the map lands, instead of fetching a grid for where it's leaving.
+    if(map.isMoving()){ windCanvas.classList.add('is-moving'); return; }
     loadWind();
     runWind();
   }
@@ -1270,12 +1277,12 @@
   function updateReadout(v){
     if(!weatherLine || !elevLine) return;
     if(v === VIEWS.west){
-      // Whole-coast view: the readout follows the radar instead of one spot.
+      // Whole-coast view: the readout follows the overlay instead of one spot.
       readoutFor = v;
       if(coordsEl) coordsEl.textContent = 'WEST COAST';
       var d = validAt(frame);
-      weatherLine.textContent = 'Forecast radar';
-      elevLine.textContent = d ? formatTime(d) : '…';
+      weatherLine.textContent = overlay === 'wind' ? 'Wind' : overlay === 'temp' ? 'Temperature' : 'Forecast radar';
+      elevLine.textContent = overlay === 'wind' ? 'Now' : overlay === 'temp' ? 'NOAA forecast' : d ? formatTime(d) : '…';
       return;
     }
     if(readoutFor === v) return;
