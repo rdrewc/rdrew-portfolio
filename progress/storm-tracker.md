@@ -235,6 +235,11 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 ## Overlay bar on one line (done)
 - Under 860 px, Wind and Temp sit on one line. From 520 px up, Radar does too. Only Radar on narrow phones uses two rows, for its timeline.
 
+## Cam width, phone legend, rate limits (done)
+- Cams use `min-width` (240 px, 180 px under 860), so they fill the label however wide its text makes it, with even 9 px sides. The old fixed width left a gap on the right once the coordinates line got wider.
+- Under 520 px, Wind and Temp hide the time label so their legend has the row.
+- Open-Meteo's free limit is per IP and counts each location, so a wind map is about 120 calls. Heavy testing from one address gets 429s for a while. Normal visits are fine. The Worker calls from Cloudflare's shared IPs, so if it ever gets limited, `elnino.json` falls back to the last good copy.
+
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.
 - A couple of tiny rings at Tahoe's north and south shores are elevation-tile glitches, not real features.
