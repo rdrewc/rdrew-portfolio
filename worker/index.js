@@ -21,6 +21,14 @@ const MOISTURE_PATH = '/elnino-moisture.bin';
 const FORECAST_PATH = '/elnino-forecast.json';
 // The top bar's current weather (see elnino.js).
 const WEATHER_PATH = '/elnino-weather.json';
+// What a shared rdrew.com/elnino link previews as, in place of the homepage's tags. The image is a
+// still of the tracker on the California coast (targets and wind), 1200x630.
+const TRACKER_SHARE = {
+  title: 'El Niño Tracker',
+  description: 'Snow, wind and storm risk across the West Coast through the El Niño winter.',
+  url: 'https://rdrew.com/elnino',
+  image: 'https://rdrew.com/assets/elnino-share.jpg'
+};
 
 // Add a project's folder here to put it behind the password, e.g. /^\/spatial-audio(\/|$)/.
 // Empty: the whole site is public.
@@ -37,7 +45,7 @@ export default {
     if(url.pathname === FORECAST_PATH) return forecastJSON(request, ctx);
     if(url.pathname === WEATHER_PATH) return weatherJSON(request, ctx);
     if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
-    if(url.pathname === TRACKER_PATH) return env.ASSETS.fetch(new Request(new URL('/', url), request));
+    if(url.pathname === TRACKER_PATH) return trackerPage(request, env);
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);
     if(readCookie(request, COOKIE) !== SESSION_TOKEN) return gate(request, env);
 
@@ -49,6 +57,27 @@ export default {
     return out;
   }
 };
+
+// The homepage, with its link-preview tags swapped for the tracker's.
+async function trackerPage(request, env){
+  const page = await env.ASSETS.fetch(new Request(new URL('/', request.url), request));
+  const tags = {
+    'og:title': TRACKER_SHARE.title, 'twitter:title': TRACKER_SHARE.title,
+    'description': TRACKER_SHARE.description, 'og:description': TRACKER_SHARE.description, 'twitter:description': TRACKER_SHARE.description,
+    'og:url': TRACKER_SHARE.url,
+    'og:image': TRACKER_SHARE.image, 'twitter:image': TRACKER_SHARE.image,
+    'twitter:card': 'summary_large_image'
+  };
+  return new HTMLRewriter()
+    .on('meta', { element(meta){
+      const key = meta.getAttribute('property') || meta.getAttribute('name');
+      if(key in tags) meta.setAttribute('content', tags[key]);
+    } })
+    .on('meta[property="og:image"]', { element(meta){
+      meta.after('<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">', { html: true });
+    } })
+    .transform(page);
+}
 
 // The gate page answers at the locked URL itself, so unlocking just reloads it.
 async function gate(request, env){
