@@ -762,7 +762,46 @@
       legendRAF = requestAnimationFrame(frameLoop);
     })();
   }
+  // The Worker's wind grid (/elnino-wind.bin: GFS 10 m wind, 0.25 degrees, the hour nearest now) covers
+  // the whole map, so moving it just rebuilds the field. If it can't be reached (as in the local
+  // preview, or if the Worker is down), the old way: a grid over the view, straight from Open-Meteo.
+  var WIND_GRID_MS = 3600000;
+  var windGrid = null, windGridAt = 0, windGridLoad = null;
+  function loadWindGrid(){
+    if(windGrid && Date.now() - windGridAt < WIND_GRID_MS) return Promise.resolve(windGrid);
+    if(!windGridLoad){
+      windGridLoad = fetch('/elnino-wind.bin')
+        .then(function(r){ if(!r.ok) throw new Error('wind ' + r.status); return r.arrayBuffer(); })
+        .then(function(buffer){
+          var length = new DataView(buffer).getUint32(0);
+          var head = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, 4, length)));
+          var lat = head.lat, lon = head.lon, n = lat.count * lon.count;
+          var comps = new Int8Array(buffer, 4 + length, 2 * n);
+          windGrid = {
+            // the field samples cell centers, so the edges sit half a step out from the outer points
+            w: lon.from - lon.step / 2, e: lon.from + (lon.count - 0.5) * lon.step,
+            s: lat.from - lat.step / 2, n: lat.from + (lat.count - 0.5) * lat.step,
+            cols: lon.count, rows: lat.count,
+            east: Float32Array.from(comps.subarray(0, n)), north: Float32Array.from(comps.subarray(n))
+          };
+          windGridAt = Date.now();
+          return windGrid;
+        })
+        .catch(function(){ return null; })
+        .then(function(grid){ windGridLoad = null; return grid; });
+    }
+    return windGridLoad;
+  }
   function loadWind(){
+    if(shown() !== 'wind') return;
+    loadWindGrid().then(function(grid){
+      if(shown() !== 'wind') return;
+      if(!grid) return loadWindDirect();
+      windData = grid;
+      buildField(); resetParticles(); runWind();
+    });
+  }
+  function loadWindDirect(){
     if(shown() !== 'wind') return;
     var b = map.getBounds(), vw = b.getWest(), ve = b.getEast(), vs = b.getSouth(), vn = b.getNorth();
     // Still inside the area already fetched, at a similar scale: just rebuild the field.

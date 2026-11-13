@@ -71,6 +71,13 @@ const MOISTURE_HOURS = 78;
 const MOISTURE_TIMEOUT_MS = 20000;
 const MOISTURE_SCALE = 2; // one byte per point: mm of water x 2, so half-mm steps up to 127 mm
 const COARSE_GRID = { lat: { from: 16, step: 2.5, count: 18 }, lon: { from: -170, step: 2.5, count: 33 } };
+// Wind overlay: GFS 10 m wind on the same 0.25 degree grid, at the forecast hour nearest now, so
+// visitors' browsers don't each fetch a wind grid from Open-Meteo (and lose it to its per-address limit).
+const WIND_URL = 'https://thredds.ucar.edu/thredds/ncss/grid/grib/NCEP/GFS/Global_0p25deg/Best' +
+  '?var=u-component_of_wind_height_above_ground&var=v-component_of_wind_height_above_ground&vertCoord=10' +
+  '&north=60&south=12&west=190&east=275&horizStride=1&accept=netcdf3';
+const WIND_CACHE_SECONDS = 3600;
+const MPH_PER_MS = 2.23694;
 const MOISTURE_CACHE_SECONDS = 21600;
 const MOISTURE_STALE_SECONDS = 172800;
 
@@ -85,6 +92,9 @@ export function forecastJSON(request, ctx){
 }
 export function weatherJSON(request, ctx){
   return cached(request, ctx, '/elnino-weather.json', WEATHER_CACHE_SECONDS, STALE_SECONDS, async () => JSON.stringify(await buildWeather()));
+}
+export function windBin(request, ctx){
+  return cached(request, ctx, '/elnino-wind.bin', WIND_CACHE_SECONDS, STALE_SECONDS, buildWind, 'text/plain; charset=x-user-defined');
 }
 export function moistureJSON(request, ctx){
   // text/plain so Cloudflare compresses it; the page reads it as bytes
@@ -196,6 +206,43 @@ export async function buildMoisture(){
   out.set(head, 4);
   out.set(bytes, 4 + head.length);
   return out;
+}
+
+// The wind file: a 4-byte length, a JSON header of that length, then the east and the north component
+// in whole mph, one signed byte per point, each running south to north, then west to east.
+export async function buildWind(){
+  const hour = (t) => new Date(t).toISOString().slice(0, 13) + ':00:00Z';
+  const now = Date.now();
+  const res = await fetch(WIND_URL + '&time_start=' + hour(now) + '&time_end=' + hour(now + 3 * 3600000),
+    { signal: AbortSignal.timeout(MOISTURE_TIMEOUT_MS) });
+  if(!res.ok) throw new Error('THREDDS ' + res.status);
+  const file = readNetCDF(await res.arrayBuffer());
+  const find = (test) => file.variables.find(test);
+  const lats = values(file, find((v) => v.name === 'latitude'));
+  const lons = values(file, find((v) => v.name === 'longitude'));
+  const timeVar = find((v) => /^time/.test(v.name) && v.dimensions.length === 1);
+  const since = Date.parse(timeVar.attributes.units.replace(/^Hour since /, ''));
+  const valid = since + values(file, timeVar)[0] * 3600000; // the forecast hour at or just before now
+  const rows = lats.length, cols = lons.length, north = lats[0] > lats[rows - 1];
+  const out = new Int8Array(2 * rows * cols);
+  [find((v) => v.name.startsWith('u-component')), find((v) => v.name.startsWith('v-component'))].forEach((component, k) => {
+    for(let r = 0, i = k * rows * cols; r < rows; r++){
+      let from = component.begin + (north ? rows - 1 - r : r) * cols * 4; // the first time, the one height
+      for(let c = 0; c < cols; c++, i++, from += 4){
+        out[i] = Math.max(-127, Math.min(127, Math.round(file.view.getFloat32(from) * MPH_PER_MS)));
+      }
+    }
+  });
+  const head = new TextEncoder().encode(JSON.stringify({
+    updated: new Date().toISOString(), valid: new Date(valid).toISOString(),
+    lat: { from: Math.min(lats[0], lats[rows - 1]), step: Math.abs(lats[1] - lats[0]), count: rows },
+    lon: { from: lons[0] - 360, step: lons[1] - lons[0], count: cols }
+  }));
+  const body = new Uint8Array(4 + head.length + out.length);
+  new DataView(body.buffer).setUint32(0, head.length);
+  body.set(head, 4);
+  body.set(new Uint8Array(out.buffer), 4 + head.length);
+  return body;
 }
 
 async function fineMoisture(){

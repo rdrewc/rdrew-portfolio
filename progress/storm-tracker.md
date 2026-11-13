@@ -257,10 +257,15 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - `loadStats()`: Worker first, then the same requests directly (as in the local preview), then the browser's saved copy (`storm-forecast` in localStorage, about 84 KB). "Forecast unavailable" only shows if all of that fails and this browser has never loaded a forecast.
 - A copy 3+ hours old says "Saved forecast from ...", hourly data is shifted so "next 24 h" starts now, and the region card finds today by date. Showing a saved copy, the tracker tries again on next open.
 - Checked on the preview deploy, on a connection getting 429s from Open-Meteo: all 7 cards loaded. With the Worker and Open-Meteo both blocked and the saved copy aged 20 hours: all 7 cards showed it, with the note.
-- Still direct from the browser, and so still limited per address: the Wind overlay's grid.
 
 ## Top bar weather never goes empty (done)
 - `/elnino-weather.json` holds the current weather for the homepage's lake spot and all six cards, cached 15 minutes, last good copy kept a day. The page tries that, then Open-Meteo directly, then the last reading this browser saved (`storm-weather`, used for up to a day).
+
+## Wind from the Worker (done)
+- 2026-11-13: wind stopped showing for Ryan. His connection could no longer reach api.open-meteo.com at all (timeouts, while open-meteo.com and the ensemble API answered), probably blocked after earlier heavy testing. The Worker reached it fine. Wind was the last thing the browser still fetched from Open-Meteo itself.
+- `/elnino-wind.bin` (`buildWind()` in `worker/elnino.js`) serves GFS 10 m wind from UCAR THREDDS: the same 0.25-degree grid as moisture, at the forecast hour at or just before now, packed as signed whole-mph bytes (east, then north). About 132 KB. Cached 1 hour, last good copy kept a day.
+- The page loads it once (refreshed hourly), and moving the map just rebuilds the flow field. If the Worker can't answer, it falls back to the old Open-Meteo grid over the view.
+- Zoomed into a zone, wind detail is now GFS's roughly 17-mile spacing instead of Open-Meteo's blend, which used finer regional models over the US.
 
 ## Not done yet
 - On narrow phones a target's label can run off the right edge.

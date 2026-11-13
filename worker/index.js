@@ -21,6 +21,8 @@ const MOISTURE_PATH = '/elnino-moisture.bin';
 const FORECAST_PATH = '/elnino-forecast.json';
 // The top bar's current weather (see elnino.js).
 const WEATHER_PATH = '/elnino-weather.json';
+// The Wind overlay's grid (see elnino.js).
+const WIND_PATH = '/elnino-wind.bin';
 // What a shared rdrew.com/elnino link previews as, in place of the homepage's tags. The image is a
 // still of the tracker on the California coast (targets and wind), 1200x630.
 const TRACKER_SHARE = {
@@ -34,7 +36,7 @@ const TRACKER_SHARE = {
 // Empty: the whole site is public.
 const PROTECTED_PATHS = [];
 
-import { elninoJSON, forecastJSON, moistureJSON, weatherJSON } from './elnino.js';
+import { elninoJSON, forecastJSON, moistureJSON, weatherJSON, windBin } from './elnino.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -44,6 +46,7 @@ export default {
     if(url.pathname === MOISTURE_PATH) return moistureJSON(request, ctx);
     if(url.pathname === FORECAST_PATH) return forecastJSON(request, ctx);
     if(url.pathname === WEATHER_PATH) return weatherJSON(request, ctx);
+    if(url.pathname === WIND_PATH) return windBin(request, ctx);
     if(url.pathname === TRACKER_PATH + '/') return Response.redirect(new URL(TRACKER_PATH, url), 301);
     if(url.pathname === TRACKER_PATH) return trackerPage(request, env);
     if(!PROTECTED_PATHS.some((re) => re.test(url.pathname))) return env.ASSETS.fetch(request);
