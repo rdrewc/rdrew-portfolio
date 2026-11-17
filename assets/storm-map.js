@@ -766,11 +766,20 @@
   // the whole map, so moving it just rebuilds the field. If it can't be reached (as in the local
   // preview, or if the Worker is down), the old way: a grid over the view, straight from Open-Meteo.
   var WIND_GRID_MS = 3600000;
+  // A request that hangs (it happens when Open-Meteo blocks an address) is given up on, so wind can
+  // try again instead of waiting on it forever.
+  var WIND_TIMEOUT_MS = 10000;
+  function timeout(ms){
+    if(window.AbortSignal && AbortSignal.timeout) return AbortSignal.timeout(ms);
+    var c = new AbortController();
+    setTimeout(function(){ c.abort(); }, ms);
+    return c.signal;
+  }
   var windGrid = null, windGridAt = 0, windGridLoad = null;
   function loadWindGrid(){
     if(windGrid && Date.now() - windGridAt < WIND_GRID_MS) return Promise.resolve(windGrid);
     if(!windGridLoad){
-      windGridLoad = fetch('/elnino-wind.bin')
+      windGridLoad = fetch('/elnino-wind.bin', { signal: timeout(WIND_TIMEOUT_MS) })
         .then(function(r){ if(!r.ok) throw new Error('wind ' + r.status); return r.arrayBuffer(); })
         .then(function(buffer){
           var length = new DataView(buffer).getUint32(0);
@@ -824,7 +833,7 @@
       '?latitude=' + pts.map(function(p){ return p[1].toFixed(3); }).join(',') +
       '&longitude=' + pts.map(function(p){ return p[0].toFixed(3); }).join(',') +
       '&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=mph';
-    fetch(url).then(function(res){ return res.json(); }).then(function(data){
+    fetch(url, { signal: timeout(WIND_TIMEOUT_MS) }).then(function(res){ if(!res.ok) throw new Error('wind ' + res.status); return res.json(); }).then(function(data){
       if(key !== windKey) return;
       var list = Array.isArray(data) ? data : [data];
       var east = new Float32Array(list.length), north = new Float32Array(list.length);

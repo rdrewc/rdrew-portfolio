@@ -265,6 +265,7 @@ Turning the homepage background into an El Niño storm tracker for winter 2026-2
 - 2026-11-13: wind stopped showing for Ryan. His connection could no longer reach api.open-meteo.com at all (timeouts, while open-meteo.com and the ensemble API answered), probably blocked after earlier heavy testing. The Worker reached it fine. Wind was the last thing the browser still fetched from Open-Meteo itself.
 - `/elnino-wind.bin` (`buildWind()` in `worker/elnino.js`) serves GFS 10 m wind from UCAR THREDDS: the same 0.25-degree grid as moisture, at the forecast hour at or just before now, packed as signed whole-mph bytes (east, then north). About 132 KB. Cached 1 hour, last good copy kept a day.
 - The page loads it once (refreshed hourly), and moving the map just rebuilds the flow field. If the Worker can't answer, it falls back to the old Open-Meteo grid over the view.
+- 2026-11-17: wind was blank on the live site (still the old direct version). The browser's request to Open-Meteo hung without ever failing, and `loadWind` treated that request as still on its way, so it never asked again. Wind requests now give up after 10 s (`WIND_TIMEOUT_MS`), so a hang can't block them.
 - Zoomed into a zone, wind detail is now GFS's roughly 17-mile spacing instead of Open-Meteo's blend, which used finer regional models over the US.
 
 ## Not done yet
