@@ -767,7 +767,7 @@
   // preview, or if the Worker is down), the old way: a grid over the view, straight from Open-Meteo.
   var WIND_GRID_MS = 3600000;
   // A request that hangs (it happens when Open-Meteo blocks an address) is given up on, so wind can
-  // try again instead of waiting on it forever.
+  // try again and the cards and top bar can fall back, instead of waiting on it forever.
   var WIND_TIMEOUT_MS = 10000;
   function timeout(ms){
     if(window.AbortSignal && AbortSignal.timeout) return AbortSignal.timeout(ms);
@@ -1327,7 +1327,7 @@
       '&longitude=' + RAIN_SITES.map(function(p){ return p.lon; }).join(',') +
       '&daily=rain_sum&forecast_days=7&precipitation_unit=inch&timezone=America%2FLos_Angeles';
     function getJSON(u){
-      return fetch(u).then(function(r){ if(!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
+      return fetch(u, { signal: timeout(WIND_TIMEOUT_MS) }).then(function(r){ if(!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
     }
     function optional(promise){ return promise.catch(function(){ return null; }); } // these can fail alone
     function asList(x){ return Array.isArray(x) ? x : [x]; }
@@ -1638,7 +1638,7 @@
   function weatherNow(key, t){
     if(!weatherAll || Date.now() - weatherAt > WEATHER_REFRESH_MS){
       weatherAt = Date.now();
-      weatherAll = fetch('/elnino-weather.json')
+      weatherAll = fetch('/elnino-weather.json', { signal: timeout(WIND_TIMEOUT_MS) })
         .then(function(r){ if(!r.ok) throw new Error('weather ' + r.status); return r.json(); })
         .then(function(data){ saveWeather(data.places); return data.places; })
         .catch(function(){ weatherAt = 0; return {}; }); // ask again next time
@@ -1646,7 +1646,7 @@
     return weatherAll.then(function(places){
       if(places[key]) return places[key];
       return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + t.lat + '&longitude=' + t.lon +
-        '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit')
+        '&elevation=' + Math.round(t.ft / 3.28084) + '&current_weather=true&temperature_unit=fahrenheit', { signal: timeout(WIND_TIMEOUT_MS) })
         .then(function(r){ if(!r.ok) throw new Error('weather ' + r.status); return r.json(); })
         .then(function(data){
           var now = { temperature: data.current_weather.temperature, code: data.current_weather.weathercode }, one = {};
