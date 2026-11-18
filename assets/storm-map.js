@@ -566,7 +566,7 @@
   var WIND_GRID = [10, 12];   // columns, rows of wind samples (each one counts against Open-Meteo's limit)
   var WIND_MARGIN = 0.25;     // fetch this much extra on every side, so small pans reuse the data
   var FIELD_CELL = 16;        // px between flow-field points on screen
-  var PX_PER_MPH = 0.035;     // particle speed, px per frame per mph
+  var PX_PER_MPH = 0.026;     // particle speed, px per frame per mph (slowed a quarter on 2026-11-17)
   var MAX_AGE = 130;          // frames before a particle is respawned (longer, so slow ones still travel)
   var PARTICLE_AREA = 520;    // one particle per this many square px
   var FADE = 0.955;           // share of each trail kept from frame to frame (slower motion, longer fade)
